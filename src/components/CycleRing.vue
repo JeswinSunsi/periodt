@@ -29,7 +29,7 @@ const phaseIcons = {
 };
 </script>
 <template>
-  <div class="living-ring" :class="{ 'living-ring-detailed': detailed }">
+  <div class="living-ring" :class="{ 'living-ring-detailed': detailed }" :data-phase="phase">
     <svg class="living-ring-svg" viewBox="0 0 240 240" aria-hidden="true">
       <circle
         cx="120"
@@ -85,10 +85,10 @@ const phaseIcons = {
           cy="26"
           r="11"
           fill="#fcfcf3"
-          stroke="#526a40"
+          stroke="var(--ring-accent, #526a40)"
           stroke-width="3"
         />
-        <circle cx="120" cy="26" r="3" fill="#526a40" />
+        <circle cx="120" cy="26" r="3" fill="var(--ring-accent, #526a40)" />
       </g>
     </svg>
     <div class="living-ring-center">
@@ -108,8 +108,15 @@ const phaseIcons = {
 .living-ring {
   width: 100%;
   position: relative;
-  color: #64794e;
+  color: var(--ring-accent, #64794e);
+  transition: color .6s;
 }
+.living-ring[data-phase="Ovulation"] { --ring-accent: #a6577d; }
+.living-ring[data-phase="Ovulation"] .living-ring-center > span:first-of-type,
+.living-ring[data-phase="Ovulation"] .living-ring-center strong,
+.living-ring[data-phase="Ovulation"] .living-ring-spark { color: var(--ring-accent); }
+.living-ring-marker circle { transition: fill .6s, stroke .6s; }
+.living-ring-center strong,.living-ring-center>span { transition: color .6s; }
 .living-ring-svg {
   display: block;
   width: 100%;

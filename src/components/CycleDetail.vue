@@ -11,6 +11,12 @@ const selectedDay = ref(
   Math.max(1, Math.min(cycleDay.value, state.profile.cycleLength)),
 );
 const exploring = ref(false);
+// Native range inputs don't animate their thumbs; the visual thumb below does.
+// Direct pointer/keyboard input stays immediate, while phase jumps glide.
+const isScrubbing = ref(false);
+const sliderPosition = computed(() =>
+  ((selectedDay.value - 1) / (state.profile.cycleLength - 1)) * 100,
+);
 const segments = computed(() =>
   phaseSegments(state.profile.cycleLength, state.profile.periodLength),
 );
@@ -58,6 +64,7 @@ const rangeLabel = (p) =>
       ? `Around day ${p.start}`
       : `Days ${p.start}–${p.end}`;
 function returnToToday() {
+  isScrubbing.value = false;
   exploring.value = false;
   selectedDay.value = Math.max(
     1,
@@ -66,11 +73,13 @@ function returnToToday() {
 }
 function selectPhase(p) {
   if (!p.days) return;
+  isScrubbing.value = false;
   selectedDay.value =
     p.name === phase.value ? Math.min(cycleDay.value, p.end) : p.start;
   exploring.value = true;
 }
 function selectDay(event) {
+  isScrubbing.value = true;
   selectedDay.value = Number(event.target.value);
   exploring.value = true;
 }
@@ -106,7 +115,7 @@ const showEstrogen = ref(true),
 const chartId = `cycle-hormones`;
 </script>
 <template>
-  <div class="cycle-detail">
+  <div class="cycle-detail" :data-phase="selectedPhase">
     <div
       class="cycle-detail-toolbar flex flex-wrap items-center justify-between gap-3"
     >
@@ -195,17 +204,23 @@ const chartId = `cycle-hormones`;
             {{ exploring ? selectedDay : cycleDay }}</output
           >
         </div>
-        <input
+        <div class="cycle-range-control" :class="{ 'is-scrubbing': isScrubbing }">
+          <div class="cycle-range-rail" :style="rangeStyle" aria-hidden="true"></div>
+          <div class="cycle-range-travel" aria-hidden="true">
+            <span class="cycle-range-thumb" :style="{ left: `${sliderPosition}%` }"><i></i></span>
+          </div>
+          <input
           id="cycle-day-range"
           class="cycle-day-range"
           type="range"
           min="1"
           :max="state.profile.cycleLength"
           :value="selectedDay"
-          :style="rangeStyle"
           :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, state.profile.periodLength)} phase`"
           @input="selectDay"
+          @pointerdown="isScrubbing = true"
         />
+        </div>
         <div class="cycle-day-labels">
           <span>Day 1</span><span>Slide to explore your cycle</span
           ><span>Day {{ state.profile.cycleLength }}</span>
@@ -213,13 +228,18 @@ const chartId = `cycle-hormones`;
       </div>
     </section>
 
-    <div class="cycle-seasons" role="group" aria-label="Explore cycle phases">
+    <div class="phase-picker">
+      <div class="phase-picker-heading">
+      </br>
+      </div>
+      <div class="cycle-seasons" role="group" aria-label="Explore cycle phases">
       <button
-        v-for="(p, i) in segments"
+        v-for="p in segments"
         :key="p.name"
         class="cycle-season-tab"
         :class="{ 'is-selected': selectedPhase === p.name }"
         :style="{ '--phase-color': p.color }"
+        :data-phase="p.name"
         :aria-pressed="selectedPhase === p.name"
         :disabled="!p.days"
         @click="selectPhase(p)"
@@ -230,11 +250,11 @@ const chartId = `cycle-hormones`;
         <span class="season-tab-copy"
           ><strong>{{ p.name }}</strong
           ><small>{{ rangeLabel(p) }}</small></span
-        ><span class="season-tab-number" aria-hidden="true">0{{ i + 1 }}</span>
-        <span v-if="phase === p.name" class="season-today"
-          >YOU MAY BE HERE</span
         >
+        <span class="season-selection" aria-hidden="true"><Icon v-if="selectedPhase === p.name" name="Check" :size="12" /></span>
+        <span v-if="phase === p.name" class="season-today"><i></i> Your estimated phase</span>
       </button>
+      </div>
     </div>
     <p class="cycle-overlap-note">
       A simple map, with a little overlap: menstruation is also the beginning of
