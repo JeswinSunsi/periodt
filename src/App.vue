@@ -152,10 +152,11 @@ function changeMonth(direction) {
     1,
   );
 }
-function goTo(page) {
+async function goTo(page) {
   activePage.value = page;
   mobileNav.value = false;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  await nextTick();
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 const toast = ref("");
 let toastTimer;
