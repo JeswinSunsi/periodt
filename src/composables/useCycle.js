@@ -1,4 +1,5 @@
 import { computed, reactive, watch } from "vue";
+import { phaseAtDay } from "../lib/cyclePhases.js";
 export const dateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const fromKey = (key) => new Date(`${key}T12:00:00`);
@@ -74,12 +75,11 @@ export function useCycle() {
   const phase = computed(() => phaseFor(today));
   function phaseFor(date) {
     const day = dayDifference(date, fromKey(state.profile.lastPeriod)) + 1;
-    if (day < 1 || day > state.profile.cycleLength) return "Unconfirmed";
-    if (day <= state.profile.periodLength) return "Menstrual";
-    const ovulation = state.profile.cycleLength - 14;
-    if (day < ovulation) return "Follicular";
-    if (day === ovulation) return "Ovulation";
-    return "Luteal";
+    return phaseAtDay(
+      day,
+      state.profile.cycleLength,
+      state.profile.periodLength,
+    );
   }
   return {
     state,

@@ -1,7 +1,17 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from "vue";
 import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
+import CycleRing from "./components/CycleRing.vue";
+import CycleDetail from "./components/CycleDetail.vue";
 import {
   useCycle,
   dateKey,
@@ -11,10 +21,26 @@ import {
 } from "./composables/useCycle";
 const { state, today, cycleDay, remaining, nextPeriod, phase, storageError } =
   useCycle();
-const activePage = ref("Overview"),
+const pageRoutes = {
+  Overview: "/overview",
+  "My cycle": "/cycle",
+  "My calendar": "/calendar",
+  "Cycle insights": "/insights",
+  "My journal": "/journal",
+  "Partner space": "/partner",
+};
+function pageFromHash() {
+  return (
+    Object.keys(pageRoutes).find(
+      (page) => pageRoutes[page] === window.location.hash.slice(1),
+    ) || "Overview"
+  );
+}
+const activePage = ref(pageFromHash()),
   mobileNav = ref(false);
 const navigation = [
   { title: "Overview", icon: "House" },
+  { title: "My cycle", icon: "Sprout" },
   { title: "My calendar", icon: "CalendarDays" },
   { title: "Cycle insights", icon: "ChartNoAxesColumnIncreasing" },
   { title: "My journal", icon: "BookOpen" },
@@ -24,6 +50,7 @@ const pageHeading = computed(
   () =>
     ({
       Overview: "A little more in tune.",
+      "My cycle": "A little closer to you.",
       "My calendar": "Your cycle, at a glance.",
       "Cycle insights": "Get to know your rhythm.",
       "My journal": "A little space for you.",
@@ -34,6 +61,7 @@ const pageDescription = computed(
   () =>
     ({
       Overview: "Every day is different. Let’s meet you where you are.",
+      "My cycle": "Understand the changes. Get curious about your own rhythm.",
       "My calendar": "Notice your patterns, one day at a time.",
       "Cycle insights":
         "Your body tells a story. Start listening to the patterns.",
@@ -154,10 +182,23 @@ function changeMonth(direction) {
 }
 async function goTo(page) {
   activePage.value = page;
+  window.location.hash = pageRoutes[page];
   mobileNav.value = false;
   await nextTick();
   window.scrollTo({ top: 0, behavior: "auto" });
+  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
 }
+async function syncPageFromHash() {
+  activePage.value = pageFromHash();
+  mobileNav.value = false;
+  await nextTick();
+  window.scrollTo({ top: 0, behavior: "auto" });
+  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
+}
+onMounted(() => window.addEventListener("hashchange", syncPageFromHash));
+onBeforeUnmount(() =>
+  window.removeEventListener("hashchange", syncPageFromHash),
+);
 const toast = ref("");
 let toastTimer;
 function notify(message) {
@@ -457,15 +498,27 @@ onBeforeUnmount(() => {
             <p class="eyebrow">
               <span class="tiny-sun">☼</span> {{ fullDate }}
             </p>
-            <h1>{{ pageHeading }}</h1>
+            <h1 tabindex="-1">{{ pageHeading }}</h1>
             <p class="page-description">{{ pageDescription }}</p>
           </div>
           <button class="button button-dark" @click="openLog()">
             <Icon name="Plus" :size="18" /> Log my day
           </button>
         </section>
+        <CycleDetail
+          v-if="activePage === 'My cycle'"
+          @back="goTo('Overview')"
+          @log="(date) => openLog(date)"
+          @settings="openSettings"
+          @calendar="goTo('My calendar')"
+        />
         <div v-if="activePage === 'Overview'" class="top-grid">
-          <section class="cycle-card">
+          <section class="cycle-card cycle-card-interactive">
+            <button
+              class="cycle-card-hitbox"
+              aria-label="Open my cycle: explore phases, body changes, and check-ins"
+              @click="goTo('My cycle')"
+            ></button>
             <div class="cycle-card-top">
               <span class="card-eyebrow">YOU & YOUR CYCLE</span
               ><button
@@ -478,104 +531,12 @@ onBeforeUnmount(() => {
             </div>
             <div class="cycle-card-body">
               <div class="cycle-ring">
-                <svg viewBox="0 0 220 220" aria-hidden="true">
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="94"
-                    fill="none"
-                    stroke="#d7dcb5"
-                    stroke-width="14"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="94"
-                    fill="none"
-                    stroke="#f5d2b0"
-                    stroke-width="14"
-                    stroke-dasharray="95 496"
-                    transform="rotate(-90 110 110)"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="94"
-                    fill="none"
-                    stroke="#96a778"
-                    stroke-width="14"
-                    stroke-dasharray="166 425"
-                    stroke-dashoffset="-104"
-                    transform="rotate(-90 110 110)"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="94"
-                    fill="none"
-                    stroke="#d4b962"
-                    stroke-width="14"
-                    stroke-dasharray="22 569"
-                    stroke-dashoffset="-279"
-                    transform="rotate(-90 110 110)"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="94"
-                    fill="none"
-                    stroke="#b2bc8d"
-                    stroke-width="14"
-                    stroke-dasharray="271 320"
-                    stroke-dashoffset="-310"
-                    transform="rotate(-90 110 110)"
-                  />
-                  <circle
-                    :cx="
-                      110 +
-                      94 *
-                        Math.cos(
-                          (((Math.min(
-                            cycleDay - 1,
-                            state.profile.cycleLength - 1,
-                          ) /
-                            state.profile.cycleLength) *
-                            360 -
-                            90) *
-                            Math.PI) /
-                            180,
-                        )
-                    "
-                    :cy="
-                      110 +
-                      94 *
-                        Math.sin(
-                          (((Math.min(
-                            cycleDay - 1,
-                            state.profile.cycleLength - 1,
-                          ) /
-                            state.profile.cycleLength) *
-                            360 -
-                            90) *
-                            Math.PI) /
-                            180,
-                        )
-                    "
-                    r="9"
-                    fill="#fbfaf0"
-                    stroke="#596845"
-                    stroke-width="4"
-                  />
-                </svg>
-                <div class="ring-center">
-                  <span>CYCLE DAY</span><strong>{{ cycleDay }}</strong
-                  ><span class="ring-phase">{{
-                    phase === "Unconfirmed"
-                      ? "Check your dates"
-                      : phase + " phase"
-                  }}</span
-                  ><span class="ring-spark">✧</span>
-                </div>
+                <CycleRing
+                  :day="cycleDay"
+                  :cycle-length="state.profile.cycleLength"
+                  :period-length="state.profile.periodLength"
+                  :phase="phase"
+                />
               </div>
               <div class="cycle-message">
                 <span class="phase-badge"
@@ -588,9 +549,9 @@ onBeforeUnmount(() => {
                 >
                 <h2>{{ currentPhaseCopy.title }}</h2>
                 <p>{{ currentPhaseCopy.description }}</p>
-                <button class="text-button" @click="modal = 'phases'">
-                  Get to know this phase <Icon name="ArrowUpRight" :size="16" />
-                </button>
+                <span class="text-button cycle-explore-link"
+                  >Explore my cycle <Icon name="ArrowUpRight" :size="16"
+                /></span>
               </div>
             </div>
             <div class="cycle-card-footer">
