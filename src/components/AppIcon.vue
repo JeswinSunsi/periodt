@@ -1,0 +1,81 @@
+<script setup>
+import {
+  ArrowUpRight,
+  ArrowRight,
+  ArrowLeft,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  ChartNoAxesColumnIncreasing,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Copy,
+  Droplet,
+  Ellipsis,
+  Heart,
+  House,
+  Leaf,
+  Link,
+  LockKeyhole,
+  LogOut,
+  Menu,
+  MessageCircleHeart,
+  Moon,
+  Plus,
+  Settings2,
+  ShieldCheck,
+  Smile,
+  Sparkles,
+  Sprout,
+  Sun,
+  Users,
+  Wind,
+  X,
+} from "lucide-vue-next";
+defineProps({ name: String, size: { type: [Number, String], default: 20 } });
+const icons = {
+  ArrowUpRight,
+  ArrowRight,
+  ArrowLeft,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  ChartNoAxesColumnIncreasing,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Copy,
+  Droplet,
+  Ellipsis,
+  Heart,
+  House,
+  Leaf,
+  Link,
+  LockKeyhole,
+  LogOut,
+  Menu,
+  MessageCircleHeart,
+  Moon,
+  Plus,
+  Settings2,
+  ShieldCheck,
+  Smile,
+  Sparkles,
+  Sprout,
+  Sun,
+  Users,
+  Wind,
+  X,
+};
+</script>
+<template>
+  <component
+    :is="icons[name] || icons.Leaf"
+    :size="size"
+    :stroke-width="1.65"
+    aria-hidden="true"
+  />
+</template>
