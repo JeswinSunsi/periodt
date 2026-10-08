@@ -1057,14 +1057,6 @@ onBeforeUnmount(() => {
                   Stop sharing
                 </button>
               </div>
-              <div class="demo-notice">
-                <strong>A little preview of what’s to come</strong>
-                <p>
-                  This frontend demo saves your choices in this browser. Codes
-                  work only in the local partner preview; sharing across devices
-                  will need a backend.
-                </p>
-              </div>
             </section>
             <div>
               <section class="partner-card partner-explainer">
