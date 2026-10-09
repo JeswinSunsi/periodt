@@ -8,7 +8,7 @@ const props = defineProps({
   periodLength: Number,
   phase: String,
   detailed: Boolean,
-  label: { type: String, default: "CYCLE DAY" },
+  label: { type: String, default: "DAY" },
 });
 const segments = computed(() =>
   phaseSegments(props.cycleLength, props.periodLength).filter((p) => p.days),

@@ -12,6 +12,7 @@ import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
+import { isPeriodStart, removePeriodStart } from "./lib/periodHistory.js";
 import {
   useCycle,
   dateKey,
@@ -270,7 +271,7 @@ function openLog(date = today, initialMood = "") {
     flow: existing?.flow || "None",
     symptoms: [...(existing?.symptoms || [])],
     notes: existing?.notes || "",
-    periodStart: existing?.periodStart || false,
+    periodStart: isPeriodStart(state, logDate.value),
   });
   modal.value = "log";
 }
@@ -301,6 +302,8 @@ function setPeriodStart(date) {
 function saveLog() {
   if (draft.periodStart && logDate.value <= dateKey(today))
     setPeriodStart(logDate.value);
+  else if (!draft.periodStart && isPeriodStart(state, logDate.value))
+    removePeriodStart(state, logDate.value, dateKey(addDays(today, -11)));
   state.logs[logDate.value] = { ...draft, symptoms: [...draft.symptoms] };
   if (logDate.value === dateKey(today)) selectedMood.value = draft.mood;
   modal.value = "";
@@ -1089,7 +1092,7 @@ onBeforeUnmount(() => {
           </button>
           <form v-if="modal === 'log'" @submit.prevent="saveLog">
             <span class="eyebrow">A MOMENT FOR YOU</span>
-            <h2 id="modal-title">How are you, really?</h2>
+            <h2 id="modal-title">How are you feeling?</h2>
             <p>
               {{
                 fromKey(logDate).toLocaleDateString("en-US", {
@@ -1126,7 +1129,6 @@ onBeforeUnmount(() => {
               ><input
                 type="checkbox"
                 v-model="draft.periodStart"
-                :disabled="!!state.logs[logDate]?.periodStart"
               /><span
                 >My period started this day<small
                   >Sets this date as the start of a cycle.</small
