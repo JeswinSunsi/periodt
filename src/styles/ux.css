@@ -232,6 +232,9 @@ summary:focus-visible {
   line-height: 1.7;
   color: var(--text-secondary);
 }
+.checkin-card {
+  container: checkin / inline-size;
+}
 .mood-options {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -240,11 +243,33 @@ summary:focus-visible {
 }
 .mood-option {
   min-width: 0;
-  padding: 8px 2px;
+  min-height: 88px;
+  justify-content: center;
+  padding: 12px 4px;
   font-size: 12px;
   line-height: 1.4;
   color: var(--text-secondary);
   border: 1px solid transparent;
+}
+.mood-option > span:last-child {
+  white-space: nowrap;
+}
+/* Wrap by the card's available width, including narrow desktop columns. */
+@container checkin (max-width: 360px) {
+  .mood-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .mood-option {
+    flex: 0 0 calc((100% - 16px) / 3);
+  }
+}
+@container checkin (max-width: 240px) {
+  .mood-option {
+    flex-basis: calc((100% - 8px) / 2);
+  }
 }
 .mood-option.selected {
   border-color: #8c9e77;
