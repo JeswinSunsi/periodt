@@ -1261,3 +1261,48 @@ summary:focus-visible {
     display: none;
   }
 }
+
+/* One spacing scale for card collections, including between separate grids. */
+.page-content {
+  --card-gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+.page-content > * {
+  margin-block: 0;
+}
+.top-grid,
+.middle-grid,
+.article-grid,
+.insight-grid,
+.journal-list,
+.sharing-grid,
+.phase-grid,
+.cycle-seasons,
+.cycle-detail-grid,
+.cycle-detail-side {
+  gap: var(--card-gap);
+}
+.care-section,
+.sharing-grid > div,
+.cycle-detail,
+.phase-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+.care-heading,
+.sharing-grid > div > *,
+.cycle-detail > *,
+.phase-picker > * {
+  margin-block: 0;
+}
+.page-footer {
+  padding-top: 0;
+}
+@media (max-width: 680px) {
+  .page-content {
+    --card-gap: 20px;
+  }
+}
