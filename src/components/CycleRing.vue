@@ -29,7 +29,11 @@ const phaseIcons = {
 };
 </script>
 <template>
-  <div class="living-ring" :class="{ 'living-ring-detailed': detailed }" :data-phase="phase">
+  <div
+    class="living-ring"
+    :class="{ 'living-ring-detailed': detailed }"
+    :data-phase="phase"
+  >
     <svg class="living-ring-svg" viewBox="0 0 240 240" aria-hidden="true">
       <circle
         cx="120"
@@ -109,14 +113,25 @@ const phaseIcons = {
   width: 100%;
   position: relative;
   color: var(--ring-accent, #64794e);
-  transition: color .6s;
+  transition: color 0.6s;
 }
-.living-ring[data-phase="Ovulation"] { --ring-accent: #a6577d; }
+.living-ring[data-phase="Ovulation"] {
+  --ring-accent: #a6577d;
+}
 .living-ring[data-phase="Ovulation"] .living-ring-center > span:first-of-type,
 .living-ring[data-phase="Ovulation"] .living-ring-center strong,
-.living-ring[data-phase="Ovulation"] .living-ring-spark { color: var(--ring-accent); }
-.living-ring-marker circle { transition: fill .6s, stroke .6s; }
-.living-ring-center strong,.living-ring-center>span { transition: color .6s; }
+.living-ring[data-phase="Ovulation"] .living-ring-spark {
+  color: var(--ring-accent);
+}
+.living-ring-marker circle {
+  transition:
+    fill 0.6s,
+    stroke 0.6s;
+}
+.living-ring-center strong,
+.living-ring-center > span {
+  transition: color 0.6s;
+}
 .living-ring-svg {
   display: block;
   width: 100%;
@@ -132,9 +147,9 @@ const phaseIcons = {
   pointer-events: none;
 }
 .living-ring-center > span:first-of-type {
-  font-size: 8px;
-  letter-spacing: 1.8px;
-  color: #7c8a67;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #59664e;
 }
 .living-ring-center strong {
   font:
@@ -144,7 +159,7 @@ const phaseIcons = {
   letter-spacing: -2px;
 }
 .living-ring-phase {
-  font-size: 9px;
+  font-size: 12px;
   margin-top: 4px;
 }
 .living-ring-spark {
@@ -175,7 +190,7 @@ const phaseIcons = {
   font-size: 12px;
 }
 .living-ring-detailed .living-ring-center > span:first-of-type {
-  font-size: 9px;
+  font-size: 12px;
 }
 .day-number-enter-active,
 .day-number-leave-active {

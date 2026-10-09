@@ -14,8 +14,8 @@ const exploring = ref(false);
 // Native range inputs don't animate their thumbs; the visual thumb below does.
 // Direct pointer/keyboard input stays immediate, while phase jumps glide.
 const isScrubbing = ref(false);
-const sliderPosition = computed(() =>
-  ((selectedDay.value - 1) / (state.profile.cycleLength - 1)) * 100,
+const sliderPosition = computed(
+  () => ((selectedDay.value - 1) / (state.profile.cycleLength - 1)) * 100,
 );
 const segments = computed(() =>
   phaseSegments(state.profile.cycleLength, state.profile.periodLength),
@@ -178,9 +178,11 @@ const chartId = `cycle-hormones`;
             >
               <Icon name="Plus" :size="16" />
               {{
-                exploring && dateKey(selectedDate) !== dateKey(today)
-                  ? "Check in on this day"
-                  : "Check in with myself"
+                exploring && dateKey(selectedDate) > dateKey(today)
+                  ? "Plan a note for this day"
+                  : exploring && dateKey(selectedDate) !== dateKey(today)
+                    ? "Check in on this day"
+                    : "Check in with myself"
               }}</button
             ><button
               v-if="exploring"
@@ -198,28 +200,39 @@ const chartId = `cycle-hormones`;
 
       <div class="cycle-day-explorer">
         <div class="flex items-center justify-between gap-2">
-          <label for="cycle-day-range">Every day has its own rhythm</label
+          <label for="cycle-day-range">Explore a day in your cycle</label
           ><output for="cycle-day-range" aria-live="polite"
             >{{ exploring ? "Exploring" : "Today" }} · Day
             {{ exploring ? selectedDay : cycleDay }}</output
           >
         </div>
-        <div class="cycle-range-control" :class="{ 'is-scrubbing': isScrubbing }">
-          <div class="cycle-range-rail" :style="rangeStyle" aria-hidden="true"></div>
+        <div
+          class="cycle-range-control"
+          :class="{ 'is-scrubbing': isScrubbing }"
+        >
+          <div
+            class="cycle-range-rail"
+            :style="rangeStyle"
+            aria-hidden="true"
+          ></div>
           <div class="cycle-range-travel" aria-hidden="true">
-            <span class="cycle-range-thumb" :style="{ left: `${sliderPosition}%` }"><i></i></span>
+            <span
+              class="cycle-range-thumb"
+              :style="{ left: `${sliderPosition}%` }"
+              ><i></i
+            ></span>
           </div>
           <input
-          id="cycle-day-range"
-          class="cycle-day-range"
-          type="range"
-          min="1"
-          :max="state.profile.cycleLength"
-          :value="selectedDay"
-          :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, state.profile.periodLength)} phase`"
-          @input="selectDay"
-          @pointerdown="isScrubbing = true"
-        />
+            id="cycle-day-range"
+            class="cycle-day-range"
+            type="range"
+            min="1"
+            :max="state.profile.cycleLength"
+            :value="selectedDay"
+            :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, state.profile.periodLength)} phase`"
+            @input="selectDay"
+            @pointerdown="isScrubbing = true"
+          />
         </div>
         <div class="cycle-day-labels">
           <span>Day 1</span><span>Slide to explore your cycle</span
@@ -230,30 +243,35 @@ const chartId = `cycle-hormones`;
 
     <div class="phase-picker">
       <div class="phase-picker-heading">
-      </br>
+        <h2>Explore the four phases</h2>
+        <p>Select a phase to see its dates and learn more.</p>
       </div>
       <div class="cycle-seasons" role="group" aria-label="Explore cycle phases">
-      <button
-        v-for="p in segments"
-        :key="p.name"
-        class="cycle-season-tab"
-        :class="{ 'is-selected': selectedPhase === p.name }"
-        :style="{ '--phase-color': p.color }"
-        :data-phase="p.name"
-        :aria-pressed="selectedPhase === p.name"
-        :disabled="!p.days"
-        @click="selectPhase(p)"
-      >
-        <span class="season-tab-icon"
-          ><Icon :name="phaseStories[p.name].icon" :size="22"
-        /></span>
-        <span class="season-tab-copy"
-          ><strong>{{ p.name }}</strong
-          ><small>{{ rangeLabel(p) }}</small></span
+        <button
+          v-for="p in segments"
+          :key="p.name"
+          class="cycle-season-tab"
+          :class="{ 'is-selected': selectedPhase === p.name }"
+          :style="{ '--phase-color': p.color }"
+          :data-phase="p.name"
+          :aria-pressed="selectedPhase === p.name"
+          :disabled="!p.days"
+          @click="selectPhase(p)"
         >
-        <span class="season-selection" aria-hidden="true"><Icon v-if="selectedPhase === p.name" name="Check" :size="12" /></span>
-        <span v-if="phase === p.name" class="season-today"><i></i> Your estimated phase</span>
-      </button>
+          <span class="season-tab-icon"
+            ><Icon :name="phaseStories[p.name].icon" :size="22"
+          /></span>
+          <span class="season-tab-copy"
+            ><strong>{{ p.name }}</strong
+            ><small>{{ rangeLabel(p) }}</small></span
+          >
+          <span class="season-selection" aria-hidden="true"
+            ><Icon v-if="selectedPhase === p.name" name="Check" :size="12"
+          /></span>
+          <span v-if="phase === p.name" class="season-today"
+            ><i></i> Your estimated phase</span
+          >
+        </button>
       </div>
     </div>
     <p class="cycle-overlap-note">

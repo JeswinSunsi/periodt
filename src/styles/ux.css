@@ -1,0 +1,1231 @@
+/* Shared usability layer. Keep the cream/sage palette and serif headings,
+   with a consistent type scale, visible states, and comfortable controls. */
+:root {
+  --text-body: #46513e;
+  --text-secondary: #59664e;
+  --text-muted: #5b684f;
+  --text-danger: #8a4233;
+  font-size: 16px;
+  line-height: 1.55;
+}
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+button svg,
+a svg {
+  flex-shrink: 0;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #496235;
+  outline-offset: 3px;
+}
+.skip-link {
+  position: fixed;
+  z-index: 250;
+  top: 12px;
+  left: 12px;
+  padding: 12px 18px;
+  background: #fffef8;
+  color: #3e5630;
+  border-radius: 6px;
+  transform: translateY(-160%);
+}
+.skip-link:focus {
+  transform: none;
+}
+.page-content {
+  padding-bottom: 12px;
+}
+.page-heading {
+  align-items: center;
+}
+.page-heading h1 {
+  font-size: clamp(28px, 2.5vw, 34px);
+}
+.page-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.page-heading > .button {
+  min-height: 44px;
+  font-size: 14px;
+  padding: 11px 16px;
+}
+.page-heading .eyebrow,
+.breadcrumb,
+.private-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.breadcrumb span {
+  padding: 0 8px;
+  color: var(--text-muted);
+}
+.button,
+.button-outline,
+.checkin-button {
+  min-height: 44px;
+  font-size: 14px;
+  line-height: 1.45;
+  padding: 11px 16px;
+}
+.button-outline,
+.checkin-button {
+  color: #4c613d;
+  border-color: #b9c4a7;
+}
+.icon-button,
+.top-avatar,
+.cycle-card-interactive .cycle-edit {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.icon-button,
+.cycle-card-interactive .cycle-edit {
+  color: #526843;
+}
+.small-text-button,
+.text-button,
+.cycle-text-link,
+.cycle-back,
+.source-link,
+.cycle-settings-button,
+.page-footer > button,
+.cycle-research-note a {
+  min-height: 44px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4c653b;
+  gap: 7px;
+}
+.small-text-button,
+.cycle-text-link,
+.cycle-back,
+.page-footer > button {
+  padding: 8px 2px;
+}
+.small-text-button,
+.cycle-text-link,
+.source-link,
+.page-footer > button {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.card-eyebrow,
+.eyebrow,
+.brand-subtitle,
+.nav-label,
+.sidebar-note > span,
+.profile span,
+.profile strong {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.card-eyebrow {
+  letter-spacing: 1px;
+}
+.brand-subtitle {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.nav-label {
+  margin-top: 34px;
+  letter-spacing: 1px;
+}
+.nav-item {
+  font-size: 14px;
+  min-height: 48px;
+  color: var(--text-secondary);
+  gap: 10px;
+  padding: 12px;
+}
+.sidebar-note {
+  padding: 18px 14px;
+  margin-bottom: 12px;
+}
+.sidebar-note p {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+.sidebar-bottom {
+  padding-top: 24px;
+}
+.settings-link {
+  margin-bottom: 12px;
+}
+.profile {
+  padding: 18px 0;
+}
+.nav-close {
+  display: none;
+}
+.top-grid,
+.middle-grid {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+.top-grid > *,
+.middle-grid > *,
+.sharing-grid > *,
+.cycle-detail-grid > * {
+  min-width: 0;
+}
+.cycle-card-body {
+  gap: 22px;
+}
+.cycle-message {
+  min-width: 0;
+  max-width: 330px;
+}
+.cycle-message h2 {
+  max-width: none;
+  font-size: 26px;
+}
+.cycle-message p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: none;
+}
+.phase-badge {
+  font-size: 12px;
+  color: #4c613d;
+  line-height: 1.5;
+}
+.cycle-card-footer,
+.cycle-card-footer .estimate {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.cycle-card-footer > span:first-child {
+  flex-wrap: wrap;
+}
+.cycle-explore-link {
+  font-size: 14px;
+  padding-bottom: 0;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.checkin-card h2 {
+  font-size: 24px;
+  line-height: 1.4;
+}
+.checkin-card > p,
+.partner-card > p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.mood-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 22px 0;
+}
+.mood-option {
+  min-width: 0;
+  padding: 8px 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.mood-option.selected {
+  border-color: #8c9e77;
+  background: #e9efdc;
+}
+.mood-face {
+  transform: none;
+  flex-shrink: 0;
+}
+.checkin-caption,
+.partner-card .card-eyebrow,
+.partner-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.section-card-heading {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.section-card-heading h2 {
+  font-size: 16px;
+}
+.calendar-content,
+.calendar-page .calendar-content {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.calendar-navigation {
+  margin-bottom: 14px;
+  gap: 8px;
+}
+.calendar-navigation strong {
+  font-size: 16px;
+  color: var(--text-body);
+}
+.calendar-grid,
+.calendar-page .calendar-grid {
+  gap: 6px 4px;
+}
+.weekday,
+.calendar-page .weekday {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.calendar-day,
+.calendar-page .calendar-day {
+  width: 100%;
+  max-width: 64px;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  font-size: 14px;
+  color: #4c5a40;
+}
+.calendar-day.outside {
+  opacity: 1;
+  color: #637054;
+  background: #f3f3ed;
+}
+.calendar-day.period {
+  color: #74472e;
+}
+.calendar-day.predicted {
+  color: #795234;
+  border-color: #ab805e;
+}
+.calendar-day.fertile {
+  color: #50633c;
+}
+.calendar-day.ovulation {
+  color: #655326;
+}
+.calendar-day.today {
+  color: #fffef2;
+  background: #506b3e;
+  outline-width: 2px;
+  border-radius: 8px;
+}
+.calendar-day.today i {
+  background: #fffef2;
+}
+.middle-grid.calendar-page {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1000px;
+}
+.sharing-demo {
+  margin-bottom: 24px;
+}
+.journal-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.modal-card .eyebrow {
+  display: block;
+  padding-right: 48px;
+}
+.modal-card .form-hint button {
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.close-prompt + [inert] {
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .living-ring *,
+  .cycle-range-thumb {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+.calendar-day:focus-visible {
+  outline: 3px solid #496235;
+  outline-offset: 2px;
+}
+.calendar-day i {
+  width: 5px;
+  height: 5px;
+  bottom: 4px;
+  left: calc(50% - 2.5px);
+}
+.calendar-instruction {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 14px;
+}
+.calendar-side,
+.calendar-page .calendar-side {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  border-left: 0;
+  border-top: 1px solid #e4e7d9;
+  padding: 18px 0 0;
+  gap: 18px 28px;
+  margin-top: 0;
+}
+.calendar-side > .card-eyebrow,
+.calendar-note {
+  display: none;
+}
+.middle-grid > .partner-card {
+  align-self: start;
+}
+.upcoming {
+  margin-bottom: 0;
+  gap: 10px;
+}
+.upcoming-icon {
+  flex-shrink: 0;
+}
+.upcoming > div > span,
+.upcoming small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.upcoming strong {
+  font-size: 14px;
+  color: var(--text-body);
+}
+.calendar-legend {
+  justify-content: flex-start;
+  gap: 8px 16px;
+}
+.calendar-legend > span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  gap: 6px;
+}
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+.legend-dot.logged {
+  width: 5px;
+  height: 5px;
+  background: #536a41;
+}
+.legend-dot.current-day {
+  background: #506b3e;
+  border-radius: 3px;
+}
+.partner-card h2 {
+  font-size: 25px;
+  max-width: 310px;
+}
+.care-heading {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.care-heading h2 {
+  font-size: 24px;
+}
+.care-heading p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.care-heading > .small-text-button {
+  max-width: none;
+  font-size: 14px;
+  margin-top: 0;
+}
+.article-card {
+  min-height: 180px;
+}
+.article-copy {
+  min-width: 0;
+  padding: 20px 16px;
+}
+.article-copy > span {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+.article-copy h3 {
+  font-size: 20px;
+}
+.article-copy p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.article-copy > div {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.page-footer {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.stat-card > span,
+.stat-card p,
+.insights-detail > p,
+.phase-item p,
+.insights-note,
+.empty-state p,
+.journal-content p,
+.sharing-card > p,
+.share-option strong,
+.partner-explainer ul,
+.redeem-card strong {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.stat-card > strong {
+  font-size: 36px;
+}
+.stat-card p,
+.insights-note {
+  font-size: 12px;
+}
+.phase-item h3 {
+  font-size: 21px;
+}
+.symptom-row {
+  font-size: 14px;
+}
+.symptom-row > span {
+  width: 130px;
+}
+.symptom-row > strong {
+  width: auto;
+  min-width: 48px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.journal-content h3 {
+  font-size: 23px;
+}
+.journal-content h3 > span,
+.journal-date > span,
+.journal-date small,
+.tag,
+.share-option small,
+.sharing-card > .private-note,
+.share-code > span,
+.redeem-card small {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.journal-date small {
+  display: block;
+  margin-top: 3px;
+}
+.journal-date {
+  flex-shrink: 0;
+}
+.journal-content p {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.journal-entry > svg {
+  flex-shrink: 0;
+}
+.share-option {
+  min-height: 72px;
+}
+.share-option > span {
+  min-width: 0;
+}
+.toggle {
+  width: 48px;
+  height: 28px;
+  border: 1px solid #879779;
+}
+.toggle:after {
+  width: 20px;
+  height: 20px;
+}
+.toggle:checked {
+  background: #4c6739;
+  border-color: #4c6739;
+}
+.toggle:checked:after {
+  transform: translateX(20px);
+}
+.share-code {
+  padding: 16px;
+}
+.share-code strong {
+  font-size: clamp(18px, 2vw, 25px);
+  letter-spacing: 1.5px;
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+.sharing-card h2,
+.partner-explainer h2 {
+  font-size: 26px;
+}
+.demo-notice,
+.demo-notice strong,
+.demo-notice p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.sharing-demo {
+  margin-top: 18px;
+}
+.modal-card {
+  width: 560px;
+  padding: 28px 32px;
+  overscroll-behavior: contain;
+  scroll-padding: 20px;
+}
+.modal-card:focus {
+  outline: none;
+}
+.modal-close {
+  display: flex;
+  position: sticky;
+  top: 0;
+  right: auto;
+  margin-left: auto;
+  margin-bottom: -44px;
+  z-index: 3;
+  background: #fffef8;
+  border: 1px solid #d8dfcb;
+  border-radius: 50%;
+}
+.modal-card h2 {
+  font-size: 27px;
+  padding-right: 48px;
+  margin-right: 0;
+}
+.modal-card p,
+.modal-card .article-body {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+.modal-card legend,
+.field-label {
+  font-size: 14px;
+  color: #4a603b;
+}
+.field-label span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.choice {
+  min-height: 44px;
+  padding: 10px 13px;
+  font-size: 14px;
+  color: #556448;
+}
+.choice.chosen {
+  border-width: 2px;
+  padding: 9px 12px;
+  background: #dee8cd;
+  color: #3d562c;
+  font-weight: 600;
+}
+.modal-card input:not([type="checkbox"]),
+.modal-card textarea {
+  min-height: 48px;
+  font-size: 16px;
+  color: var(--text-body);
+}
+.modal-card textarea {
+  min-height: 110px;
+}
+.modal-card input::placeholder,
+.modal-card textarea::placeholder {
+  color: #65715b;
+}
+.modal-card .form-hint,
+.modal-card .future-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.modal-card .error-text {
+  color: var(--text-danger);
+  font-size: 14px;
+}
+.period-start-option {
+  font-size: 14px;
+  color: #6d5034;
+}
+.period-start-option small {
+  font-size: 12px;
+  color: #725d45;
+}
+.period-start-option input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.dialog-cancel {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+}
+.danger-action {
+  color: var(--text-danger);
+}
+.close-prompt {
+  position: relative;
+  z-index: 4;
+  padding: 20px;
+  background: #f4ecdd;
+  border: 1px solid #c7b597;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+.close-prompt p {
+  margin: 8px 0 16px;
+}
+.library-item h3 {
+  font-size: 20px;
+}
+.library-item p,
+.partner-detail span,
+.partner-detail p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.partner-detail h3 {
+  font-size: 22px;
+}
+.toast-message {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.toast-message > svg {
+  flex-shrink: 0;
+}
+.storage-warning {
+  font-size: 14px;
+  color: #6b4b2c;
+}
+/* The phase slider's 44px input owns the hit area; the rail stays delicate. */
+.cycle-range-control {
+  position: relative;
+  height: 44px;
+  margin: 16px 0 8px;
+}
+.cycle-range-rail {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 18px;
+  height: 8px;
+  border-radius: 8px;
+}
+.cycle-range-travel {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 10px;
+  height: 24px;
+  pointer-events: none;
+}
+.cycle-range-thumb {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  transform: translateX(-50%);
+  background: #fcfcf5;
+  border: 6px solid #536a40;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px #fafbef88;
+  transition: left 0.35s;
+}
+.is-scrubbing .cycle-range-thumb {
+  transition: none;
+}
+.cycle-day-range {
+  position: relative;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+}
+.cycle-day-range::-webkit-slider-thumb {
+  width: 24px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.cycle-day-range:hover::-webkit-slider-thumb {
+  box-shadow: none;
+}
+.cycle-day-range::-moz-range-thumb {
+  width: 24px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+}
+.cycle-day-range:focus-visible {
+  outline-offset: 3px;
+}
+.cycle-day-explorer label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.cycle-day-explorer output,
+.cycle-day-labels,
+.cycle-day-labels > span:nth-child(2) {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.cycle-data-label,
+.cycle-orbit-caption,
+.cycle-season,
+.season-tab-copy small,
+.cycle-overlap-note,
+.cycle-section-title .card-eyebrow,
+.cycle-care-card > .card-eyebrow,
+.illustration-badge,
+.hormone-phase-labels,
+.hormone-disclaimer,
+.cycle-observations .card-eyebrow,
+.selected-day-log small,
+.selected-day-log span,
+.cycle-symptom-tags > span,
+.cycle-symptom-tags b {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.cycle-explorer-top {
+  flex-wrap: wrap;
+}
+.cycle-explorer-top > .card-eyebrow {
+  font-size: 12px;
+  max-width: none;
+}
+.cycle-story h2 {
+  font-size: 32px;
+  line-height: 1.3;
+  letter-spacing: -0.8px;
+}
+.cycle-story p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  min-height: 0;
+}
+.cycle-story-action .button {
+  font-size: 14px;
+}
+.phase-picker-heading {
+  margin-top: 26px;
+}
+.phase-picker-heading h2 {
+  font-size: 24px;
+}
+.phase-picker-heading p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+.cycle-seasons {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.cycle-season-tab {
+  padding: 18px 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-content: center;
+}
+.season-tab-copy {
+  flex: 1;
+  min-width: 0;
+}
+.season-tab-copy strong {
+  font-size: 20px;
+}
+.season-tab-copy small {
+  white-space: normal;
+}
+.season-tab-icon {
+  color: #586a44;
+}
+.season-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: #4f673c;
+}
+.season-today {
+  position: static;
+  width: 100%;
+  font-size: 12px;
+  letter-spacing: 0;
+  color: #4f643e;
+  line-height: 1.5;
+}
+.cycle-section-title h2 {
+  font-size: 24px;
+}
+.cycle-body-facts h3 {
+  font-size: 15px;
+  color: #4c623d;
+}
+.cycle-body-facts p,
+.cycle-care-card > p,
+.cycle-observations p,
+.cycle-research-note p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+.cycle-hormone-chart > .flex > span:first-child {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.hormone-phase-labels {
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 6px 12px;
+  margin-top: 8px;
+}
+.hormone-legend {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hormone-legend button {
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 10px;
+}
+.hormone-legend button[aria-pressed="false"] {
+  opacity: 1;
+  background: #f1f2e8;
+}
+.cycle-journal-prompt {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+.cycle-date-row,
+.cycle-date-row strong {
+  font-size: 14px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.cycle-observations h2 {
+  font-size: 25px;
+}
+.selected-day-log {
+  flex-wrap: wrap;
+}
+.selected-day-log strong {
+  font-size: 15px;
+  color: #4f633d;
+}
+.cycle-research-note summary {
+  min-height: 44px;
+  padding: 10px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.cycle-research-note a {
+  padding: 8px 0;
+}
+@media (min-width: 1301px) {
+  .middle-grid:not(.calendar-page) .calendar-content {
+    grid-template-columns: minmax(0, 1fr) 180px;
+    gap: 20px;
+  }
+  .middle-grid:not(.calendar-page) .calendar-side {
+    display: block;
+    border-top: 0;
+    border-left: 1px solid #e4e7d9;
+    padding: 8px 0 0 20px;
+  }
+  .middle-grid:not(.calendar-page) .upcoming {
+    margin-bottom: 24px;
+  }
+}
+@media (max-width: 1300px) {
+  .top-grid,
+  .middle-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 1200px) {
+  .article-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .article-card {
+    min-height: 160px;
+  }
+  .article-art {
+    width: 24%;
+  }
+  .cycle-card-body {
+    justify-content: center;
+  }
+  .cycle-seasons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cycle-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cycle-explorer-body {
+    grid-template-columns: 240px minmax(0, 1fr);
+    padding: 20px 0;
+    gap: 24px;
+  }
+  .sharing-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 940px) {
+  .nav-item {
+    font-size: 14px;
+    padding: 12px 8px;
+  }
+  .cycle-explorer-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cycle-story {
+    margin: auto;
+    text-align: center;
+  }
+  .cycle-story-action {
+    justify-content: center;
+  }
+  .cycle-detail-side {
+    display: flex;
+  }
+}
+@media (max-width: 680px) {
+  .topbar {
+    padding: 0 16px;
+    height: 68px;
+  }
+  .main-content {
+    padding-top: 68px;
+  }
+  .page-content {
+    padding: 24px 16px 12px;
+  }
+  .page-heading > .button {
+    width: 100%;
+  }
+  .sidebar {
+    width: min(300px, calc(100vw - 44px));
+    padding: 20px;
+    overscroll-behavior: contain;
+  }
+  .nav-close {
+    display: flex;
+    margin-left: auto;
+    margin-bottom: 10px;
+  }
+  .sidebar-note {
+    display: none;
+  }
+  .nav-label {
+    margin-top: 24px;
+  }
+  .cycle-card-body {
+    flex-direction: column;
+    padding: 16px 0 24px;
+    gap: 16px;
+    text-align: center;
+  }
+  .cycle-card-interactive .cycle-ring {
+    width: 190px;
+  }
+  .cycle-message {
+    max-width: 100%;
+  }
+  .cycle-message h2 {
+    font-size: 25px;
+    margin: 12px 0;
+  }
+  .cycle-card-footer {
+    gap: 10px;
+  }
+  .checkin-card {
+    padding: 20px 18px;
+  }
+  .checkin-card h2 {
+    font-size: 24px;
+  }
+  .calendar-card {
+    padding: 18px 12px;
+  }
+  .calendar-grid,
+  .calendar-page .calendar-grid {
+    column-gap: 2px;
+  }
+  .calendar-side {
+    gap: 18px;
+  }
+  .calendar-navigation {
+    margin-bottom: 14px;
+  }
+  .calendar-legend > span {
+    font-size: 12px;
+  }
+  .article-art {
+    width: 25%;
+  }
+  .article-copy {
+    padding: 18px 14px;
+  }
+  .article-copy h3 {
+    font-size: 20px;
+  }
+  .page-footer {
+    align-items: flex-start;
+  }
+  .sharing-card {
+    padding: 22px 18px;
+  }
+  .share-code {
+    padding: 12px;
+  }
+  .journal-entry {
+    gap: 12px;
+    padding: 18px 12px;
+  }
+  .journal-date {
+    padding: 10px;
+  }
+  .journal-content h3 {
+    font-size: 21px;
+  }
+  .insights-detail {
+    padding: 22px 18px;
+  }
+  .phase-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .phase-item {
+    padding: 18px;
+  }
+  .symptom-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .symptom-row > span {
+    width: auto;
+    flex: 1;
+  }
+  .symptom-row > div {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .modal-backdrop {
+    padding: 10px;
+  }
+  .modal-card {
+    padding: 24px 18px;
+    max-height: calc(100dvh - 20px);
+  }
+  .modal-card h2 {
+    font-size: 25px;
+  }
+  .modal-card input:not([type="checkbox"]),
+  .modal-card textarea {
+    font-size: 16px;
+  }
+  .cycle-explorer {
+    padding: 20px 16px;
+  }
+  .cycle-story h2 {
+    font-size: 29px;
+  }
+  .cycle-story-action .button {
+    width: 100%;
+  }
+  .cycle-day-explorer > .flex {
+    flex-wrap: wrap;
+  }
+  .cycle-day-explorer label {
+    font-size: 14px;
+    max-width: none;
+  }
+  .cycle-day-explorer output {
+    font-size: 12px;
+  }
+  .cycle-day-labels > span:nth-child(2) {
+    display: none;
+  }
+  .cycle-seasons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .cycle-season-tab {
+    padding: 16px 10px;
+    gap: 8px;
+  }
+  .season-tab-copy strong {
+    font-size: 18px;
+  }
+  .season-selection {
+    display: none;
+  }
+  .cycle-data-label {
+    font-size: 12px;
+  }
+  .cycle-body-card,
+  .cycle-care-card,
+  .cycle-dates-card,
+  .cycle-observations {
+    padding: 22px 18px;
+  }
+  .cycle-section-title h2 {
+    font-size: 23px;
+  }
+  .cycle-observations {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cycle-date-row {
+    gap: 6px;
+  }
+}
+@media (max-width: 359px) {
+  .cycle-seasons {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-height: 850px) and (min-width: 681px) {
+  .sidebar-note {
+    display: none;
+  }
+}

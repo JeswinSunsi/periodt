@@ -55,7 +55,7 @@ const pageHeading = computed(
       "My calendar": "Your cycle, at a glance.",
       "Cycle insights": "Get to know your rhythm.",
       "My journal": "A little space for you.",
-      "Partner space": "A little understanding goes a long way.",
+      "Partner space": "A little closer, together.",
     })[activePage.value],
 );
 const pageDescription = computed(
@@ -68,8 +68,7 @@ const pageDescription = computed(
         "Your body tells a story. Start listening to the patterns.",
       "My journal":
         "The big feelings, the little things. They all belong here.",
-      "Partner space":
-        "Invite your person to understand and support your cycle.",
+      "Partner space": "Preview the details you’d want your person to see.",
     })[activePage.value],
 );
 const shortDate = (date) =>
@@ -211,6 +210,10 @@ function notify(message) {
 }
 const modal = ref(""),
   modalElement = ref(null);
+const sidebarElement = ref(null);
+const closePrompt = ref("");
+const draftSnapshot = ref("");
+let afterDiscard;
 let previousFocus;
 function syncBodyScrollLock() {
   document.body.style.overflow = modal.value || mobileNav.value ? "hidden" : "";
@@ -218,32 +221,114 @@ function syncBodyScrollLock() {
 watch(modal, async (value, old) => {
   syncBodyScrollLock();
   if (value) {
+    toast.value = "";
+    clearTimeout(toastTimer);
     if (!old) previousFocus = document.activeElement;
     await nextTick();
-    modalElement.value?.querySelector("button, input, textarea")?.focus();
-  } else previousFocus?.focus();
+    modalElement.value?.focus();
+    modalElement.value?.scrollTo({ top: 0 });
+  } else {
+    closePrompt.value = "";
+    selectedMood.value = todayLog.value?.mood || "";
+    await nextTick();
+    const isVisible = (element) =>
+      element?.getClientRects().length &&
+      getComputedStyle(element).visibility !== "hidden";
+    const menu = document.querySelector(".mobile-menu");
+    const target = isVisible(previousFocus)
+      ? previousFocus
+      : isVisible(menu)
+        ? menu
+        : document.querySelector(".page-heading h1");
+    target?.focus();
+  }
 });
-watch(mobileNav, syncBodyScrollLock);
-function modalKeydown(event) {
-  if (event.key === "Escape") modal.value = "";
+watch(mobileNav, async (open) => {
+  syncBodyScrollLock();
+  await nextTick();
+  if (open) sidebarElement.value?.querySelector(".nav-close")?.focus();
+  else if (
+    !modal.value &&
+    sidebarElement.value?.contains(document.activeElement)
+  )
+    document.querySelector(".mobile-menu")?.focus();
+});
+const mobileQuery = window.matchMedia("(max-width: 680px)");
+function syncNavigationViewport() {
+  if (!mobileQuery.matches) mobileNav.value = false;
+}
+function skipToContent() {
+  document.querySelector(".page-heading h1")?.focus();
+}
+onMounted(() => mobileQuery.addEventListener("change", syncNavigationViewport));
+onBeforeUnmount(() =>
+  mobileQuery.removeEventListener("change", syncNavigationViewport),
+);
+function trapFocus(event, root) {
   if (event.key !== "Tab") return;
   const items = [
-    ...modalElement.value.querySelectorAll(
-      "button, input, textarea, select, a[href]",
-    ),
+    ...root.querySelectorAll("button, input, textarea, select, a[href]"),
   ].filter(
     (el) =>
       !el.disabled &&
+      !el.closest("[inert]") &&
       !el.closest("fieldset:disabled") &&
       el.offsetParent !== null,
   );
-  if (event.shiftKey && document.activeElement === items[0]) {
+  if (
+    event.shiftKey &&
+    (document.activeElement === items[0] ||
+      !items.includes(document.activeElement))
+  ) {
     event.preventDefault();
     items.at(-1)?.focus();
   } else if (!event.shiftKey && document.activeElement === items.at(-1)) {
     event.preventDefault();
     items[0]?.focus();
   }
+}
+function modalKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closePrompt.value ? keepEditing() : requestClose();
+  }
+  trapFocus(event, modalElement.value);
+}
+function navigationKeydown(event) {
+  if (!mobileNav.value) return;
+  if (event.key === "Escape") mobileNav.value = false;
+  trapFocus(event, sidebarElement.value);
+}
+const hasUnsavedChanges = computed(() =>
+  modal.value === "log"
+    ? JSON.stringify(draft) !== draftSnapshot.value
+    : modal.value === "settings" &&
+      JSON.stringify(settings) !== draftSnapshot.value,
+);
+async function showPrompt(kind) {
+  closePrompt.value = kind;
+  await nextTick();
+  modalElement.value?.querySelector(".close-prompt button")?.focus();
+}
+function requestClose(nextAction) {
+  if (hasUnsavedChanges.value) {
+    afterDiscard = nextAction;
+    showPrompt("discard");
+  } else if (nextAction) nextAction();
+  else modal.value = "";
+}
+async function keepEditing() {
+  closePrompt.value = "";
+  afterDiscard = undefined;
+  await nextTick();
+  modalElement.value?.focus();
+}
+function confirmDiscard() {
+  closePrompt.value = "";
+  const action = afterDiscard;
+  afterDiscard = undefined;
+  if (action) action();
+  else modal.value = "";
 }
 const logDate = ref(dateKey(today)),
   draft = reactive({
@@ -263,16 +348,43 @@ const symptoms = [
   "Backache",
   "Cravings",
 ];
+const canSaveLog = computed(
+  () =>
+    !!state.logs[logDate.value] ||
+    !!(
+      draft.mood ||
+      draft.flow !== "None" ||
+      draft.symptoms.length ||
+      draft.notes.trim() ||
+      draft.periodStart
+    ),
+);
+const showPeriodStart = computed(() => {
+  if (logDate.value > dateKey(today)) return false;
+  const recordedStarts = [
+    ...(state.profile.demo ? [] : [state.profile.lastPeriod]),
+    ...state.periodHistory.map((period) => period.start),
+    ...Object.entries(state.logs)
+      .filter(([, log]) => log.periodStart)
+      .map(([date]) => date),
+  ];
+  return !recordedStarts.some((start) => {
+    const elapsed = dayDifference(fromKey(logDate.value), fromKey(start));
+    return elapsed >= 0 && elapsed < 7;
+  });
+});
 function openLog(date = today, initialMood = "") {
   logDate.value = dateKey(date);
   const existing = state.logs[logDate.value];
   Object.assign(draft, {
-    mood: existing?.mood || initialMood,
+    mood: existing?.mood || "",
     flow: existing?.flow || "None",
     symptoms: [...(existing?.symptoms || [])],
     notes: existing?.notes || "",
     periodStart: isPeriodStart(state, logDate.value),
   });
+  draftSnapshot.value = JSON.stringify(draft);
+  if (initialMood) draft.mood = initialMood;
   modal.value = "log";
 }
 function toggleSymptom(symptom) {
@@ -300,6 +412,7 @@ function setPeriodStart(date) {
     });
 }
 function saveLog() {
+  if (!canSaveLog.value) return;
   if (draft.periodStart && logDate.value <= dateKey(today))
     setPeriodStart(logDate.value);
   else if (!draft.periodStart && isPeriodStart(state, logDate.value))
@@ -307,12 +420,27 @@ function saveLog() {
   state.logs[logDate.value] = { ...draft, symptoms: [...draft.symptoms] };
   if (logDate.value === dateKey(today)) selectedMood.value = draft.mood;
   modal.value = "";
-  notify("A little check-in, saved. ♡");
+  notify(
+    logDate.value > dateKey(today)
+      ? "Your planned note is saved."
+      : "Your check-in is saved. ♡",
+  );
+}
+function deleteLog() {
+  if (isPeriodStart(state, logDate.value))
+    removePeriodStart(state, logDate.value, dateKey(addDays(today, -11)));
+  delete state.logs[logDate.value];
+  modal.value = "";
+  notify("Check-in deleted.");
 }
 const settings = reactive({ lastPeriod: "", cycleLength: 28, periodLength: 5 });
 function openSettings() {
-  Object.assign(settings, state.profile);
-  modal.value = "settings";
+  requestClose(() => {
+    mobileNav.value = false;
+    Object.assign(settings, state.profile);
+    draftSnapshot.value = JSON.stringify(settings);
+    modal.value = "settings";
+  });
 }
 function saveSettings() {
   setPeriodStart(settings.lastPeriod);
@@ -325,13 +453,16 @@ const journalEntries = computed(() =>
 );
 const mostLogged = computed(() => {
   const counts = {};
-  journalEntries.value.forEach(([, log]) =>
+  completedEntries.value.forEach(([, log]) =>
     log.symptoms.forEach((s) => {
       counts[s] = (counts[s] || 0) + 1;
     }),
   );
   return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 });
+const completedEntries = computed(() =>
+  journalEntries.value.filter(([date]) => date <= dateKey(today)),
+);
 function generateCode() {
   const bytes = crypto.getRandomValues(new Uint8Array(6)),
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -411,8 +542,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <a
+    class="skip-link"
+    href="#main-content"
+    :inert="modal || mobileNav ? true : undefined"
+    @click.prevent="skipToContent"
+    >Skip to content</a
+  >
   <div class="app-shell" :inert="modal ? true : undefined">
-    <aside class="sidebar" :class="{ 'mobile-open': mobileNav }">
+    <aside
+      id="main-navigation"
+      ref="sidebarElement"
+      class="sidebar"
+      :class="{ 'mobile-open': mobileNav }"
+      :role="mobileNav ? 'dialog' : undefined"
+      :aria-modal="mobileNav ? true : undefined"
+      aria-label="Main navigation"
+      @keydown="navigationKeydown"
+    >
+      <button
+        class="icon-button nav-close"
+        aria-label="Close navigation"
+        @click="mobileNav = false"
+      >
+        <Icon name="X" />
+      </button>
       <a
         href="#"
         class="brand"
@@ -453,7 +607,6 @@ onBeforeUnmount(() => {
           <div>
             <strong>My little space</strong><span>Growing with you</span>
           </div>
-          <Icon name="ChevronDown" :size="16" />
         </div>
       </div>
     </aside>
@@ -461,14 +614,20 @@ onBeforeUnmount(() => {
       v-if="mobileNav"
       class="nav-backdrop"
       aria-label="Close navigation"
+      tabindex="-1"
       @click="mobileNav = false"
     ></button>
-    <main class="main-content">
+    <main
+      id="main-content"
+      class="main-content"
+      :inert="mobileNav ? true : undefined"
+    >
       <header class="topbar">
         <div class="flex items-center gap-3">
           <button
             class="icon-button mobile-menu"
             :aria-expanded="mobileNav"
+            aria-controls="main-navigation"
             aria-label="Open navigation"
             @click="mobileNav = !mobileNav"
           >
@@ -505,7 +664,8 @@ onBeforeUnmount(() => {
             <p class="page-description">{{ pageDescription }}</p>
           </div>
           <button class="button button-dark" @click="openLog()">
-            <Icon name="Plus" :size="18" /> Log my day
+            <Icon :name="todayLog ? 'Pencil' : 'Plus'" :size="18" />
+            {{ todayLog ? "Edit today’s check-in" : "Log my day" }}
           </button>
         </section>
         <CycleDetail
@@ -590,7 +750,7 @@ onBeforeUnmount(() => {
                 class="mood-option"
                 :class="{ selected: selectedMood === mood.name }"
                 :aria-pressed="selectedMood === mood.name"
-                @click="selectedMood = mood.name"
+                @click="openLog(today, mood.name)"
               >
                 <span class="mood-face" :class="mood.face"
                   ><i></i><i></i><b></b
@@ -611,8 +771,8 @@ onBeforeUnmount(() => {
               /></button
             ><span class="checkin-caption">{{
               todayLog
-                ? "You made a little time for you. Lovely."
-                : "No right or wrong. Just how you feel."
+                ? "Today’s check-in is saved. Tap a mood to edit."
+                : "Choose a mood, then save your check-in."
             }}</span>
           </section>
         </div>
@@ -650,7 +810,7 @@ onBeforeUnmount(() => {
             <div class="calendar-content">
               <div class="calendar-main">
                 <div class="calendar-navigation">
-                  <strong>{{ calendarTitle }}</strong>
+                  <strong aria-live="polite">{{ calendarTitle }}</strong>
                   <div class="flex gap-1">
                     <button
                       class="icon-button"
@@ -669,7 +829,15 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="calendar-grid">
                   <span
-                    v-for="(day, i) in ['M', 'T', 'W', 'T', 'F', 'S', 'S']"
+                    v-for="(day, i) in [
+                      'Mon',
+                      'Tue',
+                      'Wed',
+                      'Thu',
+                      'Fri',
+                      'Sat',
+                      'Sun',
+                    ]"
                     :key="'weekday-' + i"
                     class="weekday"
                     >{{ day }}</span
@@ -686,12 +854,17 @@ onBeforeUnmount(() => {
                       },
                     ]"
                     :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type ? ', ' + cell.type + (state.profile.demo ? ', sample cycle' : ', estimated') : ''}${cell.logged ? ', has check-in' : ''}`"
+                    :aria-current="cell.today ? 'date' : undefined"
                     @click="openLog(cell.date)"
                   >
                     <span>{{ cell.day }}</span
                     ><i v-if="cell.logged"></i>
                   </button>
                 </div>
+                <p class="calendar-instruction">
+                  Select a date to add or edit a check-in. Future dates are for
+                  planned notes.
+                </p>
               </div>
               <div class="calendar-side">
                 <p class="card-eyebrow">A LITTLE LOOK AHEAD</p>
@@ -745,9 +918,11 @@ onBeforeUnmount(() => {
               ><span
                 ><i class="legend-dot fertile"></i> Est. fertile window</span
               ><span><i class="legend-dot ovulation"></i> Est. ovulation</span>
+              <span><i class="legend-dot current-day"></i> Today</span>
+              <span><i class="legend-dot logged"></i> Has check-in</span>
             </div>
           </section>
-          <section class="partner-card">
+          <section v-if="activePage === 'Overview'" class="partner-card">
             <div class="partner-art">
               <span class="partner-circle circle-one"
                 ><Icon name="Heart" :size="29" /></span
@@ -769,7 +944,7 @@ onBeforeUnmount(() => {
               {{
                 state.sharing.code
                   ? "Manage partner space"
-                  : "Invite your partner"
+                  : "Explore partner preview"
               }}<Icon name="ArrowUpRight" :size="16" /></button
             ><span class="partner-caption"
               ><Icon name="ShieldCheck" :size="12" /> You’re always in
@@ -786,7 +961,7 @@ onBeforeUnmount(() => {
               </p>
             </div>
             <button class="small-text-button" @click="modal = 'library'">
-              Explore the little things <Icon name="ArrowRight" :size="16" />
+              Browse self-care guides <Icon name="ArrowRight" :size="16" />
             </button>
           </div>
           <div class="article-grid">
@@ -840,7 +1015,12 @@ onBeforeUnmount(() => {
             </div>
             <div class="card stat-card">
               <Icon name="BookOpen" /><span>Little moments logged</span
-              ><strong>{{ journalEntries.length }} <small>days</small></strong>
+              ><strong
+                >{{ completedEntries.length }}
+                <small>{{
+                  completedEntries.length === 1 ? "day" : "days"
+                }}</small></strong
+              >
               <p>Every check-in is a little insight.</p>
             </div>
           </div>
@@ -879,7 +1059,7 @@ onBeforeUnmount(() => {
                 <div>
                   <i
                     :style="{
-                      width: `${(count / journalEntries.length) * 100}%`,
+                      width: `${(count / completedEntries.length) * 100}%`,
                     }"
                   ></i>
                 </div>
@@ -918,10 +1098,12 @@ onBeforeUnmount(() => {
                 ><span>{{
                   fromKey(date).toLocaleDateString("en-US", { month: "short" })
                 }}</span>
+                <small>{{ fromKey(date).getFullYear() }}</small>
               </div>
               <div class="journal-content">
                 <h3>
                   {{ log.mood || "A moment for me" }}
+                  <span v-if="date > dateKey(today)">Planned note</span>
                   <span v-if="log.flow !== 'None'">{{ log.flow }} flow</span>
                 </h3>
                 <p>{{ log.notes || "A little check-in with myself." }}</p>
@@ -938,7 +1120,14 @@ onBeforeUnmount(() => {
             </button></div
         ></template>
         <template v-if="activePage === 'Partner space'"
-          ><div class="sharing-grid">
+          ><div class="demo-notice sharing-demo">
+            <strong>Partner preview · saved in this browser only</strong>
+            <p>
+              Codes work here for trying the experience. They don’t connect
+              another device or send your details to anyone.
+            </p>
+          </div>
+          <div class="sharing-grid">
             <section class="card sharing-card">
               <span class="sharing-icon"><Icon name="Users" :size="28" /></span>
               <h2>Let your person in.</h2>
@@ -1003,8 +1192,18 @@ onBeforeUnmount(() => {
                 "
                 @click="generateCode"
               >
-                <Icon name="Link" :size="17" /> Create a sharing code
+                <Icon name="Link" :size="17" /> Create a demo code
               </button>
+              <p
+                v-if="
+                  !state.sharing.cycle &&
+                  !state.sharing.mood &&
+                  !state.sharing.symptoms
+                "
+                class="form-hint"
+              >
+                Select at least one detail to include in the preview.
+              </p>
               <div v-if="state.sharing.code" class="flex flex-wrap gap-3 mt-4">
                 <button class="button button-dark" @click="previewPartner">
                   Try your partner’s view
@@ -1073,7 +1272,7 @@ onBeforeUnmount(() => {
       </div></Transition
     >
     <Teleport to="body"
-      ><div v-if="modal" class="modal-backdrop" @click.self="modal = ''">
+      ><div v-if="modal" class="modal-backdrop" @click.self="requestClose()">
         <section
           ref="modalElement"
           class="modal-card"
@@ -1081,358 +1280,458 @@ onBeforeUnmount(() => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
+          tabindex="-1"
           @keydown="modalKeydown"
         >
-          <button
-            class="modal-close icon-button"
-            aria-label="Close dialog"
-            @click="modal = ''"
-          >
-            <Icon name="X" />
-          </button>
-          <form v-if="modal === 'log'" @submit.prevent="saveLog">
-            <span class="eyebrow">A MOMENT FOR YOU</span>
-            <h2 id="modal-title">How are you feeling?</h2>
+          <div v-if="closePrompt" class="close-prompt" role="alert">
+            <strong>{{
+              closePrompt === "delete"
+                ? "Delete this check-in?"
+                : "Discard your unsaved changes?"
+            }}</strong>
             <p>
               {{
-                fromKey(logDate).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })
+                closePrompt === "delete"
+                  ? "This removes the entry and any period start recorded for this date. This can’t be undone."
+                  : "Your changes haven’t been saved. Keep editing to finish your check-in or cycle settings."
               }}
             </p>
-            <p v-if="logDate > dateKey(today)" class="future-note">
-              This is a future date. You can plan a note; log symptoms after
-              they happen.
-            </p>
-            <fieldset :disabled="logDate > dateKey(today)">
-              <legend>My mood</legend>
-              <div class="choice-row">
-                <button
-                  v-for="mood in moods"
-                  :key="mood.name"
-                  type="button"
-                  class="choice"
-                  :class="{ chosen: draft.mood === mood.name }"
-                  :aria-pressed="draft.mood === mood.name"
-                  @click="
-                    draft.mood = draft.mood === mood.name ? '' : mood.name
-                  "
-                >
-                  {{ mood.name }}
-                </button>
-              </div>
-            </fieldset>
-            <label v-if="logDate <= dateKey(today)" class="period-start-option"
-              ><input
-                type="checkbox"
-                v-model="draft.periodStart"
-              /><span
-                >My period started this day<small
-                  >Sets this date as the start of a cycle.</small
-                ></span
-              ></label
-            >
-            <fieldset :disabled="logDate > dateKey(today)">
-              <legend>Period flow</legend>
-              <div class="choice-row">
-                <button
-                  v-for="flow in [
-                    'None',
-                    'Spotting',
-                    'Light',
-                    'Medium',
-                    'Heavy',
-                  ]"
-                  :key="flow"
-                  type="button"
-                  class="choice"
-                  :class="{ chosen: draft.flow === flow }"
-                  :aria-pressed="draft.flow === flow"
-                  @click="draft.flow = flow"
-                >
-                  {{ flow }}
-                </button>
-              </div>
-            </fieldset>
-            <fieldset :disabled="logDate > dateKey(today)">
-              <legend>What I’m noticing</legend>
-              <div class="choice-row">
-                <button
-                  v-for="symptom in symptoms"
-                  :key="symptom"
-                  type="button"
-                  class="choice"
-                  :class="{ chosen: draft.symptoms.includes(symptom) }"
-                  :aria-pressed="draft.symptoms.includes(symptom)"
-                  @click="toggleSymptom(symptom)"
-                >
-                  {{ symptom }}
-                </button>
-              </div>
-            </fieldset>
-            <label class="field-label" for="journal-note"
-              >A little note <span>(just for you)</span></label
-            ><textarea
-              id="journal-note"
-              v-model="draft.notes"
-              rows="3"
-              placeholder="What’s on your mind?"
-              maxlength="3000"
-            ></textarea>
-            <p class="form-hint">
-              Need to correct a period start date? Update it in
-              <button type="button" @click="openSettings">cycle settings</button
-              >.
-            </p>
-            <button type="submit" class="button button-dark w-full mt-5">
-              <Icon name="Check" :size="17" /> Save my check-in
-            </button>
-          </form>
-          <form v-else-if="modal === 'settings'" @submit.prevent="saveSettings">
-            <span class="eyebrow">YOUR OWN RHYTHM</span>
-            <h2 id="modal-title">Make this space yours.</h2>
-            <p>A few dates help us get to know your cycle.</p>
-            <div v-if="state.profile.demo" class="demo-notice">
-              You’re exploring a sample cycle. Add your dates to personalize
-              your estimates.
+            <div class="dialog-actions">
+              <button class="button button-dark" @click="keepEditing">
+                Keep editing
+              </button>
+              <button
+                class="button button-outline danger-action"
+                @click="
+                  closePrompt === 'delete' ? deleteLog() : confirmDiscard()
+                "
+              >
+                {{
+                  closePrompt === "delete"
+                    ? "Delete check-in"
+                    : "Discard changes"
+                }}
+              </button>
             </div>
-            <label class="field-label" for="last-period"
-              >First day of your last period</label
-            ><input
-              id="last-period"
-              v-model="settings.lastPeriod"
-              type="date"
-              :max="dateKey(today)"
-              required
-            /><label class="field-label" for="cycle-length"
-              >Usual cycle length (days)</label
-            ><input
-              id="cycle-length"
-              v-model.number="settings.cycleLength"
-              type="number"
-              min="21"
-              max="45"
-              required
-            /><label class="field-label" for="period-length"
-              >Usual period length (days)</label
-            ><input
-              id="period-length"
-              v-model.number="settings.periodLength"
-              type="number"
-              min="2"
-              max="10"
-              required
-            />
-            <p class="form-hint">
-              Cycles vary. These estimates may be less useful with irregular
-              cycles or hormonal contraception. They aren’t birth control.
-            </p>
-            <button class="button button-dark w-full mt-5" type="submit">
-              Save cycle details <Icon name="Check" :size="17" />
-            </button>
-          </form>
-          <template v-else-if="modal === 'phases'"
-            ><span class="eyebrow">GET TO KNOW YOU</span>
-            <h2 id="modal-title">Your cycle has seasons.</h2>
-            <p>
-              Your experience is personal. Here’s a gentle guide to what happens
-              in your body.
-            </p>
-            <div class="phase-explanations">
-              <div>
-                <Icon name="Moon" />
-                <h3>Menstrual</h3>
-                <p>
-                  Your period starts a new cycle. The lining of your uterus
-                  sheds; bleeding often lasts 2–7 days.
-                </p>
-              </div>
-              <div>
-                <Icon name="Sprout" />
-                <h3>Follicular</h3>
-                <p>
-                  This begins with your period. An egg develops in the ovary and
-                  estrogen rises ahead of ovulation.
-                </p>
-              </div>
-              <div>
-                <Icon name="Sun" />
-                <h3>Ovulation</h3>
-                <p>
-                  An ovary releases an egg. The timing varies, so a calendar can
-                  estimate but can’t confirm it.
-                </p>
-              </div>
-              <div>
-                <Icon name="Leaf" />
-                <h3>Luteal</h3>
-                <p>
-                  After ovulation, progesterone rises. If pregnancy doesn’t
-                  occur, hormone levels fall and a new period begins.
-                </p>
-              </div>
-            </div>
-            <p class="form-hint">
-              Energy and mood don’t follow a fixed schedule. Listen to your own
-              experience. Calendar predictions should not be used as
-              contraception.
-            </p>
-            <a
-              class="source-link"
-              href="https://www.nhs.uk/conditions/periods/fertility-in-the-menstrual-cycle/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Read more from the NHS <Icon name="ArrowUpRight" :size="14" /></a
-          ></template>
-          <template v-else-if="modal === 'article'"
-            ><div class="modal-article-art" :class="selectedArticle.color">
-              <BotanicalArt :variant="selectedArticle.art" />
-            </div>
-            <span class="eyebrow">{{ selectedArticle.tag }}</span>
-            <h2 id="modal-title">{{ selectedArticle.title }}</h2>
-            <p class="article-body">{{ selectedArticle.body }}</p>
-            <a
-              class="source-link"
-              :href="selectedArticle.source"
-              target="_blank"
-              rel="noopener noreferrer"
-              >{{ selectedArticle.sourceName }}
-              <Icon name="ArrowUpRight" :size="14" /></a
-          ></template>
-          <template v-else-if="modal === 'library'"
-            ><span class="eyebrow">THE LITTLE THINGS</span>
-            <h2 id="modal-title">A softer kind of self-care.</h2>
-            <p>A few gentle reads, whenever you need them.</p>
+          </div>
+          <div :inert="closePrompt ? true : undefined">
             <button
-              v-for="article in articles"
-              :key="article.title"
-              class="library-item"
-              @click="openArticle(article)"
+              class="modal-close icon-button"
+              aria-label="Close dialog"
+              @click="requestClose()"
             >
-              <div class="library-art" :class="article.color">
-                <BotanicalArt :variant="article.art" />
-              </div>
-              <div>
-                <h3>{{ article.title }}</h3>
-                <p>{{ article.time }}</p>
-              </div>
-              <Icon name="ArrowUpRight" :size="18" /></button
-          ></template>
-          <form v-else-if="modal === 'redeem'" @submit.prevent="redeemCode">
-            <span class="eyebrow">A LITTLE CLOSER</span>
-            <h2 id="modal-title">Welcome to their rhythm.</h2>
-            <p>
-              Enter the code created in this browser to try the partner
-              experience.
-            </p>
-            <label class="field-label" for="partner-code">Partner code</label
-            ><input
-              id="partner-code"
-              v-model="enteredCode"
-              placeholder="PT-XXXXXX"
-              autocomplete="off"
-              required
-              :aria-invalid="!!codeError"
-              aria-describedby="code-error"
-            />
-            <p id="code-error" v-if="codeError" class="error-text" role="alert">
-              {{ codeError }}
-            </p>
-            <button class="button button-dark w-full mt-5">
-              Open partner preview<Icon name="ArrowRight" :size="17" />
+              <Icon name="X" />
             </button>
-            <p class="form-hint">
-              Frontend demo: this code doesn’t connect different devices.
-            </p>
-          </form>
-          <template v-else-if="modal === 'partner'"
-            ><span class="eyebrow">PARTNER PREVIEW</span>
-            <h2 id="modal-title">A little understanding.</h2>
-            <p>Here’s what your person has chosen to share.</p>
-            <div v-if="state.sharing.cycle" class="partner-detail">
-              <Icon :name="currentPhaseCopy.icon" />
-              <div>
-                <span>Estimated phase</span>
-                <h3>
-                  {{
-                    phase === "Unconfirmed"
-                      ? "Awaiting a new period date"
-                      : phase + " phase"
-                  }}
-                </h3>
-                <p>
-                  Next period estimated {{ shortDate(nextPeriod)
-                  }}{{ state.profile.demo ? " · Sample cycle" : "" }}
-                </p>
-              </div>
-            </div>
-            <div v-if="state.sharing.mood" class="partner-detail">
-              <Icon name="Smile" />
-              <div>
-                <span>Today’s mood</span>
-                <h3>{{ todayLog?.mood || "No mood shared yet" }}</h3>
-              </div>
-            </div>
-            <div v-if="state.sharing.symptoms" class="partner-detail">
-              <Icon name="Heart" />
-              <div>
-                <span>Today’s symptoms</span>
-                <h3>
-                  {{
-                    todayLog?.symptoms?.length
-                      ? todayLog.symptoms.join(", ")
-                      : "No symptoms shared today"
-                  }}
-                </h3>
-              </div>
-            </div>
-            <p
-              v-if="
-                !state.sharing.cycle &&
-                !state.sharing.mood &&
-                !state.sharing.symptoms
-              "
-            >
-              No details are being shared right now.
-            </p>
-            <div class="demo-notice">
-              <strong>A little way to show up</strong>
+            <form v-if="modal === 'log'" @submit.prevent="saveLog">
+              <span class="eyebrow">A MOMENT FOR YOU</span>
+              <h2 id="modal-title">
+                {{
+                  logDate > dateKey(today)
+                    ? "Plan a little note."
+                    : "How are you feeling?"
+                }}
+              </h2>
               <p>
-                Ask “What would feel supportive today?” Their answer matters
-                more than any prediction.
+                {{
+                  fromKey(logDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                }}
               </p>
-            </div></template
-          >
-          <template v-else-if="modal === 'about'"
-            ><span class="eyebrow">A SPACE YOU CAN UNDERSTAND</span>
-            <h2 id="modal-title">Your data, simply.</h2>
-            <p>
-              Your cycle settings, check-ins, and demo sharing preferences are
-              stored in this browser’s local storage. They aren’t sent to a
-              server.
-            </p>
-            <p class="mt-4">
-              This prototype has no account or authentication. Someone with
-              access to this browser can see its data. Clearing browser storage
-              removes your entries. Partner codes only demonstrate the flow in
-              this browser.
-            </p>
-            <p class="mt-4">
-              Cycle phases and dates are estimates for awareness, not medical
-              advice or contraception. If symptoms are severe or unusual for
-              you, speak with a healthcare professional.
-            </p>
-            <a
-              class="source-link"
-              href="https://www.acog.org/womens-health/faqs/Premenstrual-Syndrome"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Why keep a symptom diary? · ACOG
-              <Icon name="ArrowUpRight" :size="14" /></a
-          ></template>
+              <p v-if="logDate > dateKey(today)" class="future-note">
+                This is a future date. You can plan a note; log symptoms after
+                they happen.
+              </p>
+              <fieldset :disabled="logDate > dateKey(today)">
+                <legend>My mood</legend>
+                <div class="choice-row">
+                  <button
+                    v-for="mood in moods"
+                    :key="mood.name"
+                    type="button"
+                    class="choice"
+                    :class="{ chosen: draft.mood === mood.name }"
+                    :aria-pressed="draft.mood === mood.name"
+                    @click="
+                      draft.mood = draft.mood === mood.name ? '' : mood.name
+                    "
+                  >
+                    {{ mood.name }}
+                  </button>
+                </div>
+              </fieldset>
+              <label v-if="showPeriodStart" class="period-start-option"
+                ><input type="checkbox" v-model="draft.periodStart" /><span
+                  >My period started this day<small
+                    >Sets this date as the start of a cycle.</small
+                  ></span
+                ></label
+              >
+              <fieldset :disabled="logDate > dateKey(today)">
+                <legend>Period flow</legend>
+                <div class="choice-row">
+                  <button
+                    v-for="flow in [
+                      'None',
+                      'Spotting',
+                      'Light',
+                      'Medium',
+                      'Heavy',
+                    ]"
+                    :key="flow"
+                    type="button"
+                    class="choice"
+                    :class="{ chosen: draft.flow === flow }"
+                    :aria-pressed="draft.flow === flow"
+                    @click="draft.flow = flow"
+                  >
+                    {{ flow }}
+                  </button>
+                </div>
+              </fieldset>
+              <fieldset :disabled="logDate > dateKey(today)">
+                <legend>What I’m noticing</legend>
+                <div class="choice-row">
+                  <button
+                    v-for="symptom in symptoms"
+                    :key="symptom"
+                    type="button"
+                    class="choice"
+                    :class="{ chosen: draft.symptoms.includes(symptom) }"
+                    :aria-pressed="draft.symptoms.includes(symptom)"
+                    @click="toggleSymptom(symptom)"
+                  >
+                    {{ symptom }}
+                  </button>
+                </div>
+              </fieldset>
+              <label class="field-label" for="journal-note"
+                >A little note <span>(just for you)</span></label
+              ><textarea
+                id="journal-note"
+                v-model="draft.notes"
+                rows="3"
+                placeholder="What’s on your mind?"
+                maxlength="3000"
+              ></textarea>
+              <p class="form-hint">
+                Need to correct a period start date? Update it in
+                <button type="button" @click="openSettings">
+                  cycle settings</button
+                >.
+              </p>
+              <p v-if="!canSaveLog" class="form-hint">
+                {{
+                  logDate > dateKey(today)
+                    ? "Add a note to save your plan."
+                    : "Choose a mood, flow or symptom, or add a note to save."
+                }}
+              </p>
+              <button
+                type="submit"
+                class="button button-dark w-full mt-5"
+                :disabled="!canSaveLog"
+              >
+                <Icon name="Check" :size="17" />
+                {{
+                  logDate > dateKey(today)
+                    ? "Save planned note"
+                    : "Save my check-in"
+                }}
+              </button>
+              <div class="dialog-actions">
+                <button
+                  type="button"
+                  class="small-text-button"
+                  @click="requestClose()"
+                >
+                  Cancel
+                </button>
+                <button
+                  v-if="state.logs[logDate]"
+                  type="button"
+                  class="small-text-button danger-action"
+                  @click="showPrompt('delete')"
+                >
+                  Delete check-in
+                </button>
+              </div>
+            </form>
+            <form
+              v-else-if="modal === 'settings'"
+              @submit.prevent="saveSettings"
+            >
+              <span class="eyebrow">YOUR OWN RHYTHM</span>
+              <h2 id="modal-title">Make this space yours.</h2>
+              <p>A few dates help us get to know your cycle.</p>
+              <div v-if="state.profile.demo" class="demo-notice">
+                You’re exploring a sample cycle. Add your dates to personalize
+                your estimates.
+              </div>
+              <label class="field-label" for="last-period"
+                >First day of your last period</label
+              ><input
+                id="last-period"
+                v-model="settings.lastPeriod"
+                type="date"
+                :max="dateKey(today)"
+                required
+              /><label class="field-label" for="cycle-length"
+                >Usual cycle length (days)</label
+              ><input
+                id="cycle-length"
+                v-model.number="settings.cycleLength"
+                type="number"
+                min="21"
+                max="45"
+                aria-describedby="cycle-length-help"
+                required
+              />
+              <p id="cycle-length-help" class="form-hint">
+                From the first day of one period to the first day of the next.
+                Supported range: 21–45 days.
+              </p>
+              <label class="field-label" for="period-length"
+                >Usual period length (days)</label
+              ><input
+                id="period-length"
+                v-model.number="settings.periodLength"
+                type="number"
+                min="2"
+                max="10"
+                aria-describedby="period-length-help"
+                required
+              />
+              <p id="period-length-help" class="form-hint">
+                How many days you usually bleed. Supported range: 2–10 days.
+              </p>
+              <p class="form-hint">
+                Cycles vary. These estimates may be less useful with irregular
+                cycles or hormonal contraception. They aren’t birth control.
+              </p>
+              <button class="button button-dark w-full mt-5" type="submit">
+                Save cycle details <Icon name="Check" :size="17" />
+              </button>
+              <button
+                type="button"
+                class="small-text-button dialog-cancel"
+                @click="requestClose()"
+              >
+                Cancel
+              </button>
+            </form>
+            <template v-else-if="modal === 'phases'"
+              ><span class="eyebrow">GET TO KNOW YOU</span>
+              <h2 id="modal-title">Your cycle has seasons.</h2>
+              <p>
+                Your experience is personal. Here’s a gentle guide to what
+                happens in your body.
+              </p>
+              <div class="phase-explanations">
+                <div>
+                  <Icon name="Moon" />
+                  <h3>Menstrual</h3>
+                  <p>
+                    Your period starts a new cycle. The lining of your uterus
+                    sheds; bleeding often lasts 2–7 days.
+                  </p>
+                </div>
+                <div>
+                  <Icon name="Sprout" />
+                  <h3>Follicular</h3>
+                  <p>
+                    This begins with your period. An egg develops in the ovary
+                    and estrogen rises ahead of ovulation.
+                  </p>
+                </div>
+                <div>
+                  <Icon name="Sun" />
+                  <h3>Ovulation</h3>
+                  <p>
+                    An ovary releases an egg. The timing varies, so a calendar
+                    can estimate but can’t confirm it.
+                  </p>
+                </div>
+                <div>
+                  <Icon name="Leaf" />
+                  <h3>Luteal</h3>
+                  <p>
+                    After ovulation, progesterone rises. If pregnancy doesn’t
+                    occur, hormone levels fall and a new period begins.
+                  </p>
+                </div>
+              </div>
+              <p class="form-hint">
+                Energy and mood don’t follow a fixed schedule. Listen to your
+                own experience. Calendar predictions should not be used as
+                contraception.
+              </p>
+              <a
+                class="source-link"
+                href="https://www.nhs.uk/conditions/periods/fertility-in-the-menstrual-cycle/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Read more from the NHS
+                <Icon name="ArrowUpRight" :size="14" /></a
+            ></template>
+            <template v-else-if="modal === 'article'"
+              ><div class="modal-article-art" :class="selectedArticle.color">
+                <BotanicalArt :variant="selectedArticle.art" />
+              </div>
+              <span class="eyebrow">{{ selectedArticle.tag }}</span>
+              <h2 id="modal-title">{{ selectedArticle.title }}</h2>
+              <p class="article-body">{{ selectedArticle.body }}</p>
+              <a
+                class="source-link"
+                :href="selectedArticle.source"
+                target="_blank"
+                rel="noopener noreferrer"
+                >{{ selectedArticle.sourceName }}
+                <Icon name="ArrowUpRight" :size="14" /></a
+            ></template>
+            <template v-else-if="modal === 'library'"
+              ><span class="eyebrow">THE LITTLE THINGS</span>
+              <h2 id="modal-title">A softer kind of self-care.</h2>
+              <p>A few gentle reads, whenever you need them.</p>
+              <button
+                v-for="article in articles"
+                :key="article.title"
+                class="library-item"
+                @click="openArticle(article)"
+              >
+                <div class="library-art" :class="article.color">
+                  <BotanicalArt :variant="article.art" />
+                </div>
+                <div>
+                  <h3>{{ article.title }}</h3>
+                  <p>{{ article.time }}</p>
+                </div>
+                <Icon name="ArrowUpRight" :size="18" /></button
+            ></template>
+            <form v-else-if="modal === 'redeem'" @submit.prevent="redeemCode">
+              <span class="eyebrow">A LITTLE CLOSER</span>
+              <h2 id="modal-title">Welcome to their rhythm.</h2>
+              <p>
+                Enter the code created in this browser to try the partner
+                experience.
+              </p>
+              <label class="field-label" for="partner-code">Partner code</label
+              ><input
+                id="partner-code"
+                v-model="enteredCode"
+                @input="codeError = ''"
+                placeholder="PT-XXXXXX"
+                autocomplete="off"
+                autocapitalize="characters"
+                :spellcheck="false"
+                required
+                :aria-invalid="!!codeError"
+                aria-describedby="code-error"
+              />
+              <p
+                id="code-error"
+                v-if="codeError"
+                class="error-text"
+                role="alert"
+              >
+                {{ codeError }}
+              </p>
+              <button class="button button-dark w-full mt-5">
+                Open partner preview<Icon name="ArrowRight" :size="17" />
+              </button>
+              <p class="form-hint">
+                Frontend demo: this code doesn’t connect different devices.
+              </p>
+            </form>
+            <template v-else-if="modal === 'partner'"
+              ><span class="eyebrow">PARTNER PREVIEW</span>
+              <h2 id="modal-title">A little understanding.</h2>
+              <p>Here’s what your person has chosen to share.</p>
+              <div v-if="state.sharing.cycle" class="partner-detail">
+                <Icon :name="currentPhaseCopy.icon" />
+                <div>
+                  <span>Estimated phase</span>
+                  <h3>
+                    {{
+                      phase === "Unconfirmed"
+                        ? "Awaiting a new period date"
+                        : phase + " phase"
+                    }}
+                  </h3>
+                  <p>
+                    Next period estimated {{ shortDate(nextPeriod)
+                    }}{{ state.profile.demo ? " · Sample cycle" : "" }}
+                  </p>
+                </div>
+              </div>
+              <div v-if="state.sharing.mood" class="partner-detail">
+                <Icon name="Smile" />
+                <div>
+                  <span>Today’s mood</span>
+                  <h3>{{ todayLog?.mood || "No mood shared yet" }}</h3>
+                </div>
+              </div>
+              <div v-if="state.sharing.symptoms" class="partner-detail">
+                <Icon name="Heart" />
+                <div>
+                  <span>Today’s symptoms</span>
+                  <h3>
+                    {{
+                      todayLog?.symptoms?.length
+                        ? todayLog.symptoms.join(", ")
+                        : "No symptoms shared today"
+                    }}
+                  </h3>
+                </div>
+              </div>
+              <p
+                v-if="
+                  !state.sharing.cycle &&
+                  !state.sharing.mood &&
+                  !state.sharing.symptoms
+                "
+              >
+                No details are being shared right now.
+              </p>
+              <div class="demo-notice">
+                <strong>A little way to show up</strong>
+                <p>
+                  Ask “What would feel supportive today?” Their answer matters
+                  more than any prediction.
+                </p>
+              </div></template
+            >
+            <template v-else-if="modal === 'about'"
+              ><span class="eyebrow">A SPACE YOU CAN UNDERSTAND</span>
+              <h2 id="modal-title">Your data, simply.</h2>
+              <p>
+                Your cycle settings, check-ins, and demo sharing preferences are
+                stored in this browser’s local storage. They aren’t sent to a
+                server.
+              </p>
+              <p class="mt-4">
+                This prototype has no account or authentication. Someone with
+                access to this browser can see its data. Clearing browser
+                storage removes your entries. Partner codes only demonstrate the
+                flow in this browser.
+              </p>
+              <p class="mt-4">
+                Cycle phases and dates are estimates for awareness, not medical
+                advice or contraception. If symptoms are severe or unusual for
+                you, speak with a healthcare professional.
+              </p>
+              <a
+                class="source-link"
+                href="https://www.acog.org/womens-health/faqs/Premenstrual-Syndrome"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Why keep a symptom diary? · ACOG
+                <Icon name="ArrowUpRight" :size="14" /></a
+            ></template>
+          </div>
         </section></div
     ></Teleport>
   </div>
