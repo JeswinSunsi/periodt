@@ -22,6 +22,7 @@ npm run format
 - Animated phase ring sized to your cycle settings, keyboard-operable day exploration, and four phase chapters.
 - Educational hormone illustrations, phase explanations, comfort prompts, and real check-in summaries. Hormone curves are illustrative, never presented as measured data.
 - Daily mood, flow, symptoms, private notes, and period-start logging.
+- Editable recorded starts and explicit no-flow check-ins that end a period early; expected bleeding days use a lighter calendar color. The usual period-length setting stays unchanged.
 - Calendar navigation, date-specific entries, and estimated period and fertile windows.
 - A journal and symptom-frequency insights based on actual local entries.
 - Cycle settings and preservation of previously recorded period starts.

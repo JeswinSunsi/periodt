@@ -1,5 +1,6 @@
 import { computed, reactive, watch } from "vue";
 import { phaseAtDay } from "../lib/cyclePhases.js";
+import { periodWindows } from "../lib/periodHistory.js";
 export const dateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const fromKey = (key) => new Date(`${key}T12:00:00`);
@@ -64,6 +65,12 @@ watch(
   { deep: true },
 );
 export function useCycle() {
+  const currentPeriodLength = computed(
+    () =>
+      periodWindows(state, dateKey(today)).find(
+        (period) => period.start === state.profile.lastPeriod,
+      )?.length ?? state.profile.periodLength,
+  );
   const elapsed = computed(() =>
     dayDifference(today, fromKey(state.profile.lastPeriod)),
   );
@@ -78,7 +85,7 @@ export function useCycle() {
     return phaseAtDay(
       day,
       state.profile.cycleLength,
-      state.profile.periodLength,
+      currentPeriodLength.value,
     );
   }
   return {
@@ -90,5 +97,6 @@ export function useCycle() {
     phase,
     phaseFor,
     storageError,
+    currentPeriodLength,
   };
 }

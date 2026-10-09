@@ -6,7 +6,15 @@ import { useCycle, addDays, dateKey, fromKey } from "../composables/useCycle";
 import { phaseSegments, phaseAtDay, phaseStories } from "../lib/cyclePhases";
 
 const emit = defineEmits(["back", "log", "settings", "calendar"]);
-const { state, today, cycleDay, phase, nextPeriod, remaining } = useCycle();
+const {
+  state,
+  today,
+  cycleDay,
+  phase,
+  nextPeriod,
+  remaining,
+  currentPeriodLength,
+} = useCycle();
 const selectedDay = ref(
   Math.max(1, Math.min(cycleDay.value, state.profile.cycleLength)),
 );
@@ -18,14 +26,14 @@ const sliderPosition = computed(
   () => ((selectedDay.value - 1) / (state.profile.cycleLength - 1)) * 100,
 );
 const segments = computed(() =>
-  phaseSegments(state.profile.cycleLength, state.profile.periodLength),
+  phaseSegments(state.profile.cycleLength, currentPeriodLength.value),
 );
 const selectedPhase = computed(() =>
   exploring.value
     ? phaseAtDay(
         selectedDay.value,
         state.profile.cycleLength,
-        state.profile.periodLength,
+        currentPeriodLength.value,
       )
     : phase.value,
 );
@@ -87,7 +95,7 @@ watch(
   () => [
     state.profile.lastPeriod,
     state.profile.cycleLength,
-    state.profile.periodLength,
+    currentPeriodLength.value,
   ],
   returnToToday,
 );
@@ -146,7 +154,7 @@ const chartId = `cycle-hormones`;
           <CycleRing
             :day="exploring ? selectedDay : cycleDay"
             :cycle-length="state.profile.cycleLength"
-            :period-length="state.profile.periodLength"
+            :period-length="currentPeriodLength"
             :phase="selectedPhase"
             detailed
             :label="exploring ? 'EXPLORING DAY' : 'TODAY · CYCLE DAY'"
@@ -229,7 +237,7 @@ const chartId = `cycle-hormones`;
             min="1"
             :max="state.profile.cycleLength"
             :value="selectedDay"
-            :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, state.profile.periodLength)} phase`"
+            :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, currentPeriodLength)} phase`"
             @input="selectDay"
             @pointerdown="isScrubbing = true"
           />

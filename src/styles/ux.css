@@ -306,11 +306,29 @@ summary:focus-visible {
   background: #f3f3ed;
 }
 .calendar-day.period {
-  color: #74472e;
+  background: #e8aaa3;
+  color: #662f2d;
+}
+.calendar-day.expected-period {
+  background: #f8e5e1;
+  color: #804b45;
+  border: 1px solid #ecd0cb;
 }
 .calendar-day.predicted {
-  color: #795234;
-  border-color: #ab805e;
+  background: #fcf0ed;
+  color: #804b45;
+  border-color: #c99992;
+}
+.calendar-legend .legend-dot.period {
+  background: #e8aaa3;
+}
+.calendar-legend .legend-dot.expected-period {
+  background: #f8e5e1;
+  border: 1px solid #c99992;
+}
+.calendar-legend .legend-dot.predicted {
+  background: #fcf0ed;
+  border-color: #c99992;
 }
 .calendar-day.fertile {
   color: #50633c;
@@ -326,6 +344,20 @@ summary:focus-visible {
 }
 .calendar-day.today i {
   background: #fffef2;
+}
+.calendar-day.today.period {
+  background: #e8aaa3;
+  color: #662f2d;
+  outline-color: #506b3e;
+}
+.calendar-day.today.expected-period {
+  background: #f8e5e1;
+  color: #804b45;
+  outline-color: #506b3e;
+}
+.calendar-day.today.period i,
+.calendar-day.today.expected-period i {
+  background: #662f2d;
 }
 .middle-grid.calendar-page {
   grid-template-columns: minmax(0, 1fr);

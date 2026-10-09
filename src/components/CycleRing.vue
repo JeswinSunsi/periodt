@@ -68,12 +68,10 @@ const phaseIcons = {
           r="94"
           fill="none"
           :stroke="p.color"
-          :stroke-width="detailed && phase === p.name ? 17 : 13"
-          stroke-linecap="round"
-          :stroke-dasharray="`${Math.max(0, (p.days / cycleLength) * circumference - 9)} ${circumference}`"
-          :stroke-dashoffset="
-            (-(p.start - 1) / cycleLength) * circumference - 4.5
-          "
+          stroke-width="13"
+          stroke-linecap="butt"
+          :stroke-dasharray="`${(p.days / cycleLength) * circumference} ${circumference}`"
+          :stroke-dashoffset="(-(p.start - 1) / cycleLength) * circumference"
           :opacity="
             !detailed || phase === p.name || phase === 'Unconfirmed' ? 1 : 0.5
           "
@@ -173,9 +171,9 @@ const phaseIcons = {
 }
 .living-ring-arc {
   transition:
-    stroke-width 0.45s,
     opacity 0.45s,
-    stroke-dasharray 0.6s;
+    stroke-dasharray 0.6s,
+    stroke-dashoffset 0.6s;
 }
 .ring-arcs {
   animation: ring-arrive 1s ease-out both;

@@ -12,7 +12,12 @@ import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
-import { isPeriodStart, removePeriodStart } from "./lib/periodHistory.js";
+import {
+  isPeriodStart,
+  removePeriodStart,
+  periodWindows,
+  periodDayType,
+} from "./lib/periodHistory.js";
 import {
   useCycle,
   dateKey,
@@ -20,8 +25,16 @@ import {
   addDays,
   dayDifference,
 } from "./composables/useCycle";
-const { state, today, cycleDay, remaining, nextPeriod, phase, storageError } =
-  useCycle();
+const {
+  state,
+  today,
+  cycleDay,
+  remaining,
+  nextPeriod,
+  phase,
+  storageError,
+  currentPeriodLength,
+} = useCycle();
 const pageRoutes = {
   Overview: "/overview",
   "My cycle": "/cycle",
@@ -128,6 +141,7 @@ const calendarTitle = computed(() =>
   }),
 );
 const calendarCells = computed(() => {
+  const windows = periodWindows(state, dateKey(today));
   const start = new Date(
     calendarMonth.value.getFullYear(),
     calendarMonth.value.getMonth(),
@@ -139,7 +153,6 @@ const calendarCells = computed(() => {
     const date = addDays(start, i - offset),
       relative = dayDifference(date, fromKey(state.profile.lastPeriod));
     let type = "";
-    if (relative >= 0 && relative < state.profile.periodLength) type = "period";
     if (
       relative >= state.profile.cycleLength &&
       relative < state.profile.cycleLength + state.profile.periodLength
@@ -151,17 +164,20 @@ const calendarCells = computed(() => {
     )
       type = "fertile";
     if (relative === state.profile.cycleLength - 15) type = "ovulation";
-    const loggedFlow = state.logs[dateKey(date)]?.flow;
-    const recordedPeriod = state.periodHistory.some((p) => {
-      const day = dayDifference(date, fromKey(p.start));
-      return day >= 0 && day < p.length;
-    });
+    const bleedingType = periodDayType(
+      state,
+      dateKey(date),
+      dateKey(today),
+      windows,
+    );
+    if (bleedingType) type = bleedingType;
     if (
-      recordedPeriod ||
-      (relative >= 0 && relative < state.profile.periodLength) ||
-      (loggedFlow && loggedFlow !== "None")
+      date <= today &&
+      state.logs[dateKey(date)]?.flowRecorded &&
+      state.logs[dateKey(date)].flow === "None" &&
+      type === "predicted"
     )
-      type = "period";
+      type = "";
     return {
       date,
       key: dateKey(date),
@@ -334,9 +350,11 @@ const logDate = ref(dateKey(today)),
   draft = reactive({
     mood: "",
     flow: "None",
+    flowRecorded: false,
     symptoms: [],
     notes: "",
     periodStart: false,
+    periodEnd: false,
   });
 const symptoms = [
   "Cramps",
@@ -351,15 +369,19 @@ const symptoms = [
 const canSaveLog = computed(
   () =>
     !!state.logs[logDate.value] ||
+    isPeriodStart(state, logDate.value) ||
     !!(
       draft.mood ||
+      draft.flowRecorded ||
       draft.flow !== "None" ||
       draft.symptoms.length ||
       draft.notes.trim() ||
-      draft.periodStart
+      draft.periodStart ||
+      draft.periodEnd
     ),
 );
 const showPeriodStart = computed(() => {
+  if (isPeriodStart(state, logDate.value)) return true;
   if (logDate.value > dateKey(today)) return false;
   const recordedStarts = [
     ...(state.profile.demo ? [] : [state.profile.lastPeriod]),
@@ -373,15 +395,50 @@ const showPeriodStart = computed(() => {
     return elapsed >= 0 && elapsed < 7;
   });
 });
+const checkinPeriod = computed(() =>
+  periodWindows(state, dateKey(today))
+    .filter((period) => !period.sample && period.start <= logDate.value)
+    .at(-1),
+);
+const showPeriodEnd = computed(() => {
+  const period = checkinPeriod.value;
+  return (
+    logDate.value <= dateKey(today) &&
+    !isPeriodStart(state, logDate.value) &&
+    !!period &&
+    dayDifference(fromKey(logDate.value), fromKey(period.start)) >= 3 &&
+    (!period.end || period.end >= logDate.value)
+  );
+});
+function togglePeriodEnd(event) {
+  draft.periodEnd = event.target.checked;
+  if (draft.periodEnd) {
+    draft.periodStart = false;
+    draft.flow = "None";
+    draft.flowRecorded = true;
+  } else if (draft.flow === "None") {
+    // Undo the end rather than leaving an explicit None that would end it again.
+    draft.flowRecorded = false;
+  }
+}
+function selectFlow(flow) {
+  draft.flow = flow;
+  draft.flowRecorded = true;
+  draft.periodEnd = flow === "None" && showPeriodEnd.value;
+}
 function openLog(date = today, initialMood = "") {
   logDate.value = dateKey(date);
   const existing = state.logs[logDate.value];
   Object.assign(draft, {
     mood: existing?.mood || "",
     flow: existing?.flow || "None",
+    flowRecorded:
+      existing?.flowRecorded === true ||
+      !!(existing?.flow && existing.flow !== "None"),
     symptoms: [...(existing?.symptoms || [])],
     notes: existing?.notes || "",
     periodStart: isPeriodStart(state, logDate.value),
+    periodEnd: checkinPeriod.value?.end === logDate.value,
   });
   draftSnapshot.value = JSON.stringify(draft);
   if (initialMood) draft.mood = initialMood;
@@ -450,6 +507,14 @@ function saveSettings() {
 }
 const journalEntries = computed(() =>
   Object.entries(state.logs).sort(([a], [b]) => b.localeCompare(a)),
+);
+const periodEndDates = computed(
+  () =>
+    new Set(
+      periodWindows(state, dateKey(today))
+        .map((period) => period.end)
+        .filter(Boolean),
+    ),
 );
 const mostLogged = computed(() => {
   const counts = {};
@@ -697,7 +762,7 @@ onBeforeUnmount(() => {
                 <CycleRing
                   :day="cycleDay"
                   :cycle-length="state.profile.cycleLength"
-                  :period-length="state.profile.periodLength"
+                  :period-length="currentPeriodLength"
                   :phase="phase"
                 />
               </div>
@@ -853,7 +918,8 @@ onBeforeUnmount(() => {
                         logged: cell.logged,
                       },
                     ]"
-                    :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type ? ', ' + cell.type + (state.profile.demo ? ', sample cycle' : ', estimated') : ''}${cell.logged ? ', has check-in' : ''}`"
+                    :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type === 'period' ? ', recorded bleeding' : cell.type === 'expected-period' ? ', expected bleeding' + (state.profile.demo ? ', sample cycle' : '') : cell.type ? ', estimated ' + cell.type : ''}${periodEndDates.has(cell.key) ? ', period ended' : ''}${cell.logged ? ', has check-in' : ''}`"
+                    :data-date="cell.key"
                     :aria-current="cell.today ? 'date' : undefined"
                     @click="openLog(cell.date)"
                   >
@@ -910,8 +976,9 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <div class="calendar-legend">
-              <span
-                ><i class="legend-dot period"></i> Period{{
+              <span><i class="legend-dot period"></i> Recorded bleeding</span
+              ><span
+                ><i class="legend-dot expected-period"></i> Expected bleeding{{
                   state.profile.demo ? " (sample)" : ""
                 }}</span
               ><span><i class="legend-dot predicted"></i> Predicted period</span
@@ -1104,6 +1171,10 @@ onBeforeUnmount(() => {
                 <h3>
                   {{ log.mood || "A moment for me" }}
                   <span v-if="date > dateKey(today)">Planned note</span>
+                  <span v-if="periodEndDates.has(date)">Period ended</span>
+                  <span v-else-if="log.flowRecorded && log.flow === 'None'"
+                    >No bleeding</span
+                  >
                   <span v-if="log.flow !== 'None'">{{ log.flow }} flow</span>
                 </h3>
                 <p>{{ log.notes || "A little check-in with myself." }}</p>
@@ -1363,7 +1434,21 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
               </fieldset>
-              <label v-if="showPeriodStart" class="period-start-option"
+              <label
+                v-if="showPeriodEnd"
+                class="period-start-option period-end-option"
+                ><input
+                  type="checkbox"
+                  :checked="draft.periodEnd"
+                  @change="togglePeriodEnd"
+                /><span
+                  >My period ended<small
+                    >No bleeding on this date. Stops the remaining expected
+                    days.</small
+                  ></span
+                ></label
+              >
+              <label v-else-if="showPeriodStart" class="period-start-option"
                 ><input type="checkbox" v-model="draft.periodStart" /><span
                   >My period started this day<small
                     >Sets this date as the start of a cycle.</small
@@ -1384,9 +1469,11 @@ onBeforeUnmount(() => {
                     :key="flow"
                     type="button"
                     class="choice"
-                    :class="{ chosen: draft.flow === flow }"
-                    :aria-pressed="draft.flow === flow"
-                    @click="draft.flow = flow"
+                    :class="{
+                      chosen: draft.flowRecorded && draft.flow === flow,
+                    }"
+                    :aria-pressed="draft.flowRecorded && draft.flow === flow"
+                    @click="selectFlow(flow)"
                   >
                     {{ flow }}
                   </button>
@@ -1408,6 +1495,21 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
               </fieldset>
+              <p
+                v-if="
+                  draft.flowRecorded &&
+                  draft.flow === 'None' &&
+                  logDate <= dateKey(today)
+                "
+                class="form-hint"
+                role="status"
+              >
+                {{
+                  draft.periodStart
+                    ? "This date is still marked as a period start. Uncheck it above to remove that start."
+                    : "Saving None records no bleeding on this date and stops any remaining expected days for this period."
+                }}
+              </p>
               <label class="field-label" for="journal-note"
                 >A little note <span>(just for you)</span></label
               ><textarea

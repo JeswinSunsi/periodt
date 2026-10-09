@@ -24,7 +24,9 @@ Reviewed all six routes, shared navigation, check-ins, cycle settings, education
 
 ## Follow-up adjustments
 
-The sample-cycle setup banner was removed at the user's request. Existing sample labels and Cycle settings remain. The period-start checkbox is hidden for check-in dates within days 0–6 of an actual recorded start and available again on day 7. Sample dates do not block it. Saving other check-in details preserves a hidden period-start value.
+The sample-cycle setup banner was removed at the user's request. Existing sample labels and Cycle settings remain. The period-start checkbox is always available on a recorded start date so it can be unchecked. It is hidden on other dates within seven days of a recorded start and available again on day 7. Sample dates do not block it.
+
+Recorded bleeding is shown in red; expected days use a lighter red. From day 4 of an ongoing recorded period, “My period ended” appears in the start checkbox's position. Checking it selects None and records an end; unchecking it clears that end and its no-flow selection. A saved end date remains editable. Recorded start dates retain their start checkbox. Explicitly choosing and saving None also ends that period's remaining expected days and labels the journal entry “Period ended.” Default None values in older or mood-only entries do not imply an end. Editing or deleting the end entry recalculates the calendar and current cycle display, while the usual period-length setting and next-cycle prediction remain unchanged.
 
 ## Verification
 

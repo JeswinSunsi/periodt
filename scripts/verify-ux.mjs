@@ -382,9 +382,11 @@ try {
   await checkDialog("about");
   await closeDialog();
   for (const scenario of [
-    { days: 0, visible: false },
-    { days: 6, visible: false },
-    { days: 7, visible: true },
+    { days: 0, visible: true },
+    { days: 2, visible: false },
+    { days: 3, visible: false, endVisible: true },
+    { days: 6, visible: false, endVisible: true },
+    { days: 7, visible: false, endVisible: true },
     { days: 2, demo: true, visible: true },
     { days: 14, history: true, visible: false },
     { days: 14, loggedStart: true, visible: false },
@@ -431,9 +433,16 @@ try {
     );
     await page.getByRole("button", { name: "Log my day", exact: true }).click();
     assert.equal(
-      await page.locator(".period-start-option").count(),
+      await page
+        .locator(".period-start-option:not(.period-end-option)")
+        .count(),
       scenario.visible ? 1 : 0,
       `Period checkbox: ${JSON.stringify(scenario)}`,
+    );
+    assert.equal(
+      await page.locator(".period-end-option").count(),
+      scenario.endVisible ? 1 : 0,
+      `End checkbox: ${JSON.stringify(scenario)}`,
     );
     await page
       .getByRole("textbox", {
@@ -454,6 +463,188 @@ try {
     );
   }
   assert.deepEqual(errors, [], "No browser runtime errors");
+  const seedPeriod = async (elapsed = 2) => {
+    const dates = await page.evaluate((elapsed) => {
+      const key = (offset) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      };
+      const dates = { start: key(-elapsed), today: key(0), future: key(1) };
+      localStorage.setItem(
+        "periodt-v1",
+        JSON.stringify({
+          version: 1,
+          profile: {
+            lastPeriod: dates.start,
+            cycleLength: 28,
+            periodLength: 5,
+            demo: false,
+          },
+          periodHistory: [],
+          logs: {},
+          sharing: { code: "", cycle: true, mood: false, symptoms: false },
+        }),
+      );
+      return dates;
+    }, elapsed);
+    await page.goto(`${base}#/calendar`);
+    await page.reload();
+    return dates;
+  };
+  const dates = await seedPeriod();
+  const dayCell = (date) => page.locator(`[data-date="${date}"]`);
+  if (!(await dayCell(dates.start).count()))
+    await page
+      .getByRole("button", { name: "Previous month", exact: true })
+      .click();
+  await dayCell(dates.start).click();
+  const startCheckbox = page.getByRole("checkbox", {
+    name: /My period started this day/,
+  });
+  assert.equal(await startCheckbox.isChecked(), true);
+  await startCheckbox.uncheck();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Save my check-in", exact: true })
+      .isEnabled(),
+    true,
+    "Settings-only starts can be unchecked without adding unrelated details",
+  );
+  await page
+    .getByRole("button", { name: "Save my check-in", exact: true })
+    .click();
+  await dialog.waitFor({ state: "hidden" });
+  assert.equal(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("periodt-v1")).profile.demo,
+    ),
+    true,
+    "Unchecking removes the only recorded start",
+  );
+
+  await seedPeriod();
+  if (!(await dayCell(dates.future).count()))
+    await page.getByRole("button", { name: "Next month", exact: true }).click();
+  assert.match(
+    await dayCell(dates.future).getAttribute("class"),
+    /expected-period/,
+  );
+  await page.screenshot({
+    path: "ux.local/period-before-end.png",
+    fullPage: true,
+  });
+  if (!(await dayCell(dates.today).count()))
+    await page
+      .getByRole("button", { name: "Previous month", exact: true })
+      .click();
+  await dayCell(dates.today).click();
+  assert.equal(
+    await page.locator(".period-start-option").count(),
+    0,
+    "Other days within seven days cannot start another period",
+  );
+  const noneFlow = dialog.getByRole("button", { name: "None", exact: true });
+  assert.equal(
+    await noneFlow.getAttribute("aria-pressed"),
+    "false",
+    "No flow is assumed before selection",
+  );
+  await noneFlow.click();
+  await page
+    .getByRole("button", { name: "Save my check-in", exact: true })
+    .click();
+  await dialog.waitFor({ state: "hidden" });
+  await page.reload();
+  if (!(await dayCell(dates.future).count()))
+    await page.getByRole("button", { name: "Next month", exact: true }).click();
+  assert.doesNotMatch(
+    await dayCell(dates.future).getAttribute("class"),
+    /expected-period|\bperiod\b/,
+  );
+  await page.screenshot({
+    path: "ux.local/period-after-end.png",
+    fullPage: true,
+  });
+  assert.equal(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("periodt-v1")).profile.periodLength,
+    ),
+    5,
+    "Early end leaves the usual length intact",
+  );
+  await page.goto(`${base}#/journal`);
+  await page.getByText("Period ended", { exact: true }).waitFor();
+  await page.goto(`${base}#/overview`);
+  assert.match(
+    await page.locator(".living-ring-phase").innerText(),
+    /Follicular/,
+    "Current cycle reflects the shortened period",
+  );
+  await page.goto(`${base}#/calendar`);
+  if (!(await dayCell(dates.today).count()))
+    await page
+      .getByRole("button", { name: "Previous month", exact: true })
+      .click();
+  await dayCell(dates.today).click();
+  await dialog.getByRole("button", { name: "Light", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Save my check-in", exact: true })
+    .click();
+  await dialog.waitFor({ state: "hidden" });
+  if (!(await dayCell(dates.future).count()))
+    await page.getByRole("button", { name: "Next month", exact: true }).click();
+  assert.match(
+    await dayCell(dates.future).getAttribute("class"),
+    /expected-period/,
+    "Correcting None restores expected days",
+  );
+  const fourthDay = await seedPeriod(3);
+  await dayCell(fourthDay.today).click();
+  const endCheckbox = page.getByRole("checkbox", { name: /^My period ended/ });
+  await endCheckbox.check();
+  assert.equal(
+    await dialog
+      .getByRole("button", { name: "None", exact: true })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+  await page.screenshot({ path: "ux.local/period-ended-checkbox.png" });
+  await page
+    .getByRole("button", { name: "Save my check-in", exact: true })
+    .click();
+  await dialog.waitFor({ state: "hidden" });
+  await page.reload();
+  await dayCell(fourthDay.today).click();
+  assert.equal(
+    await endCheckbox.isChecked(),
+    true,
+    "End checkbox persists and can be corrected",
+  );
+  await endCheckbox.uncheck();
+  assert.equal(
+    await dialog
+      .getByRole("button", { name: "None", exact: true })
+      .getAttribute("aria-pressed"),
+    "false",
+    "Unchecking clears the implicit no-flow selection",
+  );
+  await page
+    .getByRole("button", { name: "Save my check-in", exact: true })
+    .click();
+  await dialog.waitFor({ state: "hidden" });
+  if (!(await dayCell(fourthDay.future).count()))
+    await page.getByRole("button", { name: "Next month", exact: true }).click();
+  assert.match(
+    await dayCell(fourthDay.future).getAttribute("class"),
+    /expected-period/,
+    "Unchecking restores expected days",
+  );
+  assert.deepEqual(errors, [], "No period-flow runtime errors");
+  console.log("PASS: day-four end checkbox visibility, save/reload, and undo.");
+  console.log(
+    "PASS: start-date unchecking; explicit None; early-end persistence and correction; expected calendar colors; journal end label; current phase.",
+  );
   console.log(
     "PASS: six routes at five widths; menu focus; mood selection; save/reload; discard; settings; cycle slider; future notes; insights counts; journal deletion; partner preview/error/revocation; articles; dialog switching; resize.",
   );
