@@ -366,6 +366,36 @@ const symptoms = [
   "Backache",
   "Cravings",
 ];
+const logStep = ref(0);
+const logSteps = computed(() =>
+  logDate.value > dateKey(today)
+    ? [{ id: "note", title: "Plan a little note." }]
+    : [
+        { id: "mood", title: "How are you feeling?" },
+        { id: "flow", title: "How’s your flow?" },
+        { id: "symptoms", title: "What are you noticing?" },
+        { id: "note", title: "Anything on your mind?" },
+      ],
+);
+const currentLogStep = computed(() => logSteps.value[logStep.value]);
+const isLastLogStep = computed(
+  () => logStep.value === logSteps.value.length - 1,
+);
+async function changeLogStep(direction) {
+  logStep.value = Math.max(
+    0,
+    Math.min(logSteps.value.length - 1, logStep.value + direction),
+  );
+  await nextTick();
+  modalElement.value?.scrollTo({ top: 0 });
+  modalElement.value
+    ?.querySelector("#modal-title")
+    ?.focus({ preventScroll: true });
+}
+function submitLogStep() {
+  if (isLastLogStep.value) saveLog();
+  else changeLogStep(1);
+}
 const canSaveLog = computed(
   () =>
     !!state.logs[logDate.value] ||
@@ -428,6 +458,7 @@ function selectFlow(flow) {
 }
 function openLog(date = today, initialMood = "") {
   logDate.value = dateKey(date);
+  logStep.value = 0;
   const existing = state.logs[logDate.value];
   Object.assign(draft, {
     mood: existing?.mood || "",
@@ -1393,16 +1424,36 @@ onBeforeUnmount(() => {
             >
               <Icon name="X" />
             </button>
-            <form v-if="modal === 'log'" @submit.prevent="saveLog">
-              <span class="eyebrow">A MOMENT FOR YOU</span>
-              <h2 id="modal-title">
-                {{
-                  logDate > dateKey(today)
-                    ? "Plan a little note."
-                    : "How are you feeling?"
-                }}
+            <form
+              v-if="modal === 'log'"
+              class="checkin-flow"
+              @submit.prevent="submitLogStep"
+            >
+              <div class="checkin-progress-header">
+                <span class="eyebrow">A MOMENT FOR YOU</span>
+                <span class="checkin-step-count"
+                  >Step {{ logStep + 1 }} of {{ logSteps.length }}</span
+                >
+              </div>
+              <div
+                class="checkin-progress"
+                role="progressbar"
+                aria-label="Check-in progress"
+                :aria-valuenow="logStep + 1"
+                :aria-valuemin="0"
+                :aria-valuemax="logSteps.length"
+                :aria-valuetext="`Step ${logStep + 1} of ${logSteps.length}`"
+              >
+                <span
+                  v-for="(step, index) in logSteps"
+                  :key="step.id"
+                  :class="{ filled: index <= logStep }"
+                ></span>
+              </div>
+              <h2 id="modal-title" tabindex="-1">
+                {{ currentLogStep.title }}
               </h2>
-              <p>
+              <p class="checkin-date">
                 {{
                   fromKey(logDate).toLocaleDateString("en-US", {
                     weekday: "long",
@@ -1412,138 +1463,173 @@ onBeforeUnmount(() => {
                   })
                 }}
               </p>
-              <p v-if="logDate > dateKey(today)" class="future-note">
-                This is a future date. You can plan a note; log symptoms after
-                they happen.
-              </p>
-              <fieldset :disabled="logDate > dateKey(today)">
-                <legend>My mood</legend>
-                <div class="choice-row">
-                  <button
-                    v-for="mood in moods"
-                    :key="mood.name"
-                    type="button"
-                    class="choice"
-                    :class="{ chosen: draft.mood === mood.name }"
-                    :aria-pressed="draft.mood === mood.name"
-                    @click="
-                      draft.mood = draft.mood === mood.name ? '' : mood.name
+              <div class="checkin-step-body">
+                <p class="checkin-reassurance">
+                  {{
+                    logDate > dateKey(today)
+                      ? "A little space for a future thought."
+                      : isLastLogStep
+                        ? canSaveLog
+                          ? "Last step. Add a note, or simply save."
+                          : "Last step. A few words are enough."
+                        : currentLogStep.id === "symptoms"
+                          ? "Choose any that fit, or continue without selecting."
+                          : "Choose what fits, or continue without selecting."
+                  }}
+                </p>
+                <fieldset v-if="currentLogStep.id === 'mood'">
+                  <legend>My mood</legend>
+                  <div class="choice-row">
+                    <button
+                      v-for="mood in moods"
+                      :key="mood.name"
+                      type="button"
+                      class="choice"
+                      :class="{ chosen: draft.mood === mood.name }"
+                      :aria-pressed="draft.mood === mood.name"
+                      @click="
+                        draft.mood = draft.mood === mood.name ? '' : mood.name
+                      "
+                    >
+                      {{ mood.name }}
+                    </button>
+                  </div>
+                </fieldset>
+                <template v-else-if="currentLogStep.id === 'flow'">
+                  <label
+                    v-if="showPeriodEnd"
+                    class="period-start-option period-end-option"
+                    ><input
+                      type="checkbox"
+                      :checked="draft.periodEnd"
+                      @change="togglePeriodEnd"
+                    /><span
+                      >My period ended<small
+                        >No bleeding on this date. Stops the remaining expected
+                        days.</small
+                      ></span
+                    ></label
+                  >
+                  <label v-else-if="showPeriodStart" class="period-start-option"
+                    ><input type="checkbox" v-model="draft.periodStart" /><span
+                      >My period started this day<small
+                        >Sets this date as the start of a cycle.</small
+                      ></span
+                    ></label
+                  >
+                  <fieldset>
+                    <legend>Period flow</legend>
+                    <div class="choice-row">
+                      <button
+                        v-for="flow in [
+                          'None',
+                          'Spotting',
+                          'Light',
+                          'Medium',
+                          'Heavy',
+                        ]"
+                        :key="flow"
+                        type="button"
+                        class="choice"
+                        :class="{
+                          chosen: draft.flowRecorded && draft.flow === flow,
+                        }"
+                        :aria-pressed="
+                          draft.flowRecorded && draft.flow === flow
+                        "
+                        @click="selectFlow(flow)"
+                      >
+                        {{ flow }}
+                      </button>
+                    </div>
+                  </fieldset>
+                  <p
+                    v-if="
+                      draft.flowRecorded &&
+                      draft.flow === 'None' &&
+                      logDate <= dateKey(today)
                     "
+                    class="form-hint"
+                    role="status"
                   >
-                    {{ mood.name }}
-                  </button>
-                </div>
-              </fieldset>
-              <label
-                v-if="showPeriodEnd"
-                class="period-start-option period-end-option"
-                ><input
-                  type="checkbox"
-                  :checked="draft.periodEnd"
-                  @change="togglePeriodEnd"
-                /><span
-                  >My period ended<small
-                    >No bleeding on this date. Stops the remaining expected
-                    days.</small
-                  ></span
-                ></label
-              >
-              <label v-else-if="showPeriodStart" class="period-start-option"
-                ><input type="checkbox" v-model="draft.periodStart" /><span
-                  >My period started this day<small
-                    >Sets this date as the start of a cycle.</small
-                  ></span
-                ></label
-              >
-              <fieldset :disabled="logDate > dateKey(today)">
-                <legend>Period flow</legend>
-                <div class="choice-row">
-                  <button
-                    v-for="flow in [
-                      'None',
-                      'Spotting',
-                      'Light',
-                      'Medium',
-                      'Heavy',
-                    ]"
-                    :key="flow"
-                    type="button"
-                    class="choice"
-                    :class="{
-                      chosen: draft.flowRecorded && draft.flow === flow,
-                    }"
-                    :aria-pressed="draft.flowRecorded && draft.flow === flow"
-                    @click="selectFlow(flow)"
+                    {{
+                      draft.periodStart
+                        ? "This date is still marked as a period start. Uncheck it above to remove that start."
+                        : "Saving None records no bleeding on this date and stops any remaining expected days for this period."
+                    }}
+                  </p>
+                  <p class="form-hint checkin-settings-hint">
+                    <button type="button" @click="openSettings">
+                      Edit period dates in cycle settings
+                    </button>
+                  </p>
+                </template>
+                <fieldset v-else-if="currentLogStep.id === 'symptoms'">
+                  <legend>What I’m noticing</legend>
+                  <div class="choice-row">
+                    <button
+                      v-for="symptom in symptoms"
+                      :key="symptom"
+                      type="button"
+                      class="choice"
+                      :class="{ chosen: draft.symptoms.includes(symptom) }"
+                      :aria-pressed="draft.symptoms.includes(symptom)"
+                      @click="toggleSymptom(symptom)"
+                    >
+                      {{ symptom }}
+                    </button>
+                  </div>
+                </fieldset>
+                <template v-else>
+                  <label class="field-label" for="journal-note"
+                    >A little note
+                    <span>{{
+                      logDate > dateKey(today)
+                        ? "(just for you)"
+                        : "(optional, just for you)"
+                    }}</span></label
                   >
-                    {{ flow }}
-                  </button>
-                </div>
-              </fieldset>
-              <fieldset :disabled="logDate > dateKey(today)">
-                <legend>What I’m noticing</legend>
-                <div class="choice-row">
-                  <button
-                    v-for="symptom in symptoms"
-                    :key="symptom"
-                    type="button"
-                    class="choice"
-                    :class="{ chosen: draft.symptoms.includes(symptom) }"
-                    :aria-pressed="draft.symptoms.includes(symptom)"
-                    @click="toggleSymptom(symptom)"
-                  >
-                    {{ symptom }}
-                  </button>
-                </div>
-              </fieldset>
-              <p
-                v-if="
-                  draft.flowRecorded &&
-                  draft.flow === 'None' &&
-                  logDate <= dateKey(today)
-                "
-                class="form-hint"
-                role="status"
-              >
-                {{
-                  draft.periodStart
-                    ? "This date is still marked as a period start. Uncheck it above to remove that start."
-                    : "Saving None records no bleeding on this date and stops any remaining expected days for this period."
-                }}
-              </p>
-              <label class="field-label" for="journal-note"
-                >A little note <span>(just for you)</span></label
-              ><textarea
-                id="journal-note"
-                v-model="draft.notes"
-                rows="3"
-                placeholder="What’s on your mind?"
-                maxlength="3000"
-              ></textarea>
-              <p class="form-hint">
-                Need to correct a period start date? Update it in
-                <button type="button" @click="openSettings">
-                  cycle settings</button
-                >.
-              </p>
-              <p v-if="!canSaveLog" class="form-hint">
-                {{
-                  logDate > dateKey(today)
-                    ? "Add a note to save your plan."
-                    : "Choose a mood, flow or symptom, or add a note to save."
-                }}
-              </p>
-              <button
-                type="submit"
-                class="button button-dark w-full mt-5"
-                :disabled="!canSaveLog"
-              >
-                <Icon name="Check" :size="17" />
-                {{
-                  logDate > dateKey(today)
-                    ? "Save planned note"
-                    : "Save my check-in"
-                }}
-              </button>
+                  <textarea
+                    id="journal-note"
+                    v-model="draft.notes"
+                    rows="4"
+                    placeholder="What’s on your mind?"
+                    maxlength="3000"
+                  ></textarea>
+                </template>
+                <p v-if="isLastLogStep && !canSaveLog" class="form-hint">
+                  {{
+                    logDate > dateKey(today)
+                      ? "Add a note to save your plan."
+                      : "Add a note, or go back and choose something to save."
+                  }}
+                </p>
+              </div>
+              <div class="checkin-step-actions">
+                <button
+                  v-if="logStep > 0"
+                  type="button"
+                  class="button button-outline"
+                  @click="changeLogStep(-1)"
+                >
+                  <Icon name="ArrowLeft" :size="17" /> Back
+                </button>
+                <button
+                  type="submit"
+                  class="button button-dark checkin-next"
+                  :disabled="isLastLogStep && !canSaveLog"
+                >
+                  <Icon v-if="isLastLogStep" name="Check" :size="17" />
+                  {{
+                    !isLastLogStep
+                      ? "Continue"
+                      : logDate > dateKey(today)
+                        ? "Save planned note"
+                        : "Save my check-in"
+                  }}
+                  <Icon v-if="!isLastLogStep" name="ArrowRight" :size="17" />
+                </button>
+              </div>
               <div class="dialog-actions">
                 <button
                   type="button"

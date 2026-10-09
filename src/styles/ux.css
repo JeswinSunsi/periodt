@@ -753,6 +753,102 @@ summary:focus-visible {
   width: 100%;
   margin-top: 8px;
 }
+.checkin-progress-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 54px;
+}
+.checkin-progress-header .eyebrow {
+  padding-right: 0;
+}
+.checkin-step-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.checkin-progress {
+  display: flex;
+  gap: 6px;
+  margin: 18px 0 26px;
+}
+.checkin-progress > span {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: #e6eadc;
+  transition: background-color 180ms ease;
+}
+.checkin-progress > .filled {
+  background: #657f4e;
+}
+.checkin-flow #modal-title {
+  padding-right: 0;
+  margin-bottom: 6px;
+}
+.checkin-flow #modal-title:focus {
+  outline: none;
+}
+.modal-card .checkin-date {
+  font-size: 13px;
+}
+.checkin-step-body {
+  min-height: 230px;
+  padding: 24px 0;
+}
+.modal-card .checkin-reassurance {
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+.checkin-step-body fieldset {
+  margin-top: 0;
+}
+.checkin-step-body legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.checkin-step-body .period-start-option {
+  margin-top: 0;
+}
+.checkin-step-body .period-start-option + fieldset {
+  margin-top: 20px;
+}
+.checkin-step-body .field-label {
+  margin-top: 0;
+}
+.modal-card .checkin-settings-hint {
+  margin-top: 8px;
+}
+.checkin-settings-hint button {
+  display: inline-flex;
+  align-items: center;
+  text-align: left;
+  line-height: 1.5;
+}
+.checkin-step-body .choice-row {
+  gap: 10px;
+}
+.checkin-step-body .choice {
+  min-height: 48px;
+}
+.checkin-step-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #e4e7d9;
+}
+.checkin-next {
+  flex: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .checkin-progress > span {
+    transition: none;
+  }
+}
 .danger-action {
   color: var(--text-danger);
 }
