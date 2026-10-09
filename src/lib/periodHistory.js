@@ -83,6 +83,7 @@ export function periodDayType(
 }
 
 export function removePeriodStart(state, date, sampleDate) {
+  if (state.logs[date]) state.logs[date].periodStart = false;
   state.periodHistory = state.periodHistory.filter(
     (period) => period.start !== date,
   );

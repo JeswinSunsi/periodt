@@ -326,9 +326,14 @@ summary:focus-visible {
   color: #4c5a40;
 }
 .calendar-day.outside {
-  opacity: 1;
+  opacity: 0.4;
+  filter: grayscale(1);
   color: #637054;
   background: #f3f3ed;
+}
+.calendar-day.outside:hover,
+.calendar-day.outside:focus-visible {
+  opacity: 0.8;
 }
 .calendar-day.period {
   background: #e8aaa3;
@@ -740,6 +745,50 @@ summary:focus-visible {
   height: 22px;
   flex-shrink: 0;
 }
+.period-end-option {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 4px 0;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.period-end-control {
+  display: inline-flex;
+  position: relative;
+  flex-shrink: 0;
+}
+.period-end-control input {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1px solid #aab69a;
+  border-radius: 5px;
+  background: #fffef8;
+  cursor: pointer;
+}
+.period-end-control input:checked {
+  border-color: #697e53;
+  background: #697e53;
+}
+.period-end-control > svg {
+  position: absolute;
+  inset: 3px;
+  color: #fffef8;
+  visibility: hidden;
+  pointer-events: none;
+}
+.period-end-control input:checked + svg {
+  visibility: visible;
+}
+.period-end-option:hover {
+  color: var(--text-body);
+}
 .dialog-actions {
   display: flex;
   justify-content: space-between;
@@ -790,6 +839,155 @@ summary:focus-visible {
 }
 .modal-card .checkin-date {
   font-size: 13px;
+}
+.saved-checkin #modal-title {
+  margin-top: 0;
+  padding-right: 48px;
+  letter-spacing: -0.7px;
+}
+.saved-checkin-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.saved-checkin-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+.saved-checkin-details > div {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e4e7d9;
+  border-radius: 12px;
+  background: #fffefa;
+}
+.saved-checkin-details > .saved-summary-tile {
+  grid-column: auto;
+  padding: 16px;
+}
+.saved-checkin-details > .saved-mood-tile {
+  background: #eff2e6;
+  border-color: #e2e7d5;
+}
+.saved-checkin-details > .saved-flow-tile {
+  background: #f8eee7;
+  border-color: #efdfd3;
+}
+.saved-checkin-details dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.saved-checkin-details dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-body);
+}
+.saved-summary-tile dd {
+  font-family: "Lora", serif;
+  font-size: 21px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.saved-checkin-details .saved-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.saved-checkin-details > .saved-period-card {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: transparent;
+}
+.saved-period-card dt {
+  margin-bottom: 2px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.saved-period-card dd {
+  font-size: 13px;
+}
+.saved-period-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 12px;
+}
+.saved-period-card dd > strong {
+  font-weight: 400;
+}
+.remove-period-start,
+.undo-period-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.remove-period-start:hover {
+  color: #80523d;
+}
+.saved-period-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.saved-period-feedback .undo-period-start {
+  color: #4d633c;
+}
+.undo-period-start:hover {
+  color: #263e1b;
+}
+.saved-checkin-details .saved-period-event {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.saved-symptoms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+.saved-symptoms .tag {
+  padding: 6px 12px;
+  background: #eff2e6;
+}
+.saved-checkin-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.saved-checkin > .dialog-actions {
+  padding-top: 18px;
+  border-top: 1px solid #e4e7d9;
+}
+.saved-checkin > .dialog-actions > .button-dark {
+  flex: 1;
+}
+@media (max-width: 359px) {
+  .saved-checkin-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .checkin-step-body {
   min-height: 230px;
@@ -1381,6 +1579,12 @@ summary:focus-visible {
   .sidebar-note {
     display: none;
   }
+}
+
+/* Keep the calendar above the check-in at every screen size. */
+.middle-grid.overview-calendar {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
 }
 
 /* One spacing scale for card collections, including between separate grids. */

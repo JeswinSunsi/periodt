@@ -37,6 +37,7 @@ test("removing the latest start restores the most recent remaining recorded date
   removePeriodStart(state, "2026-10-01", "2026-09-28");
   assert.equal(state.profile.lastPeriod, "2026-09-15");
   assert.equal(state.profile.demo, false);
+  assert.equal(isPeriodStart(state, "2026-10-01"), false);
   assert.deepEqual(state.periodHistory, [{ start: "2026-09-01", length: 5 }]);
 });
 
@@ -44,7 +45,6 @@ test("removing the only recorded start returns to a labeled sample cycle", () =>
   const state = recordedState();
   state.periodHistory = [];
   removePeriodStart(state, "2026-10-01", "2026-09-28");
-  state.logs["2026-10-01"].periodStart = false;
   const reloaded = JSON.parse(JSON.stringify(state));
   assert.equal(reloaded.profile.lastPeriod, "2026-09-28");
   assert.equal(reloaded.profile.demo, true);
@@ -52,4 +52,31 @@ test("removing the only recorded start returns to a labeled sample cycle", () =>
   assert.equal(isPeriodStart(reloaded, "2026-09-28"), false);
   assert.equal(reloaded.logs["2026-10-01"].mood, "Good");
   assert.equal(reloaded.logs["2026-10-01"].notes, "Keep this");
+});
+
+test("removing a start preserves recorded flow and all other check-in details after reload", () => {
+  const state = recordedState();
+  Object.assign(state.logs["2026-10-01"], {
+    flow: "Spotting",
+    flowRecorded: true,
+    symptoms: ["Bloating"],
+  });
+  const original = { ...state.logs["2026-10-01"] };
+  removePeriodStart(state, "2026-10-01", "2026-09-28");
+  const reloaded = JSON.parse(JSON.stringify(state));
+  assert.equal(isPeriodStart(reloaded, "2026-10-01"), false);
+  assert.deepEqual(reloaded.logs["2026-10-01"], {
+    ...original,
+    periodStart: false,
+  });
+  assert.equal(reloaded.profile.lastPeriod, "2026-09-01");
+});
+
+test("removing a date recorded only in settings does not create or delete a check-in", () => {
+  const state = recordedState();
+  state.logs = {};
+  removePeriodStart(state, "2026-10-01", "2026-09-28");
+  assert.equal(isPeriodStart(state, "2026-10-01"), false);
+  assert.deepEqual(state.logs, {});
+  assert.equal(state.profile.lastPeriod, "2026-09-01");
 });

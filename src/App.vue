@@ -12,6 +12,8 @@ import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
+import { monthDates } from "./lib/calendar.js";
+import { hasCheckin } from "./lib/checkin.js";
 import {
   isPeriodStart,
   removePeriodStart,
@@ -91,7 +93,10 @@ const fullDate = today.toLocaleDateString("en-US", {
   month: "long",
   day: "numeric",
 });
-const todayLog = computed(() => state.logs[dateKey(today)]);
+const todayLog = computed(() => {
+  const log = state.logs[dateKey(today)];
+  return hasCheckin(log) ? log : undefined;
+});
 const moods = [
   { name: "Low", face: "low" },
   { name: "A little off", face: "off" },
@@ -147,11 +152,8 @@ const calendarCells = computed(() => {
     calendarMonth.value.getMonth(),
     1,
   );
-  const offset = (start.getDay() + 6) % 7,
-    last = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
-  return Array.from({ length: Math.ceil((offset + last) / 7) * 7 }, (_, i) => {
-    const date = addDays(start, i - offset),
-      relative = dayDifference(date, fromKey(state.profile.lastPeriod));
+  return monthDates(start.getFullYear(), start.getMonth()).map((date) => {
+    const relative = dayDifference(date, fromKey(state.profile.lastPeriod));
     let type = "";
     if (
       relative >= state.profile.cycleLength &&
@@ -172,7 +174,7 @@ const calendarCells = computed(() => {
     );
     if (bleedingType) type = bleedingType;
     if (
-      date <= today &&
+      dateKey(date) <= dateKey(today) &&
       state.logs[dateKey(date)]?.flowRecorded &&
       state.logs[dateKey(date)].flow === "None" &&
       type === "predicted"
@@ -185,7 +187,7 @@ const calendarCells = computed(() => {
       outside: date.getMonth() !== start.getMonth(),
       today: dateKey(date) === dateKey(today),
       type,
-      logged: !!state.logs[dateKey(date)],
+      logged: hasCheckin(state.logs[dateKey(date)]),
     };
   });
 });
@@ -356,6 +358,21 @@ const logDate = ref(dateKey(today)),
     periodStart: false,
     periodEnd: false,
   });
+const savedLog = computed(() => state.logs[logDate.value]);
+const logDateLabel = computed(() =>
+  fromKey(logDate.value).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }),
+);
+const savedFlowLabel = computed(() => {
+  const log = savedLog.value;
+  if (!log?.flowRecorded && (!log?.flow || log.flow === "None"))
+    return "Not recorded";
+  return log.flow === "None" ? "No bleeding" : log.flow;
+});
 const symptoms = [
   "Cramps",
   "Bloating",
@@ -398,7 +415,7 @@ function submitLogStep() {
 }
 const canSaveLog = computed(
   () =>
-    !!state.logs[logDate.value] ||
+    hasCheckin(state.logs[logDate.value]) ||
     isPeriodStart(state, logDate.value) ||
     !!(
       draft.mood ||
@@ -475,6 +492,42 @@ function openLog(date = today, initialMood = "") {
   if (initialMood) draft.mood = initialMood;
   modal.value = "log";
 }
+const removedPeriodStart = ref(null);
+function openCalendarDate(date) {
+  removedPeriodStart.value = null;
+  const key = dateKey(date);
+  if (hasCheckin(state.logs[key]) || isPeriodStart(state, key)) {
+    logDate.value = key;
+    modal.value = "saved-log";
+  } else openLog(date);
+}
+async function removeSavedPeriodStart() {
+  if (!isPeriodStart(state, logDate.value)) return;
+  removedPeriodStart.value = {
+    date: logDate.value,
+    lastPeriod: state.profile.lastPeriod,
+    demo: state.profile.demo,
+    history: state.periodHistory.map((period) => ({ ...period })),
+    logStart: savedLog.value?.periodStart,
+  };
+  removePeriodStart(state, logDate.value, dateKey(addDays(today, -11)));
+  await nextTick();
+  modalElement.value?.querySelector(".undo-period-start")?.focus();
+}
+async function undoSavedPeriodStart() {
+  const previous = removedPeriodStart.value;
+  if (!previous || previous.date !== logDate.value) return;
+  state.profile.lastPeriod = previous.lastPeriod;
+  state.profile.demo = previous.demo;
+  state.periodHistory = previous.history;
+  if (savedLog.value) {
+    if (previous.logStart === undefined) delete savedLog.value.periodStart;
+    else savedLog.value.periodStart = previous.logStart;
+  }
+  removedPeriodStart.value = null;
+  await nextTick();
+  modalElement.value?.querySelector(".remove-period-start")?.focus();
+}
 function toggleSymptom(symptom) {
   const index = draft.symptoms.indexOf(symptom);
   index < 0 ? draft.symptoms.push(symptom) : draft.symptoms.splice(index, 1);
@@ -537,7 +590,9 @@ function saveSettings() {
   notify("Your cycle details are updated.");
 }
 const journalEntries = computed(() =>
-  Object.entries(state.logs).sort(([a], [b]) => b.localeCompare(a)),
+  Object.entries(state.logs)
+    .filter(([, log]) => hasCheckin(log))
+    .sort(([a], [b]) => b.localeCompare(a)),
 );
 const periodEndDates = computed(
   () =>
@@ -771,111 +826,13 @@ onBeforeUnmount(() => {
           @settings="openSettings"
           @calendar="goTo('My calendar')"
         />
-        <div v-if="activePage === 'Overview'" class="top-grid">
-          <section class="cycle-card cycle-card-interactive">
-            <button
-              class="cycle-card-hitbox"
-              aria-label="Open my cycle: explore phases, body changes, and check-ins"
-              @click="goTo('My cycle')"
-            ></button>
-            <div class="cycle-card-top">
-              <span class="card-eyebrow">YOU & YOUR CYCLE</span
-              ><button
-                class="cycle-edit"
-                aria-label="Edit cycle details"
-                @click="openSettings"
-              >
-                <Icon name="Ellipsis" :size="23" />
-              </button>
-            </div>
-            <div class="cycle-card-body">
-              <div class="cycle-ring">
-                <CycleRing
-                  :day="cycleDay"
-                  :cycle-length="state.profile.cycleLength"
-                  :period-length="currentPeriodLength"
-                  :phase="phase"
-                />
-              </div>
-              <div class="cycle-message">
-                <span class="phase-badge"
-                  ><Icon :name="currentPhaseCopy.icon" :size="14" />
-                  {{
-                    phase === "Unconfirmed"
-                      ? "Awaiting your next log"
-                      : phase + " phase"
-                  }}</span
-                >
-                <h2>{{ currentPhaseCopy.title }}</h2>
-                <p>{{ currentPhaseCopy.description }}</p>
-                <span class="text-button cycle-explore-link"
-                  >Explore my cycle <Icon name="ArrowUpRight" :size="16"
-                /></span>
-              </div>
-            </div>
-            <div class="cycle-card-footer">
-              <span
-                ><span class="small-dot peach-dot"></span>
-                {{
-                  remaining >= 0
-                    ? "Next period in about"
-                    : "Expected period was"
-                }}
-                <strong
-                  >{{ Math.abs(remaining) }} days{{
-                    remaining < 0 ? " ago" : ""
-                  }}</strong
-                ></span
-              ><span class="estimate"
-                >{{ state.profile.demo ? "Sample cycle" : "Estimated" }}
-                <span>·</span> {{ shortDate(nextPeriod) }}</span
-              >
-            </div>
-          </section>
-          <section class="checkin-card card">
-            <div class="flex items-center justify-between">
-              <span class="card-eyebrow">YOUR DAILY CHECK-IN</span
-              ><Icon name="Sun" :size="20" />
-            </div>
-            <h2>How’s your little world?</h2>
-            <p>A moment to pause and check in with you.</p>
-            <div class="mood-options">
-              <button
-                v-for="mood in moods"
-                :key="mood.name"
-                class="mood-option"
-                :class="{ selected: selectedMood === mood.name }"
-                :aria-pressed="selectedMood === mood.name"
-                @click="openLog(today, mood.name)"
-              >
-                <span class="mood-face" :class="mood.face"
-                  ><i></i><i></i><b></b
-                  ><span v-if="mood.face === 'glow'" class="face-spark"
-                    >✧</span
-                  ></span
-                ><span>{{ mood.name }}</span>
-              </button>
-            </div>
-            <button
-              class="checkin-button"
-              @click="openLog(today, selectedMood)"
-            >
-              {{ todayLog ? "Edit today’s check-in" : "Check in with yourself"
-              }}<Icon
-                :name="todayLog ? 'Check' : 'ArrowRight'"
-                :size="17"
-              /></button
-            ><span class="checkin-caption">{{
-              todayLog
-                ? "Today’s check-in is saved. Tap a mood to edit."
-                : "Choose a mood, then save your check-in."
-            }}</span>
-          </section>
-        </div>
         <div
           v-if="activePage === 'Overview' || activePage === 'My calendar'"
           class="middle-grid"
-          :class="{ 'calendar-page': activePage === 'My calendar' }"
+          :class="{
+            'calendar-page': activePage === 'My calendar',
+            'overview-calendar': activePage === 'Overview',
+          }"
         >
           <section class="calendar-card card">
             <div class="section-card-heading">
@@ -923,7 +880,7 @@ onBeforeUnmount(() => {
                     </button>
                   </div>
                 </div>
-                <div class="calendar-grid">
+                <div class="calendar-grid" :aria-label="calendarTitle">
                   <span
                     v-for="(day, i) in [
                       'Mon',
@@ -937,7 +894,8 @@ onBeforeUnmount(() => {
                     :key="'weekday-' + i"
                     class="weekday"
                     >{{ day }}</span
-                  ><button
+                  >
+                  <button
                     v-for="cell in calendarCells"
                     :key="cell.key"
                     class="calendar-day"
@@ -952,15 +910,15 @@ onBeforeUnmount(() => {
                     :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type === 'period' ? ', recorded bleeding' : cell.type === 'expected-period' ? ', expected bleeding' + (state.profile.demo ? ', sample cycle' : '') : cell.type ? ', estimated ' + cell.type : ''}${periodEndDates.has(cell.key) ? ', period ended' : ''}${cell.logged ? ', has check-in' : ''}`"
                     :data-date="cell.key"
                     :aria-current="cell.today ? 'date' : undefined"
-                    @click="openLog(cell.date)"
+                    @click="openCalendarDate(cell.date)"
                   >
-                    <span>{{ cell.day }}</span
-                    ><i v-if="cell.logged"></i>
+                    <span>{{ cell.day }}</span>
+                    <i v-if="cell.logged" aria-hidden="true"></i>
                   </button>
                 </div>
                 <p class="calendar-instruction">
-                  Select a date to add or edit a check-in. Future dates are for
-                  planned notes.
+                  Select a date to view a saved check-in or add a new one.
+                  Future dates are for planned notes.
                 </p>
               </div>
               <div class="calendar-side">
@@ -1020,7 +978,107 @@ onBeforeUnmount(() => {
               <span><i class="legend-dot logged"></i> Has check-in</span>
             </div>
           </section>
-          <section v-if="activePage === 'Overview'" class="partner-card">
+          <section
+            class="checkin-card card"
+            v-if="activePage === 'Overview' && !todayLog"
+          >
+            <div class="flex items-center justify-between">
+              <span class="card-eyebrow">YOUR DAILY CHECK-IN</span>
+              <Icon name="Sun" :size="20" />
+            </div>
+            <h2>How’s your little world?</h2>
+            <p>A moment to pause and check in with you.</p>
+            <div class="mood-options">
+              <button
+                v-for="mood in moods"
+                :key="mood.name"
+                class="mood-option"
+                :class="{ selected: selectedMood === mood.name }"
+                :aria-pressed="selectedMood === mood.name"
+                @click="openLog(today, mood.name)"
+              >
+                <span class="mood-face" :class="mood.face">
+                  <i></i><i></i><b></b>
+                  <span v-if="mood.face === 'glow'" class="face-spark">✧</span>
+                </span>
+                <span>{{ mood.name }}</span>
+              </button>
+            </div>
+            <button
+              class="checkin-button"
+              @click="openLog(today, selectedMood)"
+            >
+              Check in with yourself
+              <Icon name="ArrowRight" :size="17" />
+            </button>
+            <span class="checkin-caption"
+              >Choose a mood, then save your check-in.</span
+            >
+          </section>
+        </div>
+        <div v-if="activePage === 'Overview'" class="top-grid overview-support">
+          <section class="cycle-card cycle-card-interactive">
+            <button
+              class="cycle-card-hitbox"
+              aria-label="Open my cycle: explore phases, body changes, and check-ins"
+              @click="goTo('My cycle')"
+            ></button>
+            <div class="cycle-card-top">
+              <span class="card-eyebrow">YOU & YOUR CYCLE</span>
+              <button
+                class="cycle-edit"
+                aria-label="Edit cycle details"
+                @click="openSettings"
+              >
+                <Icon name="Ellipsis" :size="23" />
+              </button>
+            </div>
+            <div class="cycle-card-body">
+              <div class="cycle-ring">
+                <CycleRing
+                  :day="cycleDay"
+                  :cycle-length="state.profile.cycleLength"
+                  :period-length="currentPeriodLength"
+                  :phase="phase"
+                />
+              </div>
+              <div class="cycle-message">
+                <span class="phase-badge">
+                  <Icon :name="currentPhaseCopy.icon" :size="14" />
+                  {{
+                    phase === "Unconfirmed"
+                      ? "Awaiting your next log"
+                      : phase + " phase"
+                  }}
+                </span>
+                <h2>{{ currentPhaseCopy.title }}</h2>
+                <p>{{ currentPhaseCopy.description }}</p>
+                <span class="text-button cycle-explore-link">
+                  Explore my cycle <Icon name="ArrowUpRight" :size="16" />
+                </span>
+              </div>
+            </div>
+            <div class="cycle-card-footer">
+              <span
+                ><span class="small-dot peach-dot"></span>
+                {{
+                  remaining >= 0
+                    ? "Next period in about"
+                    : "Expected period was"
+                }}
+                <strong
+                  >{{ Math.abs(remaining) }} days{{
+                    remaining < 0 ? " ago" : ""
+                  }}</strong
+                >
+              </span>
+              <span class="estimate"
+                >{{ state.profile.demo ? "Sample cycle" : "Estimated" }} ·
+                {{ shortDate(nextPeriod) }}</span
+              >
+            </div>
+          </section>
+          <section class="partner-card">
             <div class="partner-art">
               <span class="partner-circle circle-one"
                 ><Icon name="Heart" :size="29" /></span
@@ -1424,8 +1482,118 @@ onBeforeUnmount(() => {
             >
               <Icon name="X" />
             </button>
+            <div v-if="modal === 'saved-log'" class="saved-checkin">
+              <h2 id="modal-title">
+                {{
+                  logDate > dateKey(today)
+                    ? "A little look ahead."
+                    : "Your day, in one place."
+                }}
+              </h2>
+              <p class="checkin-date saved-checkin-date">
+                <Icon name="CalendarDays" :size="15" />{{ logDateLabel }}
+              </p>
+              <dl class="saved-checkin-details">
+                <template v-if="logDate <= dateKey(today)">
+                  <div class="saved-summary-tile saved-mood-tile">
+                    <dt><Icon name="Smile" :size="18" /> Mood</dt>
+                    <dd>{{ savedLog?.mood || "Not recorded" }}</dd>
+                  </div>
+                  <div class="saved-summary-tile saved-flow-tile">
+                    <dt><Icon name="Droplet" :size="18" /> Period flow</dt>
+                    <dd>{{ savedFlowLabel }}</dd>
+                  </div>
+                  <div
+                    v-if="
+                      isPeriodStart(state, logDate) ||
+                      removedPeriodStart ||
+                      periodEndDates.has(logDate)
+                    "
+                    class="saved-period-card"
+                  >
+                    <dt><Icon name="CalendarDays" :size="14" /> Cycle dates</dt>
+                    <dd
+                      v-if="isPeriodStart(state, logDate)"
+                      class="saved-period-start"
+                    >
+                      <strong>Period started this day</strong>
+                      <button
+                        class="remove-period-start"
+                        aria-label="Remove period start"
+                        title="Remove the start date and keep your check-in"
+                        @click="removeSavedPeriodStart"
+                      >
+                        Remove
+                      </button>
+                    </dd>
+                    <dd
+                      v-else-if="removedPeriodStart"
+                      class="saved-period-feedback"
+                    >
+                      <span role="status">{{
+                        hasCheckin(savedLog)
+                          ? "Period start removed. Your check-in is saved."
+                          : "Period start removed."
+                      }}</span>
+                      <button
+                        class="undo-period-start"
+                        @click="undoSavedPeriodStart"
+                      >
+                        Undo
+                      </button>
+                    </dd>
+                    <dd
+                      v-if="periodEndDates.has(logDate)"
+                      class="saved-period-event"
+                    >
+                      Period ended this day
+                    </dd>
+                  </div>
+                  <div>
+                    <dt><Icon name="Heart" :size="18" /> Symptoms</dt>
+                    <dd v-if="savedLog?.symptoms?.length">
+                      <ul class="saved-symptoms">
+                        <li
+                          v-for="symptom in savedLog.symptoms"
+                          :key="symptom"
+                          class="tag"
+                        >
+                          {{ symptom }}
+                        </li>
+                      </ul>
+                    </dd>
+                    <dd v-else class="saved-empty">No symptoms recorded</dd>
+                  </div>
+                </template>
+                <div>
+                  <dt><Icon name="BookOpen" :size="18" /> Notes</dt>
+                  <dd
+                    class="saved-checkin-notes"
+                    :class="{ 'saved-empty': !savedLog?.notes }"
+                  >
+                    {{ savedLog?.notes || "No note added" }}
+                  </dd>
+                </div>
+              </dl>
+              <div class="dialog-actions">
+                <button class="button button-outline" @click="requestClose()">
+                  Close
+                </button>
+                <button
+                  class="button button-dark"
+                  @click="openLog(fromKey(logDate))"
+                >
+                  <Icon name="Pencil" :size="17" />
+                  {{
+                    logDate > dateKey(today)
+                      ? "Edit planned note"
+                      : "Edit check-in"
+                  }}
+                </button>
+              </div>
+            </div>
             <form
-              v-if="modal === 'log'"
+              v-else-if="modal === 'log'"
               class="checkin-flow"
               @submit.prevent="submitLogStep"
             >
@@ -1453,16 +1621,7 @@ onBeforeUnmount(() => {
               <h2 id="modal-title" tabindex="-1">
                 {{ currentLogStep.title }}
               </h2>
-              <p class="checkin-date">
-                {{
-                  fromKey(logDate).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                }}
-              </p>
+              <p class="checkin-date">{{ logDateLabel }}</p>
               <div class="checkin-step-body">
                 <p class="checkin-reassurance">
                   {{
@@ -1497,20 +1656,8 @@ onBeforeUnmount(() => {
                 </fieldset>
                 <template v-else-if="currentLogStep.id === 'flow'">
                   <label
-                    v-if="showPeriodEnd"
-                    class="period-start-option period-end-option"
-                    ><input
-                      type="checkbox"
-                      :checked="draft.periodEnd"
-                      @change="togglePeriodEnd"
-                    /><span
-                      >My period ended<small
-                        >No bleeding on this date. Stops the remaining expected
-                        days.</small
-                      ></span
-                    ></label
-                  >
-                  <label v-else-if="showPeriodStart" class="period-start-option"
+                    v-if="!showPeriodEnd && showPeriodStart"
+                    class="period-start-option"
                     ><input type="checkbox" v-model="draft.periodStart" /><span
                       >My period started this day<small
                         >Sets this date as the start of a cycle.</small
@@ -1543,10 +1690,22 @@ onBeforeUnmount(() => {
                       </button>
                     </div>
                   </fieldset>
+                  <label v-if="showPeriodEnd" class="period-end-option">
+                    <span class="period-end-control">
+                      <input
+                        type="checkbox"
+                        :checked="draft.periodEnd"
+                        @change="togglePeriodEnd"
+                      />
+                      <Icon name="Check" :size="12" aria-hidden="true" />
+                    </span>
+                    <span>My period has ended</span>
+                  </label>
                   <p
                     v-if="
                       draft.flowRecorded &&
                       draft.flow === 'None' &&
+                      !draft.periodEnd &&
                       logDate <= dateKey(today)
                     "
                     class="form-hint"
