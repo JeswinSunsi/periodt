@@ -814,9 +814,17 @@ onBeforeUnmount(() => {
             <h1 tabindex="-1">{{ pageHeading }}</h1>
             <p class="page-description">{{ pageDescription }}</p>
           </div>
-          <button class="button button-dark" @click="openLog()">
-            <Icon :name="todayLog ? 'Pencil' : 'Plus'" :size="18" />
-            {{ todayLog ? "Edit today’s check-in" : "Log my day" }}
+          <button
+            v-if="
+              !todayLog &&
+              activePage !== 'Partner space' &&
+              activePage !== 'My cycle'
+            "
+            class="button button-dark"
+            @click="openLog()"
+          >
+            <Icon name="Plus" :size="18" />
+            Log my day
           </button>
         </section>
         <CycleDetail
@@ -976,6 +984,12 @@ onBeforeUnmount(() => {
               ><span><i class="legend-dot ovulation"></i> Est. ovulation</span>
               <span><i class="legend-dot current-day"></i> Today</span>
               <span><i class="legend-dot logged"></i> Has check-in</span>
+            </div>
+            <div v-if="todayLog" class="calendar-checkin-action">
+              <span>Today’s check-in is saved.</span>
+              <button class="small-text-button" @click="openLog()">
+                <Icon name="Pencil" :size="16" /> Edit today’s check-in
+              </button>
             </div>
           </section>
           <section
@@ -1227,7 +1241,7 @@ onBeforeUnmount(() => {
               frequent symptoms will appear here.
             </p>
             <button class="button button-dark mt-5" @click="openLog()">
-              Add a check-in<Icon name="Plus" :size="17" />
+              Log my day<Icon name="Plus" :size="17" />
             </button></div
         ></template>
         <template v-if="activePage === 'My journal'"
@@ -1576,19 +1590,18 @@ onBeforeUnmount(() => {
                 </div>
               </dl>
               <div class="dialog-actions">
-                <button class="button button-outline" @click="requestClose()">
-                  Close
-                </button>
                 <button
-                  class="button button-dark"
+                  class="button button-outline"
                   @click="openLog(fromKey(logDate))"
                 >
-                  <Icon name="Pencil" :size="17" />
                   {{
                     logDate > dateKey(today)
                       ? "Edit planned note"
                       : "Edit check-in"
                   }}
+                </button>
+                <button class="button button-dark" @click="requestClose()">
+                  Close
                 </button>
               </div>
             </div>
