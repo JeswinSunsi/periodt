@@ -1012,42 +1012,6 @@ h1 {
 .mobile-menu {
   display: none;
 }
-.calendar-page {
-  margin-top: 0;
-}
-.calendar-page .calendar-content {
-  grid-template-columns: 1fr;
-}
-.calendar-page .calendar-side {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  border: 0;
-  padding: 20px 0 0;
-  border-top: 1px solid #e4e7d9;
-  gap: 10px;
-}
-.calendar-page .calendar-side > .card-eyebrow {
-  display: none;
-}
-.calendar-page .calendar-day {
-  height: 48px;
-  width: 48px;
-  font-size: 12px;
-}
-.calendar-page .calendar-grid {
-  gap: 10px 0;
-}
-.calendar-page .weekday {
-  font-size: 10px;
-}
-.calendar-page .calendar-navigation {
-  margin-bottom: 24px;
-}
-.calendar-page .partner-card {
-  align-self: start;
-  padding: 40px 20px;
-}
 .insight-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1709,7 +1673,7 @@ h1 {
   display: block;
   font-size: 10px;
   color: #9a8e78;
-  margin-top: 3px;
+  margin-top: 0;
 }
 @media (min-width: 1500px) {
   .page-content {
@@ -2245,16 +2209,6 @@ h1 {
     width: max-content;
     bottom: 20px;
     font-size: 11px;
-  }
-  .calendar-page .calendar-day {
-    width: 35px;
-    height: 37px;
-  }
-  .calendar-page .calendar-content {
-    grid-template-columns: 1fr;
-  }
-  .calendar-page .calendar-side {
-    padding-left: 0;
   }
   .insight-grid {
     grid-template-columns: 1fr;

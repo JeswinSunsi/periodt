@@ -14,15 +14,14 @@ function state() {
   };
 }
 
-test("recorded starts and flow are distinct from expected future bleeding", () => {
+test("only recorded starts and flow mark bleeding, never assumed period days", () => {
   const data = state();
   data.logs["2026-10-02"] = { flow: "Light" };
   assert.equal(periodDayType(data, "2026-10-01", "2026-10-02"), "period");
   assert.equal(periodDayType(data, "2026-10-02", "2026-10-02"), "period");
-  assert.equal(
-    periodDayType(data, "2026-10-03", "2026-10-02"),
-    "expected-period",
-  );
+  assert.equal(periodDayType(data, "2026-10-03", "2026-10-02"), "");
+  assert.equal(periodDayType(data, "2026-10-03", "2026-10-05"), "");
+  assert.equal(periodDayType(data, "2026-09-02", "2026-10-05"), "");
 });
 
 test("explicit None ends one period early without changing the usual duration", () => {
@@ -50,16 +49,13 @@ test("legacy default None, mood-only entries, and future notes do not end a peri
   assert.equal(periodWindows(data, "2026-10-03")[1].length, 5);
 });
 
-test("editing or deleting the end check-in restores expected bleeding", () => {
+test("editing or deleting an end updates recorded flow without assuming other bleeding", () => {
   const data = state();
   data.logs["2026-10-03"] = { flow: "None", flowRecorded: true };
   assert.equal(periodDayType(data, "2026-10-04", "2026-10-03"), "");
   data.logs["2026-10-03"].flow = "Light";
   assert.equal(periodDayType(data, "2026-10-03", "2026-10-03"), "period");
-  assert.equal(
-    periodDayType(data, "2026-10-04", "2026-10-03"),
-    "expected-period",
-  );
+  assert.equal(periodDayType(data, "2026-10-04", "2026-10-03"), "");
   delete data.logs["2026-10-03"];
   assert.equal(periodWindows(data, "2026-10-03")[1].length, 5);
 });
@@ -91,13 +87,10 @@ test("a later recorded flow remains visible after an early end", () => {
   assert.equal(periodDayType(data, "2026-10-04", "2026-10-04"), "period");
 });
 
-test("sample cycles stay estimates and date arithmetic crosses months", () => {
+test("sample cycles never mark bleeding and period-end arithmetic crosses months", () => {
   const data = state();
   data.profile.demo = true;
-  assert.equal(
-    periodDayType(data, "2026-10-01", "2026-10-03"),
-    "expected-period",
-  );
+  assert.equal(periodDayType(data, "2026-10-01", "2026-10-03"), "");
   data.profile = { lastPeriod: "2024-02-28", periodLength: 5, demo: false };
   data.periodHistory = [];
   data.logs["2024-03-01"] = { flow: "None", flowRecorded: true };

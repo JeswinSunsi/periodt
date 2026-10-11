@@ -15,6 +15,8 @@ const {
   cycleDay,
   remaining,
   nextPeriod,
+  ovulationDate,
+  fertileWindow,
   today,
   storageError,
 } = useCycle();
@@ -48,6 +50,36 @@ test("cycle day and next period react to personalized dates", () => {
   assert.equal(cycleDay.value, 3);
   assert.equal(remaining.value, 28);
   assert.equal(dateKey(nextPeriod.value), dateKey(addDays(today, 28)));
+});
+
+test("cycle estimates use the recorded start and configured length across date boundaries", () => {
+  for (const [start, length, next, ovulation, fertileStart] of [
+    ["2026-10-01", 21, "2026-10-22", "2026-10-07", "2026-10-02"],
+    ["2026-10-01", 28, "2026-10-29", "2026-10-14", "2026-10-09"],
+    ["2026-10-01", 30, "2026-10-31", "2026-10-16", "2026-10-11"],
+    ["2026-10-01", 45, "2026-11-15", "2026-10-31", "2026-10-26"],
+    ["2024-02-28", 28, "2024-03-27", "2024-03-12", "2024-03-07"],
+    ["2026-12-20", 28, "2027-01-17", "2027-01-02", "2026-12-28"],
+  ]) {
+    Object.assign(state.profile, { lastPeriod: start, cycleLength: length });
+    for (const periodLength of [2, 5, 10]) {
+      state.profile.periodLength = periodLength;
+      assert.equal(dateKey(nextPeriod.value), next);
+      assert.equal(dateKey(ovulationDate.value), ovulation);
+      assert.equal(dateKey(fertileWindow.value.start), fertileStart);
+      assert.equal(dateKey(fertileWindow.value.end), ovulation);
+    }
+  }
+});
+
+test("an overdue prediction stays anchored until a new start is recorded", () => {
+  Object.assign(state.profile, {
+    lastPeriod: dateKey(addDays(today, -40)),
+    cycleLength: 28,
+  });
+  assert.equal(dateKey(nextPeriod.value), dateKey(addDays(today, -12)));
+  assert.equal(remaining.value, -12);
+  assert.equal(phaseFor(today), "Unconfirmed");
 });
 
 test("nested check-ins and sharing choices persist", async () => {

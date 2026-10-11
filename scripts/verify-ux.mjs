@@ -23,7 +23,6 @@ try {
     for (const route of [
       "overview",
       "cycle",
-      "calendar",
       "insights",
       "journal",
       "partner",
@@ -488,7 +487,7 @@ try {
       );
       return dates;
     }, elapsed);
-    await page.goto(`${base}#/calendar`);
+    await page.goto(`${base}#/overview`);
     await page.reload();
     return dates;
   };
@@ -526,9 +525,10 @@ try {
   await seedPeriod();
   if (!(await dayCell(dates.future).count()))
     await page.getByRole("button", { name: "Next month", exact: true }).click();
-  assert.match(
+  assert.doesNotMatch(
     await dayCell(dates.future).getAttribute("class"),
-    /expected-period/,
+    /\bperiod\b/,
+    "Unlogged days never assume bleeding",
   );
   await page.screenshot({
     path: "ux.local/period-before-end.png",
@@ -581,7 +581,7 @@ try {
     /Follicular/,
     "Current cycle reflects the shortened period",
   );
-  await page.goto(`${base}#/calendar`);
+  await page.goto(`${base}#/overview`);
   if (!(await dayCell(dates.today).count()))
     await page
       .getByRole("button", { name: "Previous month", exact: true })
@@ -594,10 +594,10 @@ try {
   await dialog.waitFor({ state: "hidden" });
   if (!(await dayCell(dates.future).count()))
     await page.getByRole("button", { name: "Next month", exact: true }).click();
-  assert.match(
+  assert.doesNotMatch(
     await dayCell(dates.future).getAttribute("class"),
-    /expected-period/,
-    "Correcting None restores expected days",
+    /\bperiod\b/,
+    "Correcting None does not assume bleeding on other days",
   );
   const fourthDay = await seedPeriod(3);
   await dayCell(fourthDay.today).click();
@@ -635,18 +635,18 @@ try {
   await dialog.waitFor({ state: "hidden" });
   if (!(await dayCell(fourthDay.future).count()))
     await page.getByRole("button", { name: "Next month", exact: true }).click();
-  assert.match(
+  assert.doesNotMatch(
     await dayCell(fourthDay.future).getAttribute("class"),
-    /expected-period/,
-    "Unchecking restores expected days",
+    /\bperiod\b/,
+    "Unchecking an end does not assume future bleeding",
   );
   assert.deepEqual(errors, [], "No period-flow runtime errors");
   console.log("PASS: day-four end checkbox visibility, save/reload, and undo.");
   console.log(
-    "PASS: start-date unchecking; explicit None; early-end persistence and correction; expected calendar colors; journal end label; current phase.",
+    "PASS: start-date unchecking; explicit None; early-end persistence and correction; recorded bleeding only; journal end label; current phase.",
   );
   console.log(
-    "PASS: six routes at five widths; menu focus; mood selection; save/reload; discard; settings; cycle slider; future notes; insights counts; journal deletion; partner preview/error/revocation; articles; dialog switching; resize.",
+    "PASS: five routes at five widths; menu focus; mood selection; save/reload; discard; settings; cycle slider; future notes; insights counts; journal deletion; partner preview/error/revocation; articles; dialog switching; resize.",
   );
 } finally {
   await browser.close();

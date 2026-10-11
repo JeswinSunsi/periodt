@@ -14,6 +14,7 @@ import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
 import { monthDates } from "./lib/calendar.js";
 import { hasCheckin } from "./lib/checkin.js";
+import { calendarEstimateAtDay } from "./lib/cyclePhases.js";
 import {
   isPeriodStart,
   removePeriodStart,
@@ -33,6 +34,7 @@ const {
   cycleDay,
   remaining,
   nextPeriod,
+  ovulationDate,
   phase,
   storageError,
   currentPeriodLength,
@@ -40,12 +42,13 @@ const {
 const pageRoutes = {
   Overview: "/overview",
   "My cycle": "/cycle",
-  "My calendar": "/calendar",
   "Cycle insights": "/insights",
   "My journal": "/journal",
   "Partner space": "/partner",
 };
 function pageFromHash() {
+  if (window.location.hash === "#/calendar")
+    window.history.replaceState(window.history.state, "", "#/overview");
   return (
     Object.keys(pageRoutes).find(
       (page) => pageRoutes[page] === window.location.hash.slice(1),
@@ -57,7 +60,6 @@ const activePage = ref(pageFromHash()),
 const navigation = [
   { title: "Overview", icon: "House" },
   { title: "My cycle", icon: "Sprout" },
-  { title: "My calendar", icon: "CalendarDays" },
   { title: "Cycle insights", icon: "ChartNoAxesColumnIncreasing" },
   { title: "My journal", icon: "BookOpen" },
   { title: "Partner space", icon: "Users" },
@@ -67,7 +69,6 @@ const pageHeading = computed(
     ({
       Overview: "A little more in tune.",
       "My cycle": "A little closer to you.",
-      "My calendar": "Your cycle, at a glance.",
       "Cycle insights": "Get to know your rhythm.",
       "My journal": "A little space for you.",
       "Partner space": "A little closer, together.",
@@ -78,7 +79,6 @@ const pageDescription = computed(
     ({
       Overview: "Every day is different. Let’s meet you where you are.",
       "My cycle": "Understand the changes. Get curious about your own rhythm.",
-      "My calendar": "Notice your patterns, one day at a time.",
       "Cycle insights":
         "Your body tells a story. Start listening to the patterns.",
       "My journal":
@@ -146,7 +146,6 @@ const calendarTitle = computed(() =>
   }),
 );
 const calendarCells = computed(() => {
-  const windows = periodWindows(state, dateKey(today));
   const start = new Date(
     calendarMonth.value.getFullYear(),
     calendarMonth.value.getMonth(),
@@ -154,24 +153,8 @@ const calendarCells = computed(() => {
   );
   return monthDates(start.getFullYear(), start.getMonth()).map((date) => {
     const relative = dayDifference(date, fromKey(state.profile.lastPeriod));
-    let type = "";
-    if (
-      relative >= state.profile.cycleLength &&
-      relative < state.profile.cycleLength + state.profile.periodLength
-    )
-      type = "predicted";
-    if (
-      relative >= state.profile.cycleLength - 20 &&
-      relative <= state.profile.cycleLength - 15
-    )
-      type = "fertile";
-    if (relative === state.profile.cycleLength - 15) type = "ovulation";
-    const bleedingType = periodDayType(
-      state,
-      dateKey(date),
-      dateKey(today),
-      windows,
-    );
+    let type = calendarEstimateAtDay(relative + 1, state.profile.cycleLength);
+    const bleedingType = periodDayType(state, dateKey(date), dateKey(today));
     if (bleedingType) type = bleedingType;
     if (
       dateKey(date) <= dateKey(today) &&
@@ -832,15 +815,11 @@ onBeforeUnmount(() => {
           @back="goTo('Overview')"
           @log="(date) => openLog(date)"
           @settings="openSettings"
-          @calendar="goTo('My calendar')"
+          @calendar="goTo('Overview')"
         />
         <div
-          v-if="activePage === 'Overview' || activePage === 'My calendar'"
-          class="middle-grid"
-          :class="{
-            'calendar-page': activePage === 'My calendar',
-            'overview-calendar': activePage === 'Overview',
-          }"
+          v-if="activePage === 'Overview'"
+          class="middle-grid overview-calendar"
         >
           <section class="calendar-card card">
             <div class="section-card-heading">
@@ -848,25 +827,6 @@ onBeforeUnmount(() => {
                 <Icon name="CalendarDays" :size="18" />
                 <h2>Your cycle calendar</h2>
               </div>
-              <button
-                v-if="activePage === 'Overview'"
-                class="small-text-button"
-                @click="goTo('My calendar')"
-              >
-                View calendar <Icon name="ArrowUpRight" :size="15" /></button
-              ><button
-                v-else
-                class="small-text-button"
-                @click="
-                  calendarMonth = new Date(
-                    today.getFullYear(),
-                    today.getMonth(),
-                    1,
-                  )
-                "
-              >
-                Back to today
-              </button>
             </div>
             <div class="calendar-content">
               <div class="calendar-main">
@@ -915,7 +875,7 @@ onBeforeUnmount(() => {
                         logged: cell.logged,
                       },
                     ]"
-                    :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type === 'period' ? ', recorded bleeding' : cell.type === 'expected-period' ? ', expected bleeding' + (state.profile.demo ? ', sample cycle' : '') : cell.type ? ', estimated ' + cell.type : ''}${periodEndDates.has(cell.key) ? ', period ended' : ''}${cell.logged ? ', has check-in' : ''}`"
+                    :aria-label="`${cell.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${cell.today ? ', today' : ''}${cell.type === 'period' ? ', recorded bleeding' : cell.type === 'predicted' ? ', estimated next period start' : cell.type ? ', estimated ' + cell.type : ''}${periodEndDates.has(cell.key) ? ', period ended' : ''}${cell.logged ? ', has check-in' : ''}`"
                     :data-date="cell.key"
                     :aria-current="cell.today ? 'date' : undefined"
                     @click="openCalendarDate(cell.date)"
@@ -930,66 +890,65 @@ onBeforeUnmount(() => {
                 </p>
               </div>
               <div class="calendar-side">
-                <p class="card-eyebrow">A LITTLE LOOK AHEAD</p>
+                <p class="calendar-estimate-label">
+                  Cycle estimates<span v-if="state.profile.demo">
+                    · Sample cycle</span
+                  >
+                </p>
                 <div class="upcoming">
-                  <span class="upcoming-icon"
-                    ><Icon name="Droplet" :size="18"
-                  /></span>
                   <div>
                     <span>Next period</span
-                    ><strong
-                      >{{ shortDate(nextPeriod) }} –
-                      {{
-                        shortDate(
-                          addDays(nextPeriod, state.profile.periodLength - 1),
-                        )
-                      }}</strong
-                    ><small>Estimated start</small>
+                    ><strong>{{ shortDate(nextPeriod) }}</strong>
                   </div>
                 </div>
                 <div class="upcoming">
-                  <span class="upcoming-icon sage"
-                    ><Icon name="Sprout" :size="18"
-                  /></span>
                   <div>
                     <span>Ovulation</span
-                    ><strong
-                      >~
-                      {{
-                        shortDate(
-                          addDays(
-                            fromKey(state.profile.lastPeriod),
-                            state.profile.cycleLength - 15,
-                          ),
-                        )
-                      }}</strong
-                    ><small>Calendar estimate</small>
+                    ><strong>{{ shortDate(ovulationDate) }}</strong>
                   </div>
                 </div>
-                <p class="calendar-note">
-                  <Icon name="Heart" :size="14" /> A guide, not a rule.<br />Your
-                  rhythm can change.
-                </p>
               </div>
             </div>
-            <div class="calendar-legend">
-              <span><i class="legend-dot period"></i> Recorded bleeding</span
-              ><span
-                ><i class="legend-dot expected-period"></i> Expected bleeding{{
-                  state.profile.demo ? " (sample)" : ""
-                }}</span
-              ><span><i class="legend-dot predicted"></i> Predicted period</span
-              ><span
-                ><i class="legend-dot fertile"></i> Est. fertile window</span
-              ><span><i class="legend-dot ovulation"></i> Est. ovulation</span>
-              <span><i class="legend-dot current-day"></i> Today</span>
-              <span><i class="legend-dot logged"></i> Has check-in</span>
-            </div>
-            <div v-if="todayLog" class="calendar-checkin-action">
-              <span>Today’s check-in is saved.</span>
-              <button class="small-text-button" @click="openLog()">
-                <Icon name="Pencil" :size="16" /> Edit today’s check-in
-              </button>
+            <div class="calendar-footer">
+              <div v-if="todayLog" class="calendar-checkin-action">
+                <span><Icon name="Check" :size="16" /> Check-in saved</span>
+                <button
+                  class="small-text-button"
+                  aria-label="Edit today’s check-in"
+                  @click="openLog()"
+                >
+                  Edit
+                </button>
+              </div>
+              <details class="calendar-key">
+                <summary>
+                  Calendar key <Icon name="ChevronDown" :size="16" />
+                </summary>
+                <div class="calendar-legend">
+                  <div class="calendar-legend-group">
+                    <h3>Bleeding</h3>
+                    <span
+                      ><i class="legend-dot period"></i> Recorded bleeding</span
+                    >
+                    <span
+                      ><i class="legend-dot predicted"></i> Next period
+                      (estimated)</span
+                    >
+                  </div>
+                  <div class="calendar-legend-group">
+                    <h3>Cycle estimates</h3>
+                    <span
+                      ><i class="legend-dot fertile"></i> Fertile window</span
+                    >
+                    <span><i class="legend-dot ovulation"></i> Ovulation</span>
+                  </div>
+                  <div class="calendar-legend-group">
+                    <h3>Your activity</h3>
+                    <span><i class="legend-dot current-day"></i> Today</span>
+                    <span><i class="legend-dot logged"></i> Has check-in</span>
+                  </div>
+                </div>
+              </details>
             </div>
           </section>
           <section

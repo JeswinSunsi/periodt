@@ -1,6 +1,46 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { phaseSegments, phaseAtDay } from "../src/lib/cyclePhases.js";
+import {
+  phaseSegments,
+  phaseAtDay,
+  cycleTiming,
+  calendarEstimateAtDay,
+} from "../src/lib/cyclePhases.js";
+
+test("a 28-day cycle has one predicted start, ovulation on day 14, and a six-day fertile window", () => {
+  assert.deepEqual(cycleTiming(28), {
+    nextPeriodDay: 29,
+    ovulationDay: 14,
+    fertileStartDay: 9,
+    fertileEndDay: 14,
+  });
+  assert.equal(calendarEstimateAtDay(8, 28), "");
+  for (let day = 9; day <= 13; day++)
+    assert.equal(calendarEstimateAtDay(day, 28), "fertile");
+  assert.equal(calendarEstimateAtDay(14, 28), "ovulation");
+  assert.equal(calendarEstimateAtDay(15, 28), "");
+  assert.equal(calendarEstimateAtDay(28, 28), "");
+  assert.equal(calendarEstimateAtDay(29, 28), "predicted");
+  assert.equal(calendarEstimateAtDay(30, 28), "");
+});
+
+test("calendar and phase estimates agree for every supported cycle length", () => {
+  for (let length = 21; length <= 45; length++) {
+    const timing = cycleTiming(length);
+    assert.equal(timing.fertileEndDay - timing.fertileStartDay + 1, 6);
+    assert.equal(phaseAtDay(timing.ovulationDay, length, 5), "Ovulation");
+    const days = Array.from({ length: length + 10 }, (_, i) => i + 1);
+    assert.deepEqual(
+      days.filter((day) => calendarEstimateAtDay(day, length) === "predicted"),
+      [length + 1],
+    );
+    assert.equal(
+      days.filter((day) => calendarEstimateAtDay(day, length) === "fertile")
+        .length,
+      5,
+    );
+  }
+});
 
 test("visual segments cover each cycle day exactly once across supported settings", () => {
   for (let length = 21; length <= 45; length++) {

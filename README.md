@@ -22,8 +22,8 @@ npm run format
 - Animated phase ring sized to your cycle settings, keyboard-operable day exploration, and four phase chapters.
 - Educational hormone illustrations, phase explanations, comfort prompts, and real check-in summaries. Hormone curves are illustrative, never presented as measured data.
 - Daily mood, flow, symptoms, private notes, and period-start logging.
-- Editable recorded starts and explicit no-flow check-ins that end a period early; expected bleeding days use a lighter calendar color. The usual period-length setting stays unchanged.
-- Calendar navigation, date-specific entries, and estimated period and fertile windows.
+- Editable recorded starts and explicit no-flow check-ins that end a period early. Only recorded bleeding is colored; the next estimated start is a single calendar marker. The usual period-length setting stays unchanged.
+- Overview calendar with month navigation, date-specific entries, and estimated period and fertile windows.
 - A journal and symptom-frequency insights based on actual local entries.
 - Cycle settings and preservation of previously recorded period starts.
 - Partner code creation, copying, selectable sharing permissions, code entry, a partner preview, and revocation. Private journal notes are excluded from the partner preview.
@@ -37,6 +37,8 @@ The first visit uses a clearly labeled sample cycle. Add a period start date in 
 Partner codes demonstrate the interaction in the same browser only. Real sharing across devices requires a backend, authentication/authorization, secure code redemption, and server-side revocation. Local storage is not encrypted and is accessible to anyone using that browser profile. This prototype is not a secure medical-record system.
 
 Cycle phases, ovulation, and fertile windows are simplified calendar estimates. They cannot confirm ovulation and must not be used as contraception. Missed predictions do not automatically become recorded periods. Cycle/period lengths are user-entered settings, not inferred clinical averages. Previously recorded starts are retained; only the active cycle and its next predicted period are projected on the calendar.
+
+The next estimated start is the last period start plus the configured cycle length (28 days by default). The [ASRM calendar model](https://www.asrm.org/practice-guidance/practice-committee-documents/optimizing-natural-fertility-a-committee-opinion-2021/) places estimated ovulation on cycle day `cycleLength - 14`, counting the period start as day 1. The fertile window includes that day and the five preceding days: days 9–14 for a 28-day cycle, or days 11–16 for a 30-day cycle. Calendar colors, displayed dates, and phase boundaries share this calculation. Estimates stay anchored to the entered start; the app does not infer a new start when the date passes.
 
 ## Research
 

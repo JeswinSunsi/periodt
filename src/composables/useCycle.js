@@ -1,5 +1,5 @@
 import { computed, reactive, watch } from "vue";
-import { phaseAtDay } from "../lib/cyclePhases.js";
+import { cycleTiming, phaseAtDay } from "../lib/cyclePhases.js";
 import { periodWindows } from "../lib/periodHistory.js";
 export const dateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -75,10 +75,21 @@ export function useCycle() {
     dayDifference(today, fromKey(state.profile.lastPeriod)),
   );
   const cycleDay = computed(() => elapsed.value + 1);
-  const remaining = computed(() => state.profile.cycleLength - elapsed.value);
+  const timing = computed(() => cycleTiming(state.profile.cycleLength));
   const nextPeriod = computed(() =>
-    addDays(fromKey(state.profile.lastPeriod), state.profile.cycleLength),
+    addDays(fromKey(state.profile.lastPeriod), timing.value.nextPeriodDay - 1),
   );
+  const remaining = computed(() => dayDifference(nextPeriod.value, today));
+  const ovulationDate = computed(() =>
+    addDays(fromKey(state.profile.lastPeriod), timing.value.ovulationDay - 1),
+  );
+  const fertileWindow = computed(() => ({
+    start: addDays(
+      fromKey(state.profile.lastPeriod),
+      timing.value.fertileStartDay - 1,
+    ),
+    end: ovulationDate.value,
+  }));
   const phase = computed(() => phaseFor(today));
   function phaseFor(date) {
     const day = dayDifference(date, fromKey(state.profile.lastPeriod)) + 1;
@@ -94,6 +105,8 @@ export function useCycle() {
     cycleDay,
     remaining,
     nextPeriod,
+    ovulationDate,
+    fertileWindow,
     phase,
     phaseFor,
     storageError,

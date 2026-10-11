@@ -447,7 +447,7 @@ const chartId = `cycle-hormones`;
             ><strong>{{ state.profile.cycleLength }} days</strong>
           </div>
           <button class="cycle-text-link" @click="emit('calendar')">
-            See my calendar <Icon name="ArrowRight" :size="15" />
+            See calendar on Overview <Icon name="ArrowRight" :size="15" />
           </button>
         </section>
       </div>

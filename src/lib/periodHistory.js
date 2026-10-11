@@ -62,24 +62,14 @@ export function periodWindows(state, today) {
   });
 }
 
-export function periodDayType(
-  state,
-  date,
-  today,
-  windows = periodWindows(state, today),
-) {
+export function periodDayType(state, date, today) {
   const log = state.logs[date];
   if (date <= today) {
     if (isPeriodStart(state, date) || (log?.flow && log.flow !== "None"))
       return "period";
     if (log?.flowRecorded && log.flow === "None") return "";
   }
-  return windows.some((period) => {
-    const elapsed = dayNumber(date) - dayNumber(period.start);
-    return elapsed >= 0 && elapsed < period.length;
-  })
-    ? "expected-period"
-    : "";
+  return "";
 }
 
 export function removePeriodStart(state, date, sampleDate) {

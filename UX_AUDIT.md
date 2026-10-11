@@ -26,12 +26,16 @@ Reviewed all six routes, shared navigation, check-ins, cycle settings, education
 
 The sample-cycle setup banner was removed at the user's request. Existing sample labels and Cycle settings remain. The period-start checkbox is always available on a recorded start date so it can be unchecked. It is hidden on other dates within seven days of a recorded start and available again on day 7. Sample dates do not block it.
 
-Recorded bleeding is shown in red; expected days use a lighter red. From day 4 of an ongoing recorded period, “My period ended” appears in the start checkbox's position. Checking it selects None and records an end; unchecking it clears that end and its no-flow selection. A saved end date remains editable. Recorded start dates retain their start checkbox. Explicitly choosing and saving None also ends that period's remaining expected days and labels the journal entry “Period ended.” Default None values in older or mood-only entries do not imply an end. Editing or deleting the end entry recalculates the calendar and current cycle display, while the usual period-length setting and next-cycle prediction remain unchanged.
+Recorded bleeding is shown in red; unlogged days no longer assume bleeding. From day 4 of an ongoing recorded period, “My period ended” appears in the start checkbox's position. Checking it selects None and records an end; unchecking it clears that end and its no-flow selection. A saved end date remains editable. Recorded start dates retain their start checkbox. Explicitly choosing and saving None also records an end and labels the journal entry “Period ended.” Default None values in older or mood-only entries do not imply an end. Editing or deleting the end entry recalculates the current cycle display, while the usual period-length setting and next-cycle prediction remain unchanged.
+
+The next period has one estimated start date: last period start plus cycle length. The calendar, ovulation date, and phase view share the ASRM calendar model (ovulation at cycle day length minus 14; fertile window from five days before through ovulation). “Expected bleeding” was removed from the calendar key and colors; predicted starts remain separate from recorded bleeding.
 
 ## Verification
 
+The duplicate My calendar page and its navigation entry were removed. The calendar now lives on Overview; old `#/calendar` URLs redirect there. The cycle page links to the Overview calendar, and the calendar's Back to today action was removed.
+
 - `npm run build` and `npm test`.
-- `scripts/verify-ux.mjs` checks all six routes at 320, 390, 768, 1024, and 1440px; saves screenshots in ignored `ux.local/`.
+- `scripts/verify-ux.mjs` checks all five current routes at 320, 390, 768, 1024, and 1440px; saves screenshots in ignored `ux.local/`.
 - Browser checks cover keyboard focus, mood save/reload/discard, settings, phase selection and slider, future notes, insights counts, confirmed deletion, partner preview/errors/revocation, education dialogs, and mobile-to-desktop resizing. A fresh browser context uses synthetic entries, leaving the user's browser data untouched.
 - Screenshots were visually reviewed for desktop and phone layouts. These checks do not constitute a complete screen-reader or cross-browser accessibility certification.
 

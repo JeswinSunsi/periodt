@@ -1,6 +1,27 @@
 // Calendar estimates for display, not confirmation of ovulation.
+// ASRM calendar model: ovulation on cycle day length - 14, with the
+// five preceding days included in the six-day fertile window.
+export function cycleTiming(cycleLength) {
+  const ovulationDay = cycleLength - 14;
+  return {
+    nextPeriodDay: cycleLength + 1,
+    ovulationDay,
+    fertileStartDay: ovulationDay - 5,
+    fertileEndDay: ovulationDay,
+  };
+}
+
+export function calendarEstimateAtDay(day, cycleLength) {
+  const timing = cycleTiming(cycleLength);
+  if (day === timing.nextPeriodDay) return "predicted";
+  if (day === timing.ovulationDay) return "ovulation";
+  if (day >= timing.fertileStartDay && day <= timing.fertileEndDay)
+    return "fertile";
+  return "";
+}
+
 export function phaseSegments(cycleLength, periodLength) {
-  const ovulation = cycleLength - 14;
+  const { ovulationDay: ovulation } = cycleTiming(cycleLength);
   const ranges = [
     ["Menstrual", 1, periodLength, "#d9aa8a"],
     ["Follicular", periodLength + 1, ovulation - 1, "#93a774"],
