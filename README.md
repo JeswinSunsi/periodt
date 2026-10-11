@@ -29,6 +29,7 @@ npm run format
 - Partner code creation, copying, selectable sharing permissions, code entry, a partner preview, and revocation. Private journal notes are excluded from the partner preview.
 - Educational phase and self-care cards with source links.
 - Mobile navigation, keyboard focus handling for dialogs, and reduced-motion support.
+- Sage and Pink themes, switchable from the top bar with a saved browser preference.
 
 ## Frontend scope
 
@@ -50,6 +51,18 @@ The feature set focuses on tracking bleeding dates, flow, symptoms, and patterns
 - [NHS: Natural family planning and limits of fertility apps](https://www.nhs.uk/contraception/methods-of-contraception/natural-family-planning/)
 - [Office on Women's Health: Your menstrual cycle](https://womenshealth.gov/menstrual-cycle/your-menstrual-cycle)
 - [Office on Women's Health: PMS and daily symptom tracking](https://womenshealth.gov/menstrual-cycle/premenstrual-syndrome)
+
+## Adding a theme
+
+Theme colors live in `src/styles/themes.css` as semantic CSS custom properties. The default Sage palette defines the token contract; `[data-theme="pink"]` overrides it. Components, SVG illustrations, charts, and phase indicators consume these tokens rather than choosing a palette themselves.
+
+To add a theme:
+
+1. Add a `[data-theme="your-id"]` block to `src/styles/themes.css`, overriding the default tokens for your palette. Any omitted tokens inherit the Sage defaults.
+2. Add an entry in the `themes` registry in `src/lib/themes.js` with a unique `id`, display `label`, CSS `swatch` color, and `browserColor` for the browser’s toolbar. The top-bar picker discovers it automatically.
+3. Check the theme on each page, in dialogs, and on mobile. Keep text and focus indicators legible and cycle phase colors distinct.
+
+`src/composables/useTheme.js` applies the selected theme to the document before Vue mounts and saves its ID under `periodt-theme`, separately from cycle data. Unknown saved IDs fall back to Sage. If browser storage is unavailable, switching still works for the current visit.
 
 ## Structure
 

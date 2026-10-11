@@ -12,6 +12,7 @@ import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
+import ThemeSwitcher from "./components/ThemeSwitcher.vue";
 import { monthDates } from "./lib/calendar.js";
 import { hasCheckin } from "./lib/checkin.js";
 import { calendarEstimateAtDay } from "./lib/cyclePhases.js";
@@ -757,7 +758,7 @@ onBeforeUnmount(() => {
       :inert="mobileNav ? true : undefined"
     >
       <header class="topbar">
-        <div class="flex items-center gap-3">
+        <div class="topbar-context flex items-center gap-3">
           <button
             class="icon-button mobile-menu"
             :aria-expanded="mobileNav"
@@ -767,10 +768,13 @@ onBeforeUnmount(() => {
           >
             <Icon name="Menu" /></button
           ><span class="breadcrumb"
-            >My space <span>/</span> <b>{{ activePage }}</b></span
+            ><span class="breadcrumb-home">My space</span>
+            <span class="breadcrumb-separator">/</span>
+            <b>{{ activePage }}</b></span
           >
         </div>
-        <div class="flex items-center gap-3">
+        <div class="topbar-actions flex items-center gap-3">
+          <ThemeSwitcher />
           <span class="private-label"
             ><Icon name="LockKeyhole" :size="13" /> Just for you</span
           ><button
@@ -2055,3 +2059,39 @@ onBeforeUnmount(() => {
     ></Teleport>
   </div>
 </template>
+
+<style scoped>
+.topbar {
+  gap: 16px;
+}
+.topbar-context {
+  min-width: 0;
+}
+.breadcrumb {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.breadcrumb .breadcrumb-home {
+  padding: 0;
+}
+.topbar-actions {
+  flex-shrink: 0;
+}
+@media (max-width: 1100px) {
+  .topbar-actions .private-label {
+    display: none;
+  }
+}
+@media (max-width: 680px) {
+  .topbar,
+  .topbar-context,
+  .topbar-actions {
+    gap: 8px;
+  }
+  .breadcrumb-home,
+  .breadcrumb-separator {
+    display: none;
+  }
+}
+</style>

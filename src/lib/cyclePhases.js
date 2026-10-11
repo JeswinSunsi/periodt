@@ -23,14 +23,19 @@ export function calendarEstimateAtDay(day, cycleLength) {
 export function phaseSegments(cycleLength, periodLength) {
   const { ovulationDay: ovulation } = cycleTiming(cycleLength);
   const ranges = [
-    ["Menstrual", 1, periodLength, "#d9aa8a"],
-    ["Follicular", periodLength + 1, ovulation - 1, "#93a774"],
-    ["Ovulation", Math.max(ovulation, periodLength + 1), ovulation, "#cb8caa"],
+    ["Menstrual", 1, periodLength, "var(--phase-menstrual)"],
+    ["Follicular", periodLength + 1, ovulation - 1, "var(--phase-follicular)"],
+    [
+      "Ovulation",
+      Math.max(ovulation, periodLength + 1),
+      ovulation,
+      "var(--phase-ovulation)",
+    ],
     [
       "Luteal",
       Math.max(ovulation + 1, periodLength + 1),
       cycleLength,
-      "#a4ac91",
+      "var(--phase-luteal)",
     ],
   ];
   return ranges.map(([name, start, end, color]) => ({

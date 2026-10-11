@@ -330,13 +330,21 @@ const chartId = `cycle-hormones`;
             </title>
             <defs>
               <linearGradient id="estrogen-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#98aa7c" stop-opacity=".2" />
-                <stop offset="100%" stop-color="#98aa7c" stop-opacity="0" />
+                <stop
+                  offset="0%"
+                  stop-color="var(--hormone-estrogen)"
+                  stop-opacity=".2"
+                />
+                <stop
+                  offset="100%"
+                  stop-color="var(--hormone-estrogen)"
+                  stop-opacity="0"
+                />
               </linearGradient>
             </defs>
             <path
               d="M10 40H490M10 80H490M10 120H490"
-              stroke="#e8ebdf"
+              stroke="var(--border)"
               stroke-dasharray="3 5"
               fill="none"
             />
@@ -347,7 +355,7 @@ const chartId = `cycle-hormones`;
               width="40"
               height="118"
               rx="12"
-              fill="#e5e9d8"
+              fill="var(--accent-soft)"
               opacity=".7"
               class="hormone-phase-highlight"
             />
@@ -362,7 +370,7 @@ const chartId = `cycle-hormones`;
               <path
                 pathLength="1"
                 d="M10 116C58 119 89 109 122 99S186 68 214 28S241 23 257 73S300 83 331 63S391 77 426 94S468 112 490 118"
-                stroke="#849c67"
+                stroke="var(--hormone-estrogen)"
                 stroke-width="3"
                 fill="none"
                 stroke-linecap="round"
@@ -371,7 +379,7 @@ const chartId = `cycle-hormones`;
             </g>
             <path
               d="M10 127C76 126 165 130 216 124S259 110 288 81S337 26 367 36S413 91 448 116S477 127 490 128"
-              stroke="#c49774"
+              stroke="var(--hormone-progesterone)"
               stroke-width="3"
               stroke-dasharray="6 5"
               stroke-linecap="round"

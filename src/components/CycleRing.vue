@@ -86,11 +86,11 @@ const phaseIcons = {
           cx="120"
           cy="26"
           r="11"
-          fill="#fcfcf3"
-          stroke="var(--ring-accent, #526a40)"
+          fill="var(--surface)"
+          stroke="var(--ring-accent)"
           stroke-width="3"
         />
-        <circle cx="120" cy="26" r="3" fill="var(--ring-accent, #526a40)" />
+        <circle cx="120" cy="26" r="3" fill="var(--ring-accent)" />
       </g>
     </svg>
     <div class="living-ring-center">
@@ -110,11 +110,11 @@ const phaseIcons = {
 .living-ring {
   width: 100%;
   position: relative;
-  color: var(--ring-accent, #64794e);
+  color: var(--ring-accent);
   transition: color 0.6s;
 }
 .living-ring[data-phase="Ovulation"] {
-  --ring-accent: #a6577d;
+  --ring-accent: var(--ring-ovulation-accent);
 }
 .living-ring[data-phase="Ovulation"] .living-ring-center > span:first-of-type,
 .living-ring[data-phase="Ovulation"] .living-ring-center strong,
@@ -147,13 +147,13 @@ const phaseIcons = {
 .living-ring-center > span:first-of-type {
   font-size: 12px;
   letter-spacing: 1px;
-  color: #59664e;
+  color: var(--text-secondary);
 }
 .living-ring-center strong {
   font:
     500 clamp(40px, 4.4vw, 62px)/1.15 "Lora",
     serif;
-  color: #4f633e;
+  color: var(--accent);
   letter-spacing: -2px;
 }
 .living-ring-phase {
@@ -163,7 +163,7 @@ const phaseIcons = {
 .living-ring-spark {
   font-size: 19px;
   margin-top: 6px;
-  color: #88966f;
+  color: var(--text-muted);
 }
 .living-ring-marker {
   transform-origin: 120px 120px;

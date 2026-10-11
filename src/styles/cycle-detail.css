@@ -7,8 +7,9 @@
     transform 0.3s;
 }
 .cycle-card-interactive:hover {
-  border-color: #bbc99e;
-  box-shadow: 0 9px 28px #4d623b0d;
+  border-color: var(--border-accent);
+  box-shadow: 0 9px 28px
+    color-mix(in srgb, var(--shadow-color) 5.1%, transparent);
   transform: translateY(-2px);
 }
 .cycle-card-hitbox {
@@ -21,7 +22,7 @@
 }
 .cycle-card-hitbox:focus-visible {
   outline-offset: -4px;
-  outline: 2px solid #617a49;
+  outline: 2px solid var(--focus-ring);
 }
 .cycle-card-interactive .cycle-edit {
   position: relative;
@@ -31,10 +32,11 @@
   border-radius: 50%;
 }
 .cycle-card-interactive .cycle-edit:hover {
-  background: #dce4c9;
+  background: var(--accent-soft-strong);
 }
 .cycle-explore-link {
-  border-bottom: 1px solid #a9b98e77;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-strong) 46.67%, transparent);
   padding-bottom: 4px;
 }
 .cycle-explore-link svg {
@@ -52,7 +54,7 @@
   position: absolute;
   width: 170px;
   height: 170px;
-  border: 1px solid #cfd8b455;
+  border: 1px solid color-mix(in srgb, var(--border-accent) 33.33%, transparent);
   border-radius: 50%;
   right: -100px;
   top: -90px;
@@ -62,7 +64,7 @@
   outline: none;
 }
 .cycle-detail {
-  --cycle-text: #485b3c;
+  --cycle-text: var(--text-body);
   animation: cycle-page-in 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .cycle-detail-toolbar {
@@ -72,31 +74,31 @@
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: #7b896b;
+  color: var(--text-muted);
   font-size: 11px;
   padding: 8px 0;
 }
 .cycle-back:hover {
-  color: #3f5730;
+  color: var(--text-heading);
 }
 .cycle-data-label {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   font-size: 10px;
-  color: #899378;
+  color: var(--text-muted);
 }
 .cycle-data-label > span {
   height: 5px;
   width: 5px;
-  background: #a2b283;
+  background: var(--accent-mid);
   border-radius: 50%;
 }
 .cycle-explorer {
   position: relative;
   overflow: hidden;
-  border: 1px solid #dce3cc;
-  background: #eaf0df;
+  border: 1px solid var(--phase-follicular-border);
+  background: var(--phase-follicular-bg);
   border-radius: 14px;
   padding: 23px 30px 20px;
   transition:
@@ -104,19 +106,19 @@
     border-color 0.65s;
 }
 .cycle-explorer[data-phase="Menstrual"] {
-  background: #f3eade;
-  border-color: #e9dbc9;
+  background: var(--phase-menstrual-bg);
+  border-color: var(--phase-menstrual-border);
 }
 .cycle-explorer[data-phase="Ovulation"] {
-  background: #f1eedb;
-  border-color: #e4ddbd;
+  background: var(--phase-ovulation-bg);
+  border-color: var(--phase-ovulation-border);
 }
 .cycle-explorer[data-phase="Luteal"] {
-  background: #e9ecdf;
-  border-color: #dce0cb;
+  background: var(--phase-luteal-bg);
+  border-color: var(--phase-luteal-border);
 }
 .cycle-explorer[data-phase="Unconfirmed"] {
-  background: #eeeee5;
+  background: var(--surface-subtle);
 }
 .cycle-explorer-top {
   position: relative;
@@ -126,15 +128,15 @@
   display: inline-flex;
   gap: 7px;
   align-items: center;
-  color: #7b886b;
+  color: var(--text-muted);
   font-size: 10px;
-  border: 1px solid #cbd6b6;
+  border: 1px solid var(--border-accent);
   padding: 8px 10px;
   border-radius: 6px;
-  background: #ffffff25;
+  background: color-mix(in srgb, var(--surface) 14.51%, transparent);
 }
 .cycle-settings-button:hover {
-  background: #ffffff55;
+  background: color-mix(in srgb, var(--surface) 33.33%, transparent);
 }
 .cycle-explorer-body {
   display: grid;
@@ -150,7 +152,7 @@
 }
 .cycle-orbit-caption {
   text-align: center;
-  color: #82906e;
+  color: var(--text-muted);
   font-size: 10px;
   margin-top: 5px;
 }
@@ -159,7 +161,7 @@
 }
 .orbit-star {
   position: absolute;
-  color: #a4af82;
+  color: var(--text-muted);
   font-size: 30px;
   z-index: 1;
   animation: star-settle 4s ease-in-out 2;
@@ -183,22 +185,22 @@
   align-items: center;
   gap: 7px;
   font-size: 10px;
-  color: #6e815a;
+  color: var(--text-secondary);
   padding: 6px 10px;
   border-radius: 20px;
-  background: #fcfff34d;
-  border: 1px solid #a4b98736;
+  background: color-mix(in srgb, var(--surface) 30.2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 21.18%, transparent);
 }
 .cycle-story h2 {
   font-size: clamp(30px, 3vw, 42px);
   line-height: 1.2;
   letter-spacing: -1.4px;
-  color: #485f37;
+  color: var(--accent);
   max-width: 330px;
   margin: 17px 0 15px;
 }
 .cycle-story p {
-  color: #7a886a;
+  color: var(--text-muted);
   font-size: 12px;
   line-height: 1.95;
   max-width: 380px;
@@ -213,13 +215,13 @@
 .cycle-text-link {
   font-size: 11px;
   font-weight: 500;
-  color: #6b8056;
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 .cycle-text-link:hover {
-  color: #324c21;
+  color: var(--text-heading);
 }
 .cycle-pressed-flower {
   position: absolute;
@@ -237,7 +239,7 @@
   height: 85px;
   left: 67px;
   top: 5px;
-  background: #afbc8c;
+  background: var(--accent-mid);
   border-radius: 50%;
   transform-origin: 50% 100%;
   transform: rotate(calc(var(--petal) * 45deg));
@@ -246,24 +248,25 @@
   position: absolute;
   width: 38px;
   height: 38px;
-  background: #81975e;
+  background: var(--accent);
   border-radius: 50%;
   left: 71px;
   top: 71px;
 }
 .cycle-day-explorer {
   position: relative;
-  border-top: 1px solid #b7c59a55;
+  border-top: 1px solid
+    color-mix(in srgb, var(--border-strong) 33.33%, transparent);
   padding: 20px 0 0;
 }
 .cycle-day-explorer label {
-  color: #697f53;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 .cycle-day-explorer output {
   font-size: 10px;
-  color: #72885b;
-  border: 1px solid #bbc8a077;
+  color: var(--text-secondary);
+  border: 1px solid color-mix(in srgb, var(--border-accent) 46.67%, transparent);
   border-radius: 20px;
   padding: 4px 9px;
 }
@@ -282,28 +285,30 @@
   width: 23px;
   height: 23px;
   border-radius: 50%;
-  background: #fcfcf5;
-  border: 6px solid #687f51;
-  box-shadow: 0 0 0 4px #fafbef88;
+  background: var(--surface);
+  border: 6px solid var(--border-strong);
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--shadow-color) 53.33%, transparent);
   transition: box-shadow 0.2s;
 }
 .cycle-day-range::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #fcfcf5;
-  border: 6px solid #687f51;
+  background: var(--surface);
+  border: 6px solid var(--border-strong);
 }
 .cycle-day-range:hover::-webkit-slider-thumb {
-  box-shadow: 0 0 0 6px #fafbefbb;
+  box-shadow: 0 0 0 6px
+    color-mix(in srgb, var(--shadow-color) 73.33%, transparent);
 }
 .cycle-day-range:focus-visible {
-  outline: 2px solid #687f51;
+  outline: 2px solid var(--focus-ring);
 }
 .cycle-day-labels {
   display: flex;
   justify-content: space-between;
-  color: #8b977b;
+  color: var(--text-muted);
   font-size: 9px;
 }
 .cycle-day-labels > span:nth-child(2) {
@@ -322,8 +327,8 @@
   position: relative;
   gap: 12px;
   text-align: left;
-  background: #fffef9;
-  border: 1px solid #e4e8da;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 9px;
   padding: 19px 15px 24px;
   overflow: hidden;
@@ -350,8 +355,9 @@
 }
 .cycle-season-tab.is-selected {
   border-color: var(--phase-color);
-  background: color-mix(in srgb, var(--phase-color) 12%, #fffefa);
-  box-shadow: 0 3px 9px #56683f08;
+  background: color-mix(in srgb, var(--phase-color) 12%, var(--surface));
+  box-shadow: 0 3px 9px
+    color-mix(in srgb, var(--shadow-color) 3.14%, transparent);
 }
 .cycle-season-tab.is-selected:after {
   opacity: 1;
@@ -364,18 +370,18 @@
   font:
     17px "Lora",
     serif;
-  color: #59694b;
+  color: var(--accent);
 }
 .season-tab-copy small {
   display: block;
   font-size: 9px;
-  color: #909a81;
+  color: var(--text-muted);
   margin-top: 5px;
   white-space: nowrap;
 }
 .season-tab-number {
   font-size: 10px;
-  color: #b4bca5;
+  color: var(--text-muted);
   margin-left: auto;
   align-self: flex-start;
 }
@@ -383,12 +389,12 @@
   position: absolute;
   bottom: 8px;
   left: 49px;
-  color: #7f9265;
+  color: var(--text-muted);
   font-size: 6px;
   letter-spacing: 0.8px;
 }
 .cycle-overlap-note {
-  color: #8e9882;
+  color: var(--text-muted);
   font-size: 10px;
   line-height: 1.7;
   margin: 12px 2px 25px;
@@ -413,8 +419,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #eff1e6;
-  color: #91a078;
+  background: var(--surface-subtle);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 .cycle-section-title .card-eyebrow {
@@ -440,36 +446,36 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #a6b78d;
+  background: var(--accent-mid);
   margin-top: 7px;
   flex-shrink: 0;
 }
 .cycle-fact-dot.peach {
-  background: #d0ac8d;
+  background: var(--phase-menstrual);
 }
 .cycle-body-facts h3 {
   font-family: "DM Sans", sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: #697d55;
+  color: var(--text-secondary);
 }
 .cycle-body-facts p {
-  color: #869278;
+  color: var(--text-muted);
   font-size: 11px;
   line-height: 1.9;
   margin-top: 6px;
 }
 .cycle-hormone-chart {
   padding-top: 18px;
-  border-top: 1px solid #eaede1;
+  border-top: 1px solid var(--border);
 }
 .cycle-hormone-chart > .flex > span:first-child {
   font-size: 11px;
-  color: #7e8e6c;
+  color: var(--text-muted);
 }
 .illustration-badge {
-  background: #f3f3e9;
-  color: #959c85;
+  background: var(--surface-subtle);
+  color: var(--text-muted);
   border-radius: 4px;
   padding: 4px 6px;
   font-size: 8px;
@@ -498,7 +504,7 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 8px;
-  color: #9da68f;
+  color: var(--text-muted);
   margin: -3px 5px 10px;
 }
 .hormone-legend {
@@ -510,7 +516,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #78866a;
+  color: var(--text-muted);
   font-size: 9px;
   padding: 4px 6px;
   border-radius: 4px;
@@ -521,21 +527,21 @@
   text-decoration: line-through;
 }
 .hormone-legend button:hover {
-  background: #f0f2e5;
+  background: var(--surface-subtle);
 }
 .hormone-legend i {
   width: 12px;
   height: 2px;
-  background: #849c67;
+  background: var(--hormone-estrogen);
   border-radius: 5px;
 }
 .hormone-legend button:nth-child(2) i {
-  background: #c49774;
+  background: var(--hormone-progesterone);
 }
 .hormone-disclaimer {
   font-size: 9px;
   line-height: 1.8;
-  color: #98a18a;
+  color: var(--text-muted);
   text-align: center;
   margin-top: 9px;
 }
@@ -547,8 +553,8 @@
 .cycle-care-card {
   position: relative;
   overflow: hidden;
-  background: #eeeede;
-  border: 1px solid #e1e5d0;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
   border-radius: 11px;
   padding: 24px;
   flex: 1;
@@ -561,7 +567,7 @@
   position: absolute;
   right: -5px;
   top: -10px;
-  color: #cbd2b4;
+  color: var(--text-muted);
   font-size: 90px;
   line-height: 1;
   opacity: 0.55;
@@ -571,7 +577,7 @@
   position: relative;
 }
 .cycle-care-card svg {
-  color: #85936c;
+  color: var(--text-muted);
 }
 .cycle-care-card h2 {
   font-size: 25px;
@@ -580,7 +586,7 @@
 .cycle-care-card > p {
   font-size: 11px;
   line-height: 1.9;
-  color: #8a9478;
+  color: var(--text-muted);
   margin-top: 13px;
 }
 .cycle-journal-prompt {
@@ -588,9 +594,9 @@
   gap: 10px;
   padding: 13px;
   border-radius: 6px;
-  background: #ffffff45;
+  background: color-mix(in srgb, var(--surface) 27.06%, transparent);
   margin: 18px 0 16px;
-  color: #818e6d;
+  color: var(--text-muted);
   font:
     italic 12px/1.7 "Lora",
     serif;
@@ -607,7 +613,7 @@
   letter-spacing: -0.5px;
 }
 .cycle-dates-card > .flex > svg {
-  color: #95a17f;
+  color: var(--text-muted);
 }
 .cycle-date-row {
   display: flex;
@@ -616,12 +622,12 @@
   gap: 10px;
   margin-top: 15px;
   font-size: 10px;
-  color: #909b80;
+  color: var(--text-muted);
 }
 .cycle-date-row strong {
   font-size: 11px;
   font-weight: 500;
-  color: #6d8059;
+  color: var(--text-secondary);
 }
 .cycle-dates-card > .cycle-text-link {
   margin-top: 19px;
@@ -647,7 +653,7 @@
 .cycle-observations p {
   font-size: 11px;
   line-height: 1.9;
-  color: #929b83;
+  color: var(--text-muted);
 }
 .cycle-observation-content {
   display: grid;
@@ -659,10 +665,10 @@
   gap: 13px;
   padding: 14px;
   border-radius: 7px;
-  background: #f0f3e7;
+  background: var(--surface-subtle);
 }
 .selected-day-log > svg {
-  color: #8da071;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 .selected-day-log > div {
@@ -671,18 +677,18 @@
 .selected-day-log small {
   display: block;
   font-size: 9px;
-  color: #929f80;
+  color: var(--text-muted);
 }
 .selected-day-log strong {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #667d51;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 .selected-day-log span {
   display: block;
-  color: #8d9a7b;
+  color: var(--text-muted);
   font-size: 10px;
   margin-top: 5px;
 }
@@ -692,22 +698,22 @@
   gap: 7px;
 }
 .cycle-symptom-tags > span {
-  color: #879577;
+  color: var(--text-muted);
   font-size: 10px;
   padding: 6px 8px;
-  border: 1px solid #e5e9da;
+  border: 1px solid var(--border);
   border-radius: 5px;
 }
 .cycle-symptom-tags b {
   font-size: 9px;
   font-weight: 400;
-  color: #a2ab95;
+  color: var(--text-muted);
   margin-left: 5px;
 }
 .cycle-research-note {
   margin-top: 23px;
-  border-bottom: 1px solid #e7ebde;
-  color: #929c82;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
 }
 .cycle-research-note summary {
   cursor: pointer;
@@ -740,7 +746,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #798e63;
+  color: var(--text-muted);
   font-size: 10px;
   text-decoration: underline;
   text-underline-offset: 3px;

@@ -1,10 +1,6 @@
-/* Shared usability layer. Keep the cream/sage palette and serif headings,
+/* Shared usability layer. Keep shared theme tokens and serif headings,
    with a consistent type scale, visible states, and comfortable controls. */
 :root {
-  --text-body: #46513e;
-  --text-secondary: #59664e;
-  --text-muted: #5b684f;
-  --text-danger: #8a4233;
   font-size: 16px;
   line-height: 1.55;
 }
@@ -26,7 +22,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #496235;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 .skip-link {
@@ -35,8 +31,8 @@ summary:focus-visible {
   top: 12px;
   left: 12px;
   padding: 12px 18px;
-  background: #fffef8;
-  color: #3e5630;
+  background: var(--surface);
+  color: var(--text-heading);
   border-radius: 6px;
   transform: translateY(-160%);
 }
@@ -82,8 +78,8 @@ summary:focus-visible {
 }
 .button-outline,
 .checkin-button {
-  color: #4c613d;
-  border-color: #b9c4a7;
+  color: var(--accent);
+  border-color: var(--border-accent);
 }
 .icon-button,
 .top-avatar,
@@ -96,7 +92,7 @@ summary:focus-visible {
 }
 .icon-button,
 .cycle-card-interactive .cycle-edit {
-  color: #526843;
+  color: var(--accent);
 }
 .small-text-button,
 .text-button,
@@ -109,7 +105,7 @@ summary:focus-visible {
   min-height: 44px;
   font-size: 14px;
   line-height: 1.5;
-  color: #4c653b;
+  color: var(--accent);
   gap: 7px;
 }
 .small-text-button,
@@ -203,7 +199,7 @@ summary:focus-visible {
 }
 .phase-badge {
   font-size: 12px;
-  color: #4c613d;
+  color: var(--accent);
   line-height: 1.5;
 }
 .cycle-card-footer,
@@ -249,13 +245,13 @@ summary:focus-visible {
   gap: 8px;
 }
 .calendar-checkin-action > span svg {
-  color: #506b3e;
+  color: var(--accent);
   flex-shrink: 0;
 }
 .calendar-footer {
   margin-top: 16px;
   padding-top: 8px;
-  border-top: 1px solid #e4e7d9;
+  border-top: 1px solid var(--border);
 }
 .calendar-key > summary {
   display: flex;
@@ -273,7 +269,7 @@ summary:focus-visible {
   display: none;
 }
 .calendar-key > summary:hover {
-  color: #3e5630;
+  color: var(--text-heading);
 }
 .calendar-key[open] > summary svg {
   transform: rotate(180deg);
@@ -315,8 +311,8 @@ summary:focus-visible {
   }
 }
 .mood-option.selected {
-  border-color: #8c9e77;
-  background: #e9efdc;
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
 }
 .mood-face {
   transform: none;
@@ -362,56 +358,56 @@ summary:focus-visible {
   height: 44px;
   min-height: 44px;
   font-size: 14px;
-  color: #4c5a40;
+  color: var(--accent);
 }
 .calendar-day.outside {
   opacity: 0.4;
   filter: grayscale(1);
-  color: #637054;
-  background: #f3f3ed;
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
 }
 .calendar-day.outside:hover,
 .calendar-day.outside:focus-visible {
   opacity: 0.8;
 }
 .calendar-day.period {
-  background: #e8aaa3;
-  color: #662f2d;
+  background: var(--period-bg);
+  color: var(--period-text);
 }
 .calendar-day.predicted {
-  background: #fcf0ed;
-  color: #804b45;
-  border-color: #c99992;
+  background: var(--predicted-bg);
+  color: var(--predicted-text);
+  border-color: var(--predicted-border);
 }
 .calendar-legend .legend-dot.period {
-  background: #e8aaa3;
+  background: var(--period-bg);
 }
 .calendar-legend .legend-dot.predicted {
-  background: #fcf0ed;
-  border-color: #c99992;
+  background: var(--predicted-bg);
+  border-color: var(--predicted-border);
 }
 .calendar-day.fertile {
-  color: #50633c;
+  color: var(--fertile-text);
 }
 .calendar-day.ovulation {
-  color: #655326;
+  color: var(--ovulation-text);
 }
 .calendar-day.today {
-  color: #fffef2;
-  background: #506b3e;
+  color: var(--on-accent);
+  background: var(--accent);
   outline-width: 2px;
   border-radius: 8px;
 }
 .calendar-day.today i {
-  background: #fffef2;
+  background: var(--surface);
 }
 .calendar-day.today.period {
-  background: #e8aaa3;
-  color: #662f2d;
-  outline-color: #506b3e;
+  background: var(--period-bg);
+  color: var(--period-text);
+  outline-color: var(--focus-ring);
 }
 .calendar-day.today.period i {
-  background: #662f2d;
+  background: var(--period-text);
 }
 .sharing-demo {
   margin-bottom: 24px;
@@ -440,7 +436,7 @@ summary:focus-visible {
   }
 }
 .calendar-day:focus-visible {
-  outline: 3px solid #496235;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 .calendar-day i {
@@ -461,7 +457,7 @@ summary:focus-visible {
   align-self: start;
   border: 0;
   border-radius: 8px;
-  background: #f4f5ed;
+  background: var(--surface-subtle);
   padding: 14px;
   gap: 12px 16px;
   margin-top: 0;
@@ -530,10 +526,10 @@ summary:focus-visible {
 .legend-dot.logged {
   width: 5px;
   height: 5px;
-  background: #536a41;
+  background: var(--accent);
 }
 .legend-dot.current-day {
-  background: #506b3e;
+  background: var(--accent);
   border-radius: 3px;
 }
 .partner-card h2 {
@@ -664,15 +660,15 @@ summary:focus-visible {
 .toggle {
   width: 48px;
   height: 28px;
-  border: 1px solid #879779;
+  border: 1px solid var(--border-strong);
 }
 .toggle:after {
   width: 20px;
   height: 20px;
 }
 .toggle:checked {
-  background: #4c6739;
-  border-color: #4c6739;
+  background: var(--accent);
+  border-color: var(--border-strong);
 }
 .toggle:checked:after {
   transform: translateX(20px);
@@ -717,8 +713,8 @@ summary:focus-visible {
   margin-left: auto;
   margin-bottom: -44px;
   z-index: 3;
-  background: #fffef8;
-  border: 1px solid #d8dfcb;
+  background: var(--surface);
+  border: 1px solid var(--border-accent);
   border-radius: 50%;
 }
 .modal-card h2 {
@@ -735,7 +731,7 @@ summary:focus-visible {
 .modal-card legend,
 .field-label {
   font-size: 14px;
-  color: #4a603b;
+  color: var(--accent);
 }
 .field-label span {
   font-size: 12px;
@@ -745,13 +741,13 @@ summary:focus-visible {
   min-height: 44px;
   padding: 10px 13px;
   font-size: 14px;
-  color: #556448;
+  color: var(--accent);
 }
 .choice.chosen {
   border-width: 2px;
   padding: 9px 12px;
-  background: #dee8cd;
-  color: #3d562c;
+  background: var(--accent-soft-strong);
+  color: var(--text-heading);
   font-weight: 600;
 }
 .modal-card input:not([type="checkbox"]),
@@ -765,7 +761,7 @@ summary:focus-visible {
 }
 .modal-card input::placeholder,
 .modal-card textarea::placeholder {
-  color: #65715b;
+  color: var(--text-secondary);
 }
 .modal-card .form-hint,
 .modal-card .future-note {
@@ -780,11 +776,11 @@ summary:focus-visible {
 .period-start-option {
   font-size: 14px;
   line-height: 1.3;
-  color: #6d5034;
+  color: var(--period-text);
 }
 .period-start-option small {
   font-size: 12px;
-  color: #725d45;
+  color: var(--period-text);
 }
 .period-start-option input {
   width: 22px;
@@ -813,19 +809,19 @@ summary:focus-visible {
   width: 18px;
   height: 18px;
   margin: 0;
-  border: 1px solid #aab69a;
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
-  background: #fffef8;
+  background: var(--surface);
   cursor: pointer;
 }
 .period-end-control input:checked {
-  border-color: #697e53;
-  background: #697e53;
+  border-color: var(--border-strong);
+  background: var(--accent);
 }
 .period-end-control > svg {
   position: absolute;
   inset: 3px;
-  color: #fffef8;
+  color: var(--on-accent);
   visibility: hidden;
   pointer-events: none;
 }
@@ -870,11 +866,11 @@ summary:focus-visible {
   flex: 1;
   height: 6px;
   border-radius: 99px;
-  background: #e6eadc;
+  background: var(--accent-soft);
   transition: background-color 180ms ease;
 }
 .checkin-progress > .filled {
-  background: #657f4e;
+  background: var(--accent);
 }
 .checkin-flow #modal-title {
   padding-right: 0;
@@ -906,21 +902,21 @@ summary:focus-visible {
   grid-column: 1 / -1;
   min-width: 0;
   padding: 18px;
-  border: 1px solid #e4e7d9;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fffefa;
+  background: var(--surface);
 }
 .saved-checkin-details > .saved-summary-tile {
   grid-column: auto;
   padding: 16px;
 }
 .saved-checkin-details > .saved-mood-tile {
-  background: #eff2e6;
-  border-color: #e2e7d5;
+  background: var(--surface-subtle);
+  border-color: var(--border);
 }
 .saved-checkin-details > .saved-flow-tile {
-  background: #f8eee7;
-  border-color: #efdfd3;
+  background: var(--phase-menstrual-bg);
+  border-color: var(--phase-menstrual-border);
 }
 .saved-checkin-details dt {
   display: flex;
@@ -988,7 +984,7 @@ summary:focus-visible {
   text-underline-offset: 3px;
 }
 .remove-period-start:hover {
-  color: #80523d;
+  color: var(--text-danger);
 }
 .saved-period-feedback {
   display: flex;
@@ -997,10 +993,10 @@ summary:focus-visible {
   gap: 12px;
 }
 .saved-period-feedback .undo-period-start {
-  color: #4d633c;
+  color: var(--accent);
 }
 .undo-period-start:hover {
-  color: #263e1b;
+  color: var(--text-heading);
 }
 .saved-checkin-details .saved-period-event {
   margin-top: 8px;
@@ -1017,7 +1013,7 @@ summary:focus-visible {
 }
 .saved-symptoms .tag {
   padding: 6px 12px;
-  background: #eff2e6;
+  background: var(--surface-subtle);
 }
 .saved-checkin-notes {
   white-space: pre-wrap;
@@ -1027,7 +1023,7 @@ summary:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   padding-top: 18px;
-  border-top: 1px solid #e4e7d9;
+  border-top: 1px solid var(--border);
 }
 .saved-checkin > .dialog-actions > .button {
   min-width: 0;
@@ -1085,7 +1081,7 @@ summary:focus-visible {
   display: flex;
   gap: 12px;
   padding-top: 18px;
-  border-top: 1px solid #e4e7d9;
+  border-top: 1px solid var(--border);
 }
 .checkin-next {
   flex: 1;
@@ -1102,8 +1098,8 @@ summary:focus-visible {
   position: relative;
   z-index: 4;
   padding: 20px;
-  background: #f4ecdd;
-  border: 1px solid #c7b597;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
   border-radius: 8px;
   margin-bottom: 24px;
   font-size: 15px;
@@ -1132,7 +1128,7 @@ summary:focus-visible {
 }
 .storage-warning {
   font-size: 14px;
-  color: #6b4b2c;
+  color: var(--warning-text);
 }
 /* The phase slider's 44px input owns the hit area; the rail stays delicate. */
 .cycle-range-control {
@@ -1161,10 +1157,11 @@ summary:focus-visible {
   width: 24px;
   height: 24px;
   transform: translateX(-50%);
-  background: #fcfcf5;
-  border: 6px solid #536a40;
+  background: var(--surface);
+  border: 6px solid var(--border-strong);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px #fafbef88;
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--shadow-color) 53.33%, transparent);
   transition: left 0.35s;
 }
 .is-scrubbing .cycle-range-thumb {
@@ -1276,21 +1273,21 @@ summary:focus-visible {
   white-space: normal;
 }
 .season-tab-icon {
-  color: #586a44;
+  color: var(--accent);
 }
 .season-selection {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
-  color: #4f673c;
+  color: var(--accent);
 }
 .season-today {
   position: static;
   width: 100%;
   font-size: 12px;
   letter-spacing: 0;
-  color: #4f643e;
+  color: var(--accent);
   line-height: 1.5;
 }
 .cycle-section-title h2 {
@@ -1298,7 +1295,7 @@ summary:focus-visible {
 }
 .cycle-body-facts h3 {
   font-size: 15px;
-  color: #4c623d;
+  color: var(--accent);
 }
 .cycle-body-facts p,
 .cycle-care-card > p,
@@ -1330,7 +1327,7 @@ summary:focus-visible {
 }
 .hormone-legend button[aria-pressed="false"] {
   opacity: 1;
-  background: #f1f2e8;
+  background: var(--surface-subtle);
 }
 .cycle-journal-prompt {
   font-size: 15px;
@@ -1350,7 +1347,7 @@ summary:focus-visible {
 }
 .selected-day-log strong {
   font-size: 15px;
-  color: #4f633d;
+  color: var(--accent);
 }
 .cycle-research-note summary {
   min-height: 44px;
