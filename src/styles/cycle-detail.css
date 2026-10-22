@@ -67,33 +67,6 @@
   --cycle-text: var(--text-body);
   animation: cycle-page-in 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
-.cycle-detail-toolbar {
-  margin: -7px 0 20px;
-}
-.cycle-back {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  color: var(--text-muted);
-  font-size: 11px;
-  padding: 8px 0;
-}
-.cycle-back:hover {
-  color: var(--text-heading);
-}
-.cycle-data-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10px;
-  color: var(--text-muted);
-}
-.cycle-data-label > span {
-  height: 5px;
-  width: 5px;
-  background: var(--accent-mid);
-  border-radius: 50%;
-}
 .cycle-explorer {
   position: relative;
   overflow: hidden;
@@ -314,84 +287,6 @@
 .cycle-day-labels > span:nth-child(2) {
   font-size: 9px;
   letter-spacing: 0.25px;
-}
-.cycle-seasons {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 13px;
-  margin-top: 18px;
-}
-.cycle-season-tab {
-  display: flex;
-  align-items: center;
-  position: relative;
-  gap: 12px;
-  text-align: left;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 19px 15px 24px;
-  overflow: hidden;
-  transition:
-    background 0.3s,
-    border-color 0.3s,
-    box-shadow 0.3s,
-    transform 0.3s;
-}
-.cycle-season-tab:after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: var(--phase-color);
-  width: 100%;
-  opacity: 0.45;
-  transition: opacity 0.25s;
-}
-.cycle-season-tab:hover {
-  transform: translateY(-2px);
-  border-color: var(--phase-color);
-}
-.cycle-season-tab.is-selected {
-  border-color: var(--phase-color);
-  background: color-mix(in srgb, var(--phase-color) 12%, var(--surface));
-  box-shadow: 0 3px 9px
-    color-mix(in srgb, var(--shadow-color) 3.14%, transparent);
-}
-.cycle-season-tab.is-selected:after {
-  opacity: 1;
-}
-.season-tab-icon {
-  color: var(--phase-color);
-}
-.season-tab-copy strong {
-  display: block;
-  font:
-    17px "Lora",
-    serif;
-  color: var(--accent);
-}
-.season-tab-copy small {
-  display: block;
-  font-size: 9px;
-  color: var(--text-muted);
-  margin-top: 5px;
-  white-space: nowrap;
-}
-.season-tab-number {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-left: auto;
-  align-self: flex-start;
-}
-.season-today {
-  position: absolute;
-  bottom: 8px;
-  left: 49px;
-  color: var(--text-muted);
-  font-size: 6px;
-  letter-spacing: 0.8px;
 }
 .cycle-overlap-note {
   color: var(--text-muted);
@@ -835,20 +730,6 @@
   .cycle-story p {
     font-size: 11px;
   }
-  .cycle-season-tab {
-    padding: 17px 10px 25px;
-    gap: 8px;
-  }
-  .season-tab-copy strong {
-    font-size: 15px;
-  }
-  .season-tab-number {
-    display: none;
-  }
-  .season-today {
-    left: 40px;
-    font-size: 5.5px;
-  }
   .cycle-section-title h2 {
     font-size: 21px;
   }
@@ -895,22 +776,6 @@
     justify-content: center;
     margin-bottom: 10px;
   }
-  .cycle-seasons {
-    grid-template-columns: 1fr 1fr;
-  }
-  .cycle-season-tab {
-    padding: 20px 16px 26px;
-  }
-  .season-tab-copy strong {
-    font-size: 18px;
-  }
-  .season-tab-number {
-    display: block;
-  }
-  .season-today {
-    left: 46px;
-    font-size: 6px;
-  }
   .cycle-detail-grid {
     grid-template-columns: 1fr;
   }
@@ -935,16 +800,6 @@
 @media (max-width: 680px) {
   .cycle-card-interactive .cycle-ring {
     width: 167px;
-  }
-  .cycle-detail-toolbar {
-    margin-top: -5px;
-    gap: 4px;
-  }
-  .cycle-data-label {
-    font-size: 9px;
-  }
-  .cycle-back {
-    font-size: 11px;
   }
   .cycle-explorer {
     padding: 18px;
@@ -983,26 +838,6 @@
   }
   .cycle-day-labels > span:nth-child(2) {
     font-size: 8px;
-  }
-  .cycle-seasons {
-    gap: 10px;
-  }
-  .cycle-season-tab {
-    gap: 9px;
-    padding: 17px 10px 25px;
-  }
-  .season-tab-copy strong {
-    font-size: 16px;
-  }
-  .season-tab-copy small {
-    font-size: 9px;
-  }
-  .season-tab-number {
-    display: none;
-  }
-  .season-today {
-    left: 42px;
-    font-size: 5.5px;
   }
   .cycle-overlap-note {
     font-size: 10px;

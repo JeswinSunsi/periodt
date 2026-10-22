@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from "vue";
 import { cycleTiming, phaseAtDay } from "../lib/cyclePhases.js";
 import { periodWindows } from "../lib/periodHistory.js";
+import { initialOnboardingStatus } from "../lib/onboarding.js";
 export const dateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const fromKey = (key) => new Date(`${key}T12:00:00`);
@@ -51,6 +52,7 @@ const state = reactive(
 state.logs ||= {};
 state.periodHistory ||= [];
 state.sharing ||= { code: "", cycle: true, mood: false, symptoms: false };
+state.onboarding = { status: initialOnboardingStatus(valid ? saved : null) };
 const storageError = reactive({ value: false });
 watch(
   state,

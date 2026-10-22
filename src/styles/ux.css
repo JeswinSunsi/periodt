@@ -97,7 +97,6 @@ summary:focus-visible {
 .small-text-button,
 .text-button,
 .cycle-text-link,
-.cycle-back,
 .source-link,
 .cycle-settings-button,
 .page-footer > button,
@@ -110,7 +109,6 @@ summary:focus-visible {
 }
 .small-text-button,
 .cycle-text-link,
-.cycle-back,
 .page-footer > button {
   padding: 8px 2px;
 }
@@ -253,26 +251,43 @@ summary:focus-visible {
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
-.calendar-key > summary {
+.calendar-key-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
   width: fit-content;
   min-height: 44px;
   padding: 8px 2px;
-  list-style: none;
+  border: 0;
+  background: transparent;
   cursor: pointer;
   font-size: 14px;
   color: var(--text-secondary);
 }
-.calendar-key > summary::-webkit-details-marker {
-  display: none;
-}
-.calendar-key > summary:hover {
+.calendar-key-toggle:hover {
   color: var(--text-heading);
 }
-.calendar-key[open] > summary svg {
+.calendar-key-toggle svg {
+  transition: transform 0.28s ease;
+}
+.calendar-key-toggle[aria-expanded="true"] svg {
   transform: rotate(180deg);
+}
+.calendar-key-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.28s ease,
+    opacity 0.28s ease;
+}
+.calendar-key-content.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.calendar-key-clip {
+  min-height: 0;
+  overflow: hidden;
 }
 .mood-options {
   display: grid;
@@ -393,21 +408,7 @@ summary:focus-visible {
   color: var(--ovulation-text);
 }
 .calendar-day.today {
-  color: var(--on-accent);
-  background: var(--accent);
-  outline-width: 2px;
-  border-radius: 8px;
-}
-.calendar-day.today i {
-  background: var(--surface);
-}
-.calendar-day.today.period {
-  background: var(--period-bg);
-  color: var(--period-text);
-  outline-color: var(--focus-ring);
-}
-.calendar-day.today.period i {
-  background: var(--period-text);
+  font-weight: 700;
 }
 .sharing-demo {
   margin-bottom: 24px;
@@ -529,7 +530,8 @@ summary:focus-visible {
   background: var(--accent);
 }
 .legend-dot.current-day {
-  background: var(--accent);
+  background: transparent;
+  border: 2px solid var(--accent);
   border-radius: 3px;
 }
 .partner-card h2 {
@@ -1202,10 +1204,8 @@ summary:focus-visible {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.cycle-data-label,
 .cycle-orbit-caption,
 .cycle-season,
-.season-tab-copy small,
 .cycle-overlap-note,
 .cycle-section-title .card-eyebrow,
 .cycle-care-card > .card-eyebrow,
@@ -1241,54 +1241,6 @@ summary:focus-visible {
 }
 .cycle-story-action .button {
   font-size: 14px;
-}
-.phase-picker-heading {
-  margin-top: 26px;
-}
-.phase-picker-heading h2 {
-  font-size: 24px;
-}
-.phase-picker-heading p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: 5px;
-}
-.cycle-seasons {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.cycle-season-tab {
-  padding: 18px 14px;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-content: center;
-}
-.season-tab-copy {
-  flex: 1;
-  min-width: 0;
-}
-.season-tab-copy strong {
-  font-size: 20px;
-}
-.season-tab-copy small {
-  white-space: normal;
-}
-.season-tab-icon {
-  color: var(--accent);
-}
-.season-selection {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  color: var(--accent);
-}
-.season-today {
-  position: static;
-  width: 100%;
-  font-size: 12px;
-  letter-spacing: 0;
-  color: var(--accent);
-  line-height: 1.5;
 }
 .cycle-section-title h2 {
   font-size: 24px;
@@ -1388,9 +1340,6 @@ summary:focus-visible {
   }
   .cycle-card-body {
     justify-content: center;
-  }
-  .cycle-seasons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .cycle-detail-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1578,23 +1527,6 @@ summary:focus-visible {
   .cycle-day-labels > span:nth-child(2) {
     display: none;
   }
-  .cycle-seasons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .cycle-season-tab {
-    padding: 16px 10px;
-    gap: 8px;
-  }
-  .season-tab-copy strong {
-    font-size: 18px;
-  }
-  .season-selection {
-    display: none;
-  }
-  .cycle-data-label {
-    font-size: 12px;
-  }
   .cycle-body-card,
   .cycle-care-card,
   .cycle-dates-card,
@@ -1609,11 +1541,6 @@ summary:focus-visible {
   }
   .cycle-date-row {
     gap: 6px;
-  }
-}
-@media (max-width: 359px) {
-  .cycle-seasons {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-height: 850px) and (min-width: 681px) {
@@ -1645,23 +1572,20 @@ summary:focus-visible {
 .journal-list,
 .sharing-grid,
 .phase-grid,
-.cycle-seasons,
 .cycle-detail-grid,
 .cycle-detail-side {
   gap: var(--card-gap);
 }
 .care-section,
 .sharing-grid > div,
-.cycle-detail,
-.phase-picker {
+.cycle-detail {
   display: flex;
   flex-direction: column;
   gap: var(--card-gap);
 }
 .care-heading,
 .sharing-grid > div > *,
-.cycle-detail > *,
-.phase-picker > * {
+.cycle-detail > * {
   margin-block: 0;
 }
 .page-footer {

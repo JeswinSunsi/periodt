@@ -55,6 +55,7 @@ test("cycle day and next period react to personalized dates", () => {
 test("cycle estimates use the recorded start and configured length across date boundaries", () => {
   for (const [start, length, next, ovulation, fertileStart] of [
     ["2026-10-01", 21, "2026-10-22", "2026-10-07", "2026-10-02"],
+    ["2026-10-21", 25, "2026-11-15", "2026-10-31", "2026-10-26"],
     ["2026-10-01", 28, "2026-10-29", "2026-10-14", "2026-10-09"],
     ["2026-10-01", 30, "2026-10-31", "2026-10-16", "2026-10-11"],
     ["2026-10-01", 45, "2026-11-15", "2026-10-31", "2026-10-26"],
@@ -70,6 +71,19 @@ test("cycle estimates use the recorded start and configured length across date b
       assert.equal(dateKey(fertileWindow.value.end), ovulation);
     }
   }
+});
+
+test("the day after an October 21 start is menstrual in a 25-day cycle", () => {
+  Object.assign(state.profile, {
+    lastPeriod: "2026-10-21",
+    cycleLength: 25,
+    periodLength: 5,
+    demo: false,
+  });
+  assert.equal(phaseFor(fromKey("2026-10-22")), "Menstrual");
+  assert.equal(phaseFor(fromKey("2026-10-26")), "Follicular");
+  assert.equal(phaseFor(fromKey("2026-10-31")), "Ovulation");
+  assert.equal(dateKey(ovulationDate.value), "2026-10-31");
 });
 
 test("an overdue prediction stays anchored until a new start is recorded", () => {

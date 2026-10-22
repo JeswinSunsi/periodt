@@ -13,6 +13,8 @@ import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
 import ThemeSwitcher from "./components/ThemeSwitcher.vue";
+import OnboardingFlow from "./components/onboarding/OnboardingFlow.vue";
+import OnboardingHandoff from "./components/onboarding/OnboardingHandoff.vue";
 import { monthDates } from "./lib/calendar.js";
 import { hasCheckin } from "./lib/checkin.js";
 import { calendarEstimateAtDay } from "./lib/cyclePhases.js";
@@ -40,6 +42,26 @@ const {
   storageError,
   currentPeriodLength,
 } = useCycle();
+const appOpening = ref(false);
+const onboardingClosing = ref(false);
+const needsOnboarding = computed(
+  () => state.onboarding.status === "pending" || onboardingClosing.value,
+);
+function onOnboardingComplete() {
+  if (appOpening.value) return;
+  onboardingClosing.value = true;
+  appOpening.value = true;
+}
+function revealApp() {
+  onboardingClosing.value = false;
+}
+async function finishAppEntry() {
+  onboardingClosing.value = false;
+  appOpening.value = false;
+  await nextTick();
+  window.scrollTo({ top: 0, behavior: "auto" });
+  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
+}
 const pageRoutes = {
   Overview: "/overview",
   "My cycle": "/cycle",
@@ -139,6 +161,7 @@ const phaseCopy = {
   },
 };
 const currentPhaseCopy = computed(() => phaseCopy[phase.value]);
+const calendarKeyOpen = ref(true);
 const calendarMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1));
 const calendarTitle = computed(() =>
   calendarMonth.value.toLocaleDateString("en-US", {
@@ -218,8 +241,10 @@ const draftSnapshot = ref("");
 let afterDiscard;
 let previousFocus;
 function syncBodyScrollLock() {
-  document.body.style.overflow = modal.value || mobileNav.value ? "hidden" : "";
+  document.body.style.overflow =
+    modal.value || mobileNav.value || appOpening.value ? "hidden" : "";
 }
+watch(appOpening, syncBodyScrollLock);
 watch(modal, async (value, old) => {
   syncBodyScrollLock();
   if (value) {
@@ -573,6 +598,10 @@ function saveSettings() {
   modal.value = "";
   notify("Your cycle details are updated.");
 }
+function openGuidedSetup() {
+  modal.value = "";
+  state.onboarding = { status: "pending" };
+}
 const journalEntries = computed(() =>
   Object.entries(state.logs)
     .filter(([, log]) => hasCheckin(log))
@@ -677,14 +706,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <OnboardingFlow
+    v-if="needsOnboarding"
+    :inert="appOpening ? true : undefined"
+    :aria-hidden="appOpening ? true : undefined"
+    @complete="onOnboardingComplete"
+  />
+  <OnboardingHandoff
+    v-if="appOpening"
+    @reveal="revealApp"
+    @complete="finishAppEntry"
+  />
   <a
+    v-if="!needsOnboarding"
     class="skip-link"
     href="#main-content"
-    :inert="modal || mobileNav ? true : undefined"
+    :inert="modal || mobileNav || appOpening ? true : undefined"
     @click.prevent="skipToContent"
     >Skip to content</a
   >
-  <div class="app-shell" :inert="modal ? true : undefined">
+  <div
+    v-if="!needsOnboarding"
+    class="app-shell"
+    :class="{ 'app-entering': appOpening }"
+    :inert="modal || appOpening ? true : undefined"
+  >
     <aside
       id="main-navigation"
       ref="sidebarElement"
@@ -816,7 +862,6 @@ onBeforeUnmount(() => {
         </section>
         <CycleDetail
           v-if="activePage === 'My cycle'"
-          @back="goTo('Overview')"
           @log="(date) => openLog(date)"
           @settings="openSettings"
           @calendar="goTo('Overview')"
@@ -924,35 +969,60 @@ onBeforeUnmount(() => {
                   Edit
                 </button>
               </div>
-              <details class="calendar-key">
-                <summary>
+              <div class="calendar-key">
+                <button
+                  type="button"
+                  class="calendar-key-toggle"
+                  :aria-expanded="calendarKeyOpen"
+                  aria-controls="calendar-key-content"
+                  @click="calendarKeyOpen = !calendarKeyOpen"
+                >
                   Calendar key <Icon name="ChevronDown" :size="16" />
-                </summary>
-                <div class="calendar-legend">
-                  <div class="calendar-legend-group">
-                    <h3>Bleeding</h3>
-                    <span
-                      ><i class="legend-dot period"></i> Recorded bleeding</span
-                    >
-                    <span
-                      ><i class="legend-dot predicted"></i> Next period
-                      (estimated)</span
-                    >
-                  </div>
-                  <div class="calendar-legend-group">
-                    <h3>Cycle estimates</h3>
-                    <span
-                      ><i class="legend-dot fertile"></i> Fertile window</span
-                    >
-                    <span><i class="legend-dot ovulation"></i> Ovulation</span>
-                  </div>
-                  <div class="calendar-legend-group">
-                    <h3>Your activity</h3>
-                    <span><i class="legend-dot current-day"></i> Today</span>
-                    <span><i class="legend-dot logged"></i> Has check-in</span>
+                </button>
+                <div
+                  id="calendar-key-content"
+                  class="calendar-key-content"
+                  :class="{ 'is-open': calendarKeyOpen }"
+                  :aria-hidden="!calendarKeyOpen"
+                  :inert="!calendarKeyOpen"
+                >
+                  <div class="calendar-key-clip">
+                    <div class="calendar-legend">
+                      <div class="calendar-legend-group">
+                        <h3>Bleeding</h3>
+                        <span
+                          ><i class="legend-dot period"></i> Recorded
+                          bleeding</span
+                        >
+                        <span
+                          ><i class="legend-dot predicted"></i> Next period
+                          (estimated)</span
+                        >
+                      </div>
+                      <div class="calendar-legend-group">
+                        <h3>Cycle estimates</h3>
+                        <span
+                          ><i class="legend-dot fertile"></i> Fertile
+                          window</span
+                        >
+                        <span
+                          ><i class="legend-dot ovulation"></i> Ovulation</span
+                        >
+                      </div>
+                      <div class="calendar-legend-group">
+                        <h3>Your activity</h3>
+                        <span
+                          ><i class="legend-dot current-day"></i> Today
+                          (outline)</span
+                        >
+                        <span
+                          ><i class="legend-dot logged"></i> Has check-in</span
+                        >
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </details>
+              </div>
             </div>
           </section>
           <section
@@ -981,16 +1051,6 @@ onBeforeUnmount(() => {
                 <span>{{ mood.name }}</span>
               </button>
             </div>
-            <button
-              class="checkin-button"
-              @click="openLog(today, selectedMood)"
-            >
-              Check in with yourself
-              <Icon name="ArrowRight" :size="17" />
-            </button>
-            <span class="checkin-caption"
-              >Choose a mood, then save your check-in.</span
-            >
           </section>
         </div>
         <div v-if="activePage === 'Overview'" class="top-grid overview-support">
@@ -1229,7 +1289,9 @@ onBeforeUnmount(() => {
               <div class="journal-date">
                 <strong>{{ fromKey(date).getDate() }}</strong
                 ><span>{{
-                  fromKey(date).toLocaleDateString("en-US", { month: "short" })
+                  fromKey(date).toLocaleDateString("en-US", {
+                    month: "short",
+                  })
                 }}</span>
                 <small>{{ fromKey(date).getFullYear() }}</small>
               </div>
@@ -1793,6 +1855,13 @@ onBeforeUnmount(() => {
               <div v-if="state.profile.demo" class="demo-notice">
                 You’re exploring a sample cycle. Add your dates to personalize
                 your estimates.
+                <button
+                  class="small-text-button"
+                  type="button"
+                  @click="requestClose(openGuidedSetup)"
+                >
+                  Set up step by step <Icon name="ArrowRight" :size="16" />
+                </button>
               </div>
               <label class="field-label" for="last-period"
                 >First day of your last period</label

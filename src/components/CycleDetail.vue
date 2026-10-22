@@ -2,10 +2,11 @@
 import { computed, ref, watch } from "vue";
 import Icon from "./AppIcon.vue";
 import CycleRing from "./CycleRing.vue";
+import CyclePhasePicker from "./CyclePhasePicker.vue";
 import { useCycle, addDays, dateKey, fromKey } from "../composables/useCycle";
 import { phaseSegments, phaseAtDay, phaseStories } from "../lib/cyclePhases";
 
-const emit = defineEmits(["back", "log", "settings", "calendar"]);
+const emit = defineEmits(["log", "settings", "calendar"]);
 const {
   state,
   today,
@@ -65,12 +66,6 @@ const symptomSummary = computed(() => {
 });
 const pretty = (date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-const rangeLabel = (p) =>
-  !p.days
-    ? "No estimate available"
-    : p.days === 1
-      ? `Around day ${p.start}`
-      : `Days ${p.start}–${p.end}`;
 function returnToToday() {
   isScrubbing.value = false;
   exploring.value = false;
@@ -124,22 +119,6 @@ const chartId = `cycle-hormones`;
 </script>
 <template>
   <div class="cycle-detail" :data-phase="selectedPhase">
-    <div
-      class="cycle-detail-toolbar flex flex-wrap items-center justify-between gap-3"
-    >
-      <button class="cycle-back" @click="emit('back')">
-        <Icon name="ArrowLeft" :size="16" /> Back to my overview
-      </button>
-      <span class="cycle-data-label"
-        ><span></span
-        >{{
-          state.profile.demo
-            ? "Exploring a sample cycle"
-            : "Based on your cycle settings"
-        }}</span
-      >
-    </div>
-
     <section class="cycle-explorer" :data-phase="selectedPhase">
       <div class="cycle-explorer-top flex items-center justify-between gap-3">
         <span class="card-eyebrow">A LITTLE CLOSER TO YOUR CYCLE</span>
@@ -249,39 +228,12 @@ const chartId = `cycle-hormones`;
       </div>
     </section>
 
-    <div class="phase-picker">
-      <div class="phase-picker-heading">
-        <h2>Explore the four phases</h2>
-        <p>Select a phase to see its dates and learn more.</p>
-      </div>
-      <div class="cycle-seasons" role="group" aria-label="Explore cycle phases">
-        <button
-          v-for="p in segments"
-          :key="p.name"
-          class="cycle-season-tab"
-          :class="{ 'is-selected': selectedPhase === p.name }"
-          :style="{ '--phase-color': p.color }"
-          :data-phase="p.name"
-          :aria-pressed="selectedPhase === p.name"
-          :disabled="!p.days"
-          @click="selectPhase(p)"
-        >
-          <span class="season-tab-icon"
-            ><Icon :name="phaseStories[p.name].icon" :size="22"
-          /></span>
-          <span class="season-tab-copy"
-            ><strong>{{ p.name }}</strong
-            ><small>{{ rangeLabel(p) }}</small></span
-          >
-          <span class="season-selection" aria-hidden="true"
-            ><Icon v-if="selectedPhase === p.name" name="Check" :size="12"
-          /></span>
-          <span v-if="phase === p.name" class="season-today"
-            ><i></i> Your estimated phase</span
-          >
-        </button>
-      </div>
-    </div>
+    <CyclePhasePicker
+      :segments="segments"
+      :selected-phase="selectedPhase"
+      :current-phase="phase"
+      @select="selectPhase"
+    />
     <p class="cycle-overlap-note">
       A simple map, with a little overlap: menstruation is also the beginning of
       the follicular phase. Dates are estimates.

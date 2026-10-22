@@ -17,6 +17,7 @@ npm run format
 
 ## Included
 
+- Compact first-visit setup with a required period start, usual lengths, editable review, and animated progress. Every screen fits the viewport; existing users retain their data.
 - Dashboard with cycle day, estimated phase, and next-period date.
 - Clickable cycle card opening a dedicated `#/cycle` view, with browser-back and direct-link support.
 - Animated phase ring sized to your cycle settings, keyboard-operable day exploration, and four phase chapters.
@@ -33,7 +34,7 @@ npm run format
 
 ## Frontend scope
 
-The first visit uses a clearly labeled sample cycle. Add a period start date in Cycle settings or a daily check-in to personalize it. Entries and preferences persist under `periodt-v1` in browser local storage. No health data is sent to a backend. Google Fonts loads the typography; all illustrations are local SVG components.
+The first visit opens a short onboarding flow: welcome, period start, usual lengths, and review. Setup requires a real start date; there are no sample, skip, or uncertain-date paths. Answers stay in memory until the final review is confirmed; going back preserves them, while refreshing starts setup again. Legacy saved profiles retain their data; previously skipped onboarding returns to setup. Entries, preferences, and setup completion persist under `periodt-v1` in browser local storage. No health data is sent to a backend. Google Fonts loads the typography; all illustrations are local SVG components.
 
 Partner codes demonstrate the interaction in the same browser only. Real sharing across devices requires a backend, authentication/authorization, secure code redemption, and server-side revocation. Local storage is not encrypted and is accessible to anyone using that browser profile. This prototype is not a secure medical-record system.
 
@@ -42,6 +43,8 @@ Cycle phases, ovulation, and fertile windows are simplified calendar estimates. 
 The next estimated start is the last period start plus the configured cycle length (28 days by default). The [ASRM calendar model](https://www.asrm.org/practice-guidance/practice-committee-documents/optimizing-natural-fertility-a-committee-opinion-2021/) places estimated ovulation on cycle day `cycleLength - 14`, counting the period start as day 1. The fertile window includes that day and the five preceding days: days 9–14 for a 28-day cycle, or days 11–16 for a 30-day cycle. Calendar colors, displayed dates, and phase boundaries share this calculation. Estimates stay anchored to the entered start; the app does not infer a new start when the date passes.
 
 ## Research
+
+The onboarding design decisions, sources, architecture, and verification commands are documented in [ONBOARDING.md](ONBOARDING.md).
 
 The feature set focuses on tracking bleeding dates, flow, symptoms, and patterns across the cycle. Educational copy avoids suggesting that everyone has a fixed mood or energy level in each phase.
 
@@ -66,4 +69,4 @@ To add a theme:
 
 ## Structure
 
-`src/App.vue` contains the app shell, hash navigation, and interaction flows. `src/components/CycleDetail.vue` owns the cycle explorer; `CycleRing.vue` renders the shared animated ring. `src/lib/cyclePhases.js` shares phase boundaries and educational content. `src/composables/useCycle.js` owns reactive cycle state and local persistence. `src/style.css` and `src/styles/cycle-detail.css` complement Tailwind. Tests cover date boundaries, phase segmentation across supported settings, persistence, and storage failures.
+`src/App.vue` contains the app shell, hash navigation, and interaction flows. `src/components/CycleDetail.vue` owns the cycle explorer; `CycleRing.vue` renders the shared animated ring. `src/components/onboarding/` contains the setup flow, progress navigation, and day-count field. `src/composables/useOnboarding.js` manages its draft and step transitions; `src/lib/onboarding.js` validates and applies confirmed answers. `src/lib/cyclePhases.js` shares phase boundaries and educational content. `src/composables/useCycle.js` owns reactive cycle state and local persistence, including setup status and compatibility with older saved data. `src/style.css`, `src/styles/onboarding.css`, and `src/styles/cycle-detail.css` complement Tailwind. Tests cover date boundaries, phase segmentation across supported settings, onboarding, persistence, and storage failures.

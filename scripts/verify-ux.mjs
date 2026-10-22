@@ -18,6 +18,12 @@ const base = process.env.UX_URL || "http://127.0.0.1:5174/";
 await mkdir("ux.local", { recursive: true });
 const report = [];
 try {
+  await page.goto(base);
+  await page.getByRole("button", { name: "Let’s begin" }).click();
+  await page.getByLabel("First day of your last period").fill("2026-10-11");
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: "Open my space" }).click();
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 950 });
     for (const route of [
