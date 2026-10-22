@@ -15,11 +15,15 @@ npm test
 npm run format
 ```
 
+## Deployment
+
+Navigation uses Vue Router's HTML5 history with `/overview`, `/cycle`, `/insights`, `/journal`, and `/partner`. Vite handles direct page loads during development and preview. Production hosts must serve `index.html` for app routes so refreshing or opening a link directly works. `public/_redirects` supplies this fallback for Netlify and Cloudflare Pages; configure an equivalent fallback on other hosts. Older `#/...` links redirect to their clean URLs, and `/calendar` redirects to `/overview`.
+
 ## Included
 
 - Compact first-visit setup with a required period start, usual lengths, editable review, and animated progress. Every screen fits the viewport; existing users retain their data.
 - Dashboard with cycle day, estimated phase, and next-period date.
-- Clickable cycle card opening a dedicated `#/cycle` view, with browser-back and direct-link support.
+- Clickable cycle card opening a dedicated `/cycle` view, with browser-back and direct-link support.
 - Animated phase ring sized to your cycle settings, keyboard-operable day exploration, and four phase chapters.
 - Educational hormone illustrations, phase explanations, comfort prompts, and real check-in summaries. Hormone curves are illustrative, never presented as measured data.
 - Daily mood, flow, symptoms, private notes, and period-start logging.
@@ -44,8 +48,6 @@ The next estimated start is the last period start plus the configured cycle leng
 
 ## Research
 
-The onboarding design decisions, sources, architecture, and verification commands are documented in [ONBOARDING.md](ONBOARDING.md).
-
 The feature set focuses on tracking bleeding dates, flow, symptoms, and patterns across the cycle. Educational copy avoids suggesting that everyone has a fixed mood or energy level in each phase.
 
 - [NHS: Periods and fertility in the menstrual cycle](https://www.nhs.uk/conditions/periods/fertility-in-the-menstrual-cycle/)
@@ -69,4 +71,4 @@ To add a theme:
 
 ## Structure
 
-`src/App.vue` contains the app shell, hash navigation, and interaction flows. `src/components/CycleDetail.vue` owns the cycle explorer; `CycleRing.vue` renders the shared animated ring. `src/components/onboarding/` contains the setup flow, progress navigation, and day-count field. `src/composables/useOnboarding.js` manages its draft and step transitions; `src/lib/onboarding.js` validates and applies confirmed answers. `src/lib/cyclePhases.js` shares phase boundaries and educational content. `src/composables/useCycle.js` owns reactive cycle state and local persistence, including setup status and compatibility with older saved data. `src/style.css`, `src/styles/onboarding.css`, and `src/styles/cycle-detail.css` complement Tailwind. Tests cover date boundaries, phase segmentation across supported settings, onboarding, persistence, and storage failures.
+`src/router/index.js` defines the page routes; `src/main.js` installs the router and mounts its `RouterView`. `src/App.vue` contains the shared app shell and interaction flows, with the displayed page derived from the current route. `src/components/CycleDetail.vue` owns the cycle explorer; `CycleRing.vue` renders the shared animated ring. `src/components/onboarding/` contains the setup flow, progress navigation, and day-count field. `src/composables/useOnboarding.js` manages its draft and step transitions; `src/lib/onboarding.js` validates and applies confirmed answers. `src/lib/cyclePhases.js` shares phase boundaries and educational content. `src/composables/useCycle.js` owns reactive cycle state and local persistence, including setup status and compatibility with older saved data. `src/style.css`, `src/styles/onboarding.css`, and `src/styles/cycle-detail.css` complement Tailwind. Tests cover date boundaries, phase segmentation across supported settings, onboarding, persistence, and storage failures.

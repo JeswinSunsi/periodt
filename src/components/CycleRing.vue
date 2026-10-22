@@ -102,7 +102,6 @@ const phaseIcons = {
       <span class="living-ring-phase">{{
         phase === "Unconfirmed" ? "Phase unconfirmed" : phase + " phase"
       }}</span>
-      <span v-if="!detailed" class="living-ring-spark">✧</span>
     </div>
   </div>
 </template>
@@ -117,8 +116,7 @@ const phaseIcons = {
   --ring-accent: var(--ring-ovulation-accent);
 }
 .living-ring[data-phase="Ovulation"] .living-ring-center > span:first-of-type,
-.living-ring[data-phase="Ovulation"] .living-ring-center strong,
-.living-ring[data-phase="Ovulation"] .living-ring-spark {
+.living-ring[data-phase="Ovulation"] .living-ring-center strong {
   color: var(--ring-accent);
 }
 .living-ring-marker circle {
@@ -142,6 +140,7 @@ const phaseIcons = {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   pointer-events: none;
 }
 .living-ring-center > span:first-of-type {
@@ -159,11 +158,6 @@ const phaseIcons = {
 .living-ring-phase {
   font-size: 12px;
   margin-top: 4px;
-}
-.living-ring-spark {
-  font-size: 19px;
-  margin-top: 6px;
-  color: var(--text-muted);
 }
 .living-ring-marker {
   transform-origin: 120px 120px;

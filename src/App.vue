@@ -8,6 +8,7 @@ import {
   ref,
   watch,
 } from "vue";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import Icon from "./components/AppIcon.vue";
 import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
@@ -62,24 +63,10 @@ async function finishAppEntry() {
   window.scrollTo({ top: 0, behavior: "auto" });
   document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
 }
-const pageRoutes = {
-  Overview: "/overview",
-  "My cycle": "/cycle",
-  "Cycle insights": "/insights",
-  "My journal": "/journal",
-  "Partner space": "/partner",
-};
-function pageFromHash() {
-  if (window.location.hash === "#/calendar")
-    window.history.replaceState(window.history.state, "", "#/overview");
-  return (
-    Object.keys(pageRoutes).find(
-      (page) => pageRoutes[page] === window.location.hash.slice(1),
-    ) || "Overview"
-  );
-}
-const activePage = ref(pageFromHash()),
-  mobileNav = ref(false);
+const router = useRouter();
+const route = useRoute();
+const activePage = computed(() => route.name);
+const mobileNav = ref(false);
 const navigation = [
   { title: "Overview", icon: "House" },
   { title: "My cycle", icon: "Sprout" },
@@ -161,7 +148,7 @@ const phaseCopy = {
   },
 };
 const currentPhaseCopy = computed(() => phaseCopy[phase.value]);
-const calendarKeyOpen = ref(true);
+const calendarKeyOpen = ref(false);
 const calendarMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1));
 const calendarTitle = computed(() =>
   calendarMonth.value.toLocaleDateString("en-US", {
@@ -205,24 +192,18 @@ function changeMonth(direction) {
     1,
   );
 }
-async function goTo(page) {
-  activePage.value = page;
-  window.location.hash = pageRoutes[page];
+function goTo(page) {
   mobileNav.value = false;
-  await nextTick();
-  window.scrollTo({ top: 0, behavior: "auto" });
-  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
+  return router.push({ name: page });
 }
-async function syncPageFromHash() {
-  activePage.value = pageFromHash();
-  mobileNav.value = false;
-  await nextTick();
-  window.scrollTo({ top: 0, behavior: "auto" });
-  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
-}
-onMounted(() => window.addEventListener("hashchange", syncPageFromHash));
-onBeforeUnmount(() =>
-  window.removeEventListener("hashchange", syncPageFromHash),
+watch(
+  () => route.fullPath,
+  async () => {
+    mobileNav.value = false;
+    await nextTick();
+    document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
+  },
+  { flush: "post" },
 );
 const toast = ref("");
 let toastTimer;
@@ -748,31 +729,31 @@ onBeforeUnmount(() => {
       >
         <Icon name="X" />
       </button>
-      <a
-        href="#"
+      <RouterLink
+        :to="{ name: 'Overview' }"
         class="brand"
         aria-label="periodt home"
-        @click.prevent="goTo('Overview')"
+        @click="mobileNav = false"
         ><span class="brand-flower">✳</span> periodt<span class="brand-dot"
           >.</span
-        ></a
+        ></RouterLink
       >
       <p class="brand-subtitle">IN YOUR OWN RHYTHM</p>
       <div class="nav-label">YOUR LITTLE SPACE</div>
       <nav class="space-y-2" aria-label="Main navigation">
-        <button
+        <RouterLink
           v-for="item in navigation"
           :key="item.title"
+          :to="{ name: item.title }"
           class="nav-item"
-          :class="{ active: activePage === item.title }"
-          :aria-current="activePage === item.title ? 'page' : undefined"
-          @click="goTo(item.title)"
+          active-class="active"
+          @click="mobileNav = false"
         >
           <Icon :name="item.icon" :size="19" /><span>{{ item.title }}</span
           ><span v-if="item.title === 'Partner space'" class="nav-heart"
             >♡</span
           >
-        </button>
+        </RouterLink>
       </nav>
       <div class="sidebar-bottom">
         <div class="sidebar-note">
