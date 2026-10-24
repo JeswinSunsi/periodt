@@ -1499,14 +1499,26 @@ summary:focus-visible {
   .modal-card textarea {
     font-size: 16px;
   }
+  /* Top is lighter than bottom: the ring's tick marks already sit ~8px inside it. */
   .cycle-explorer {
-    padding: 20px 16px;
+    padding: 6px 16px 14px;
+  }
+  .cycle-explorer-body {
+    padding-block: 0;
   }
   .cycle-story h2 {
     font-size: 29px;
   }
+  .cycle-story-action {
+    row-gap: 0;
+  }
   .cycle-story-action .button {
     width: 100%;
+  }
+  /* Keeps the 44px tap target but trims the empty space under the link. */
+  .cycle-story-action .cycle-text-link {
+    padding-block: 0;
+    margin-block: 2px -10px;
   }
   .cycle-day-explorer > .flex {
     flex-wrap: wrap;

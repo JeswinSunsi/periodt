@@ -73,7 +73,7 @@
   border: 1px solid var(--phase-follicular-border);
   background: var(--phase-follicular-bg);
   border-radius: 14px;
-  padding: 23px 30px 20px;
+  padding: 23px 30px 14px;
   transition:
     background 0.65s,
     border-color 0.65s;
@@ -116,7 +116,7 @@
   grid-template-columns: 285px 1fr;
   align-items: center;
   gap: clamp(25px, 4vw, 65px);
-  padding: 23px 20px 29px;
+  padding: 23px 20px 0;
   position: relative;
 }
 .cycle-orbit {
@@ -184,6 +184,10 @@
 }
 .cycle-story-action .button {
   font-size: 11px;
+}
+/* Keep the 44px tap target without letting it pad out the layout. */
+.cycle-story-action .cycle-text-link {
+  margin-block: -12px;
 }
 .cycle-text-link {
   font-size: 11px;
@@ -704,7 +708,7 @@
     font-size: 46px;
   }
   .cycle-explorer {
-    padding: 25px 35px;
+    padding: 25px 35px 16px;
   }
 }
 @media (max-width: 1150px) {
@@ -712,12 +716,12 @@
     width: 160px;
   }
   .cycle-explorer {
-    padding: 20px;
+    padding: 20px 20px 14px;
   }
   .cycle-explorer-body {
     grid-template-columns: 235px 1fr;
     gap: 25px;
-    padding: 20px 0;
+    padding: 20px 0 0;
   }
   .cycle-story h2 {
     font-size: 33px;
@@ -769,7 +773,6 @@
   }
   .cycle-story-action {
     justify-content: center;
-    margin-bottom: 10px;
   }
   .cycle-detail-grid {
     grid-template-columns: 1fr;
@@ -797,7 +800,7 @@
     width: 167px;
   }
   .cycle-explorer {
-    padding: 18px;
+    padding: 18px 18px 12px;
   }
   .cycle-explorer-top > .card-eyebrow {
     font-size: 8px;
@@ -821,7 +824,7 @@
     font-size: 12px;
   }
   .cycle-story-action {
-    gap: 17px;
+    gap: 10px 17px;
   }
   .cycle-day-explorer label {
     font-size: 10px;

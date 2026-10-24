@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Icon from "./AppIcon.vue";
 import CycleRing from "./CycleRing.vue";
 import { useCycle, addDays, dateKey, fromKey } from "../composables/useCycle";
@@ -63,7 +63,48 @@ function returnToToday() {
     Math.min(cycleDay.value, state.profile.cycleLength),
   );
 }
+// On landing, sweep the ring from day 1 up to today.
+const sweepDay = ref(null);
+let sweepFrame = 0;
+function stopSweep() {
+  cancelAnimationFrame(sweepFrame);
+  sweepDay.value = null;
+}
+onMounted(() => {
+  const target = Math.min(cycleDay.value, state.profile.cycleLength);
+  if (
+    target <= 1 ||
+    phase.value === "Unconfirmed" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+    return;
+  const duration = Math.min(1400, 400 + target * 30);
+  const start = performance.now();
+  sweepDay.value = 1;
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    sweepDay.value = 1 + Math.round(eased * (target - 1));
+    if (t < 1) sweepFrame = requestAnimationFrame(step);
+    else sweepDay.value = null;
+  };
+  sweepFrame = requestAnimationFrame(step);
+});
+onBeforeUnmount(stopSweep);
+const ringDay = computed(
+  () => sweepDay.value ?? (exploring.value ? selectedDay.value : cycleDay.value),
+);
+const ringPhase = computed(() =>
+  sweepDay.value === null
+    ? selectedPhase.value
+    : phaseAtDay(
+        sweepDay.value,
+        state.profile.cycleLength,
+        currentPeriodLength.value,
+      ),
+);
 function selectDay(day) {
+  stopSweep();
   selectedDay.value = day;
   exploring.value = true;
 }
@@ -97,12 +138,13 @@ const chartId = `cycle-hormones`;
           <span class="orbit-star star-one" aria-hidden="true">✧</span
           ><span class="orbit-star star-two" aria-hidden="true">✧</span>
           <CycleRing
-            :day="exploring ? selectedDay : cycleDay"
+            :day="ringDay"
             :cycle-length="state.profile.cycleLength"
             :period-length="currentPeriodLength"
-            :phase="selectedPhase"
+            :phase="ringPhase"
             detailed
             interactive
+            :sweeping="sweepDay !== null"
             :value-text="`Day ${exploring ? selectedDay : cycleDay}, ${pretty(exploring ? selectedDate : today)}, estimated ${selectedPhase} phase`"
             :label="exploring ? 'EXPLORING DAY' : 'TODAY · CYCLE DAY'"
             @select="selectDay"

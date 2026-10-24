@@ -9,6 +9,7 @@ const props = defineProps({
   phase: String,
   detailed: Boolean,
   interactive: Boolean,
+  sweeping: Boolean,
   valueText: String,
   label: { type: String, default: "DAY" },
 });
@@ -75,6 +76,7 @@ const phaseIcons = {
       'living-ring-detailed': detailed,
       'living-ring-interactive': interactive,
       'is-dragging': dragging,
+      'is-sweeping': sweeping,
     }"
     :data-phase="phase"
     :role="interactive ? 'slider' : undefined"
@@ -157,7 +159,9 @@ const phaseIcons = {
       <slot>
         <Icon v-if="detailed" :name="phaseIcons[phase]" :size="23" />
         <span>{{ label }}</span>
-        <Transition name="day-number" mode="out-in"
+        <!-- Out-in swaps can't keep up with per-frame changes during a sweep. -->
+        <strong v-if="sweeping">{{ day }}</strong>
+        <Transition v-else name="day-number" mode="out-in"
           ><strong :key="day">{{ day }}</strong></Transition
         >
       </slot>
@@ -231,7 +235,8 @@ const phaseIcons = {
 .living-ring-interactive.is-dragging .living-ring-svg {
   cursor: grabbing;
 }
-.living-ring-interactive.is-dragging .living-ring-marker {
+.living-ring-interactive.is-dragging .living-ring-marker,
+.living-ring.is-sweeping .living-ring-marker {
   transition: none;
 }
 .living-ring-interactive .living-ring-marker circle:first-child {
