@@ -1559,12 +1559,6 @@ summary:focus-visible {
   }
 }
 
-/* Keep the calendar above the check-in at every screen size. */
-.middle-grid.overview-calendar {
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-}
-
 /* One spacing scale for card collections, including between separate grids. */
 .page-content {
   --card-gap: 24px;
