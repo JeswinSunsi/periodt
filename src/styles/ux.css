@@ -39,14 +39,11 @@ summary:focus-visible {
 .skip-link:focus {
   transform: none;
 }
-.page-content {
-  padding-bottom: 12px;
-}
 .page-heading {
   align-items: center;
 }
 .page-heading h1 {
-  font-size: clamp(28px, 2.5vw, 34px);
+  font-size: 28px;
 }
 .page-description {
   font-size: 15px;
@@ -59,13 +56,8 @@ summary:focus-visible {
   padding: 11px 16px;
 }
 .page-heading .eyebrow,
-.breadcrumb,
-.private-label {
+.breadcrumb {
   font-size: 12px;
-  color: var(--text-muted);
-}
-.breadcrumb span {
-  padding: 0 8px;
   color: var(--text-muted);
 }
 .button,
@@ -123,7 +115,6 @@ summary:focus-visible {
 .eyebrow,
 .brand-subtitle,
 .nav-label,
-.sidebar-note > span,
 .profile span,
 .profile strong {
   font-size: 12px;
@@ -138,23 +129,12 @@ summary:focus-visible {
   letter-spacing: 0.5px;
 }
 .nav-label {
-  margin-top: 34px;
   letter-spacing: 1px;
 }
 .nav-item {
-  font-size: 14px;
   min-height: 48px;
   color: var(--text-secondary);
   gap: 10px;
-  padding: 12px;
-}
-.sidebar-note {
-  padding: 18px 14px;
-  margin-bottom: 12px;
-}
-.sidebar-note p {
-  font-size: 18px;
-  color: var(--text-secondary);
 }
 .sidebar-bottom {
   padding-top: 24px;
@@ -165,29 +145,17 @@ summary:focus-visible {
 .profile {
   padding: 18px 0;
 }
-.nav-close {
-  display: none;
-}
-.top-grid,
-.middle-grid {
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-}
 .top-grid > *,
 .middle-grid > *,
 .sharing-grid > *,
 .cycle-detail-grid > * {
   min-width: 0;
 }
-.cycle-card-body {
-  gap: 22px;
-}
 .cycle-message {
   min-width: 0;
-  max-width: 330px;
 }
 .cycle-message h2 {
   max-width: none;
-  font-size: 26px;
 }
 .cycle-message p {
   font-size: 14px;
@@ -217,7 +185,6 @@ summary:focus-visible {
   text-underline-offset: 4px;
 }
 .checkin-card h2 {
-  font-size: 24px;
   line-height: 1.4;
 }
 .checkin-card > p,
@@ -308,7 +275,7 @@ summary:focus-visible {
 .mood-option > span:last-child {
   white-space: nowrap;
 }
-/* Wrap by the card's available width, including narrow desktop columns. */
+/* Wrap by the card's available width. */
 @container checkin (max-width: 360px) {
   .mood-options {
     display: flex;
@@ -352,7 +319,6 @@ summary:focus-visible {
   gap: 14px;
 }
 .calendar-navigation {
-  margin-bottom: 14px;
   gap: 8px;
 }
 .calendar-navigation strong {
@@ -455,7 +421,6 @@ summary:focus-visible {
   border-radius: 8px;
   background: var(--surface-subtle);
   padding: 14px;
-  gap: 12px 16px;
   margin-top: 0;
 }
 .calendar-estimate-label {
@@ -470,10 +435,6 @@ summary:focus-visible {
   font-size: 12px;
   line-height: 1.5;
   color: var(--text-secondary);
-}
-.calendar-side > .card-eyebrow,
-.calendar-note {
-  display: none;
 }
 .middle-grid > .partner-card {
   align-self: start;
@@ -547,20 +508,13 @@ summary:focus-visible {
   font-size: 14px;
   margin-top: 0;
 }
-.article-card {
-  min-height: 180px;
-}
 .article-copy {
   min-width: 0;
-  padding: 20px 16px;
 }
 .article-copy > span {
   font-size: 12px;
   letter-spacing: 0.4px;
   color: var(--text-muted);
-}
-.article-copy h3 {
-  font-size: 20px;
 }
 .article-copy p {
   font-size: 14px;
@@ -604,18 +558,12 @@ summary:focus-visible {
 .symptom-row {
   font-size: 14px;
 }
-.symptom-row > span {
-  width: 130px;
-}
 .symptom-row > strong {
   width: auto;
   min-width: 48px;
   font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
-}
-.journal-content h3 {
-  font-size: 23px;
 }
 .journal-content h3 > span,
 .journal-date > span,
@@ -667,11 +615,8 @@ summary:focus-visible {
 .toggle:checked:after {
   transform: translateX(20px);
 }
-.share-code {
-  padding: 16px;
-}
 .share-code strong {
-  font-size: clamp(18px, 2vw, 25px);
+  font-size: 18px;
   letter-spacing: 1.5px;
   user-select: all;
   overflow-wrap: anywhere;
@@ -691,8 +636,7 @@ summary:focus-visible {
   margin-top: 18px;
 }
 .modal-card {
-  width: 560px;
-  padding: 28px 32px;
+  width: 100%;
   overscroll-behavior: contain;
   scroll-padding: 20px;
 }
@@ -712,7 +656,6 @@ summary:focus-visible {
   border-radius: 50%;
 }
 .modal-card h2 {
-  font-size: 27px;
   padding-right: 48px;
   margin-right: 0;
 }
@@ -750,7 +693,6 @@ summary:focus-visible {
 .modal-card input:not([type="checkbox"]),
 .modal-card textarea {
   min-height: 48px;
-  font-size: 16px;
   color: var(--text-body);
 }
 .modal-card textarea {
@@ -1190,13 +1132,9 @@ summary:focus-visible {
   outline-offset: 3px;
 }
 .cycle-day-explorer label {
-  font-size: 14px;
   color: var(--text-secondary);
 }
-.cycle-day-explorer output,
-.cycle-day-labels,
-.cycle-day-labels > span:nth-child(2) {
-  font-size: 12px;
+.cycle-day-explorer output {
   color: var(--text-secondary);
 }
 .cycle-orbit-caption,
@@ -1223,7 +1161,6 @@ summary:focus-visible {
   max-width: none;
 }
 .cycle-story h2 {
-  font-size: 32px;
   line-height: 1.3;
   letter-spacing: -0.8px;
 }
@@ -1235,9 +1172,6 @@ summary:focus-visible {
 }
 .cycle-story-action .button {
   font-size: 14px;
-}
-.cycle-section-title h2 {
-  font-size: 24px;
 }
 .cycle-body-facts h3 {
   font-size: 15px;
@@ -1304,255 +1238,220 @@ summary:focus-visible {
 .cycle-research-note a {
   padding: 8px 0;
 }
-@media (min-width: 1301px) {
-  .overview-calendar .calendar-content {
-    grid-template-columns: minmax(0, 1fr) 180px;
-    gap: 20px;
-  }
-  .overview-calendar .calendar-side {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .overview-calendar .upcoming {
-    margin-bottom: 0;
-  }
+.top-grid,
+.middle-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
-@media (max-width: 1300px) {
-  .top-grid,
-  .middle-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.article-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
-@media (max-width: 1200px) {
-  .article-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .article-card {
-    min-height: 160px;
-  }
-  .article-art {
-    width: 24%;
-  }
-  .cycle-card-body {
-    justify-content: center;
-  }
-  .cycle-detail-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .cycle-explorer-body {
-    grid-template-columns: 240px minmax(0, 1fr);
-    padding: 20px 0;
-    gap: 24px;
-  }
-  .sharing-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.article-card {
+  min-height: 160px;
 }
-@media (max-width: 940px) {
-  .nav-item {
-    font-size: 14px;
-    padding: 12px 8px;
-  }
-  .cycle-explorer-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .cycle-story {
-    margin: auto;
-    text-align: center;
-  }
-  .cycle-story-action {
-    justify-content: center;
-  }
-  .cycle-detail-side {
-    display: flex;
-  }
+.cycle-card-body {
+  justify-content: center;
 }
-@media (max-width: 680px) {
-  .topbar {
-    padding: 0 16px;
-    height: 68px;
-  }
-  .main-content {
-    padding-top: 68px;
-  }
-  .page-content {
-    padding: 24px 16px 12px;
-  }
-  .page-heading > .button {
-    width: 100%;
-  }
-  .sidebar {
-    width: min(300px, calc(100vw - 44px));
-    padding: 20px;
-    overscroll-behavior: contain;
-  }
-  .nav-close {
-    display: flex;
-    margin-left: auto;
-    margin-bottom: 10px;
-  }
-  .sidebar-note {
-    display: none;
-  }
-  .nav-label {
-    margin-top: 24px;
-  }
-  .cycle-card-body {
-    flex-direction: column;
-    padding: 16px 0 24px;
-    gap: 16px;
-    text-align: center;
-  }
-  .cycle-card-interactive .cycle-ring {
-    width: 190px;
-  }
-  .cycle-message {
-    max-width: 100%;
-  }
-  .cycle-message h2 {
-    font-size: 25px;
-    margin: 12px 0;
-  }
-  .cycle-card-footer {
-    gap: 10px;
-  }
-  .checkin-card {
-    padding: 20px 18px;
-  }
-  .checkin-card h2 {
-    font-size: 24px;
-  }
-  .calendar-card {
-    padding: 18px 12px;
-  }
-  .calendar-grid {
-    column-gap: 2px;
-  }
-  .calendar-side {
-    gap: 12px;
-  }
-  .calendar-navigation {
-    margin-bottom: 14px;
-  }
-  .calendar-legend > span {
-    font-size: 12px;
-  }
-  .article-art {
-    width: 25%;
-  }
-  .article-copy {
-    padding: 18px 14px;
-  }
-  .article-copy h3 {
-    font-size: 20px;
-  }
-  .page-footer {
-    align-items: flex-start;
-  }
-  .sharing-card {
-    padding: 22px 18px;
-  }
-  .share-code {
-    padding: 12px;
-  }
-  .journal-entry {
-    gap: 12px;
-    padding: 18px 12px;
-  }
-  .journal-date {
-    padding: 10px;
-  }
-  .journal-content h3 {
-    font-size: 21px;
-  }
-  .insights-detail {
-    padding: 22px 18px;
-  }
-  .phase-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .phase-item {
-    padding: 18px;
-  }
-  .symptom-row {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .symptom-row > span {
-    width: auto;
-    flex: 1;
-  }
-  .symptom-row > div {
-    order: 3;
-    flex-basis: 100%;
-  }
-  .modal-backdrop {
-    padding: 10px;
-  }
-  .modal-card {
-    padding: 24px 18px;
-    max-height: calc(100dvh - 20px);
-  }
-  .modal-card h2 {
-    font-size: 25px;
-  }
-  .modal-card input:not([type="checkbox"]),
-  .modal-card textarea {
-    font-size: 16px;
-  }
-  /* Top is lighter than bottom: the ring's tick marks already sit ~8px inside it. */
-  .cycle-explorer {
-    padding: 6px 16px 14px;
-  }
-  .cycle-explorer-body {
-    padding-block: 0;
-  }
-  .cycle-story h2 {
-    font-size: 29px;
-  }
-  .cycle-story-action {
-    row-gap: 0;
-  }
-  .cycle-story-action .button {
-    width: 100%;
-  }
-  /* Keeps the 44px tap target but trims the empty space under the link. */
-  .cycle-story-action .cycle-text-link {
-    padding-block: 0;
-    margin-block: 2px -10px;
-  }
-  .cycle-day-explorer > .flex {
-    flex-wrap: wrap;
-  }
-  .cycle-day-explorer label {
-    font-size: 14px;
-    max-width: none;
-  }
-  .cycle-day-explorer output {
-    font-size: 12px;
-  }
-  .cycle-day-labels > span:nth-child(2) {
-    display: none;
-  }
-  .cycle-body-card,
-  .cycle-care-card,
-  .cycle-dates-card,
-  .cycle-observations {
-    padding: 22px 18px;
-  }
-  .cycle-section-title h2 {
-    font-size: 23px;
-  }
-  .cycle-observations {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .cycle-date-row {
-    gap: 6px;
-  }
+.cycle-detail-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
-@media (max-height: 850px) and (min-width: 681px) {
-  .sidebar-note {
-    display: none;
-  }
+.cycle-explorer-body {
+  padding: 20px 0;
+  gap: 24px;
+}
+.sharing-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.nav-item {
+  font-size: 14px;
+  padding: 12px 8px;
+}
+.cycle-explorer-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+.cycle-story {
+  margin: auto;
+  text-align: center;
+}
+.cycle-story-action {
+  justify-content: center;
+}
+.cycle-detail-side {
+  display: flex;
+}
+.topbar {
+  padding: 0 16px;
+  height: 68px;
+}
+.main-content {
+  padding-top: 68px;
+}
+.page-content {
+  padding: 24px 16px 12px;
+}
+.page-heading > .button {
+  width: 100%;
+}
+.sidebar {
+  width: min(300px, calc(100vw - 44px));
+  padding: 20px;
+  overscroll-behavior: contain;
+}
+.nav-close {
+  display: flex;
+  margin-left: auto;
+  margin-bottom: 10px;
+}
+.nav-label {
+  margin-top: 24px;
+}
+.cycle-card-body {
+  flex-direction: column;
+  padding: 16px 0 24px;
+  gap: 16px;
+  text-align: center;
+}
+.cycle-card-interactive .cycle-ring {
+  width: 190px;
+}
+.cycle-message {
+  max-width: 100%;
+}
+.cycle-message h2 {
+  font-size: 25px;
+  margin: 12px 0;
+}
+.cycle-card-footer {
+  gap: 10px;
+}
+.checkin-card {
+  padding: 20px 18px;
+}
+.checkin-card h2 {
+  font-size: 24px;
+}
+.calendar-card {
+  padding: 18px 12px;
+}
+.calendar-grid {
+  column-gap: 2px;
+}
+.calendar-side {
+  gap: 12px;
+}
+.calendar-navigation {
+  margin-bottom: 14px;
+}
+.calendar-legend > span {
+  font-size: 12px;
+}
+.article-art {
+  width: 25%;
+}
+.article-copy {
+  padding: 18px 14px;
+}
+.article-copy h3 {
+  font-size: 20px;
+}
+.page-footer {
+  align-items: flex-start;
+}
+.sharing-card {
+  padding: 22px 18px;
+}
+.share-code {
+  padding: 12px;
+}
+.journal-entry {
+  gap: 12px;
+  padding: 18px 12px;
+}
+.journal-date {
+  padding: 10px;
+}
+.journal-content h3 {
+  font-size: 21px;
+}
+.insights-detail {
+  padding: 22px 18px;
+}
+.phase-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.phase-item {
+  padding: 18px;
+}
+.symptom-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.symptom-row > span {
+  width: auto;
+  flex: 1;
+}
+.symptom-row > div {
+  order: 3;
+  flex-basis: 100%;
+}
+.modal-backdrop {
+  padding: 10px;
+}
+.modal-card {
+  padding: 24px 18px;
+  max-height: calc(100dvh - 20px);
+}
+.modal-card h2 {
+  font-size: 25px;
+}
+.modal-card input:not([type="checkbox"]),
+.modal-card textarea {
+  font-size: 16px;
+}
+/* Top is lighter than bottom: the ring's tick marks already sit ~8px inside it. */
+.cycle-explorer {
+  padding: 6px 16px 14px;
+}
+.cycle-explorer-body {
+  padding-block: 0;
+}
+.cycle-story h2 {
+  font-size: 29px;
+}
+.cycle-story-action {
+  row-gap: 0;
+}
+.cycle-story-action .button {
+  width: 100%;
+}
+/* Keeps the 44px tap target but trims the empty space under the link. */
+.cycle-story-action .cycle-text-link {
+  padding-block: 0;
+  margin-block: 2px -10px;
+}
+.cycle-day-explorer > .flex {
+  flex-wrap: wrap;
+}
+.cycle-day-explorer label {
+  font-size: 14px;
+  max-width: none;
+}
+.cycle-day-explorer output {
+  font-size: 12px;
+}
+.cycle-body-card,
+.cycle-care-card,
+.cycle-dates-card,
+.cycle-observations {
+  padding: 22px 18px;
+}
+.cycle-section-title h2 {
+  font-size: 23px;
+}
+.cycle-observations {
+  grid-template-columns: minmax(0, 1fr);
+}
+.cycle-date-row {
+  gap: 6px;
 }
 
 /* Keep the calendar above the partner card at every screen size. */
@@ -1563,10 +1462,10 @@ summary:focus-visible {
 
 /* One spacing scale for card collections, including between separate grids. */
 .page-content {
-  --card-gap: 24px;
   display: flex;
   flex-direction: column;
   gap: var(--card-gap);
+  --card-gap: 20px;
 }
 .page-content > * {
   margin-block: 0;
@@ -1596,9 +1495,4 @@ summary:focus-visible {
 }
 .page-footer {
   padding-top: 0;
-}
-@media (max-width: 680px) {
-  .page-content {
-    --card-gap: 20px;
-  }
 }

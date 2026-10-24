@@ -139,16 +139,6 @@ function setDate(value) {
     </header>
 
     <main class="onboarding-layout">
-      <aside class="onboarding-intro" aria-label="A little welcome">
-        <div class="onboarding-art" aria-hidden="true">
-          <div class="onboarding-art-orbit"></div>
-          <span class="onboarding-art-sun">☼</span>
-          <BotanicalArt class="onboarding-botanical" />
-          <span class="onboarding-art-spark">✧</span>
-        </div>
-        <h2>Your body.<br />Your pace.<br /><em>Your kind of care.</em></h2>
-      </aside>
-
       <div class="onboarding-form-column">
         <OnboardingProgress :steps="steps" :step="step" @navigate="backTo" />
         <section
@@ -240,7 +230,6 @@ function setDate(value) {
                   v-model="draft.periodLength"
                   label="Period length"
                   description="Days you bleed"
-                  icon="Droplet"
                   :min="2"
                   :max="10"
                   :error="errors.periodLength"

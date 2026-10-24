@@ -6,7 +6,6 @@ const props = defineProps({
   id: { type: String, required: true },
   label: { type: String, required: true },
   description: { type: String, required: true },
-  icon: { type: String, default: "CalendarDays" },
   min: { type: Number, required: true },
   max: { type: Number, required: true },
   error: String,
@@ -30,9 +29,6 @@ function adjust(amount) {
 <template>
   <div class="onboarding-count-field" :class="{ 'has-error': error }">
     <div class="onboarding-count-label">
-      <span class="onboarding-field-icon"
-        ><Icon :name="icon" :size="20"
-      /></span>
       <div>
         <label :for="id">{{ label }}</label>
         <p :id="`${id}-description`">{{ description }}</p>

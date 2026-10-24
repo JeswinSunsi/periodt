@@ -1,12 +1,5 @@
 <script setup>
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 import Icon from "./components/AppIcon.vue";
 import ThemeSwitcher from "./components/ThemeSwitcher.vue";
@@ -59,17 +52,9 @@ watch(mobileNav, async (open) => {
   )
     document.querySelector(".mobile-menu")?.focus();
 });
-const mobileQuery = window.matchMedia("(max-width: 680px)");
-function syncNavigationViewport() {
-  if (!mobileQuery.matches) mobileNav.value = false;
-}
 function skipToContent() {
   document.querySelector(".page-heading h1")?.focus();
 }
-onMounted(() => mobileQuery.addEventListener("change", syncNavigationViewport));
-onBeforeUnmount(() =>
-  mobileQuery.removeEventListener("change", syncNavigationViewport),
-);
 function navigationKeydown(event) {
   if (!mobileNav.value) return;
   if (event.key === "Escape") mobileNav.value = false;
@@ -142,11 +127,6 @@ onBeforeUnmount(() => {
         </RouterLink>
       </nav>
       <div class="sidebar-bottom">
-        <div class="sidebar-note">
-          <div class="note-flower">✳</div>
-          <p>Your body.<br />Your pace.<br />Your kind of care.</p>
-          <span>A little reminder, just for you.</span>
-        </div>
         <button class="nav-item settings-link" @click="openSettingsFromShell">
           <Icon name="Settings2" :size="19" /> Cycle settings
         </button>
@@ -181,16 +161,12 @@ onBeforeUnmount(() => {
           >
             <Icon name="Menu" /></button
           ><span class="breadcrumb"
-            ><span class="breadcrumb-home">My space</span>
-            <span class="breadcrumb-separator">/</span>
-            <b>{{ activePage }}</b></span
+            ><b>{{ activePage }}</b></span
           >
         </div>
         <div class="topbar-actions flex items-center gap-3">
           <ThemeSwitcher />
-          <span class="private-label"
-            ><Icon name="LockKeyhole" :size="13" /> Just for you</span
-          ><button
+          <button
             class="top-avatar"
             aria-label="Open cycle settings"
             @click="openSettingsFromShell"
@@ -250,8 +226,10 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.topbar {
-  gap: 16px;
+.topbar,
+.topbar-context,
+.topbar-actions {
+  gap: 8px;
 }
 .topbar-context {
   min-width: 0;
@@ -261,26 +239,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.breadcrumb .breadcrumb-home {
-  padding: 0;
-}
 .topbar-actions {
   flex-shrink: 0;
-}
-@media (max-width: 1100px) {
-  .topbar-actions .private-label {
-    display: none;
-  }
-}
-@media (max-width: 680px) {
-  .topbar,
-  .topbar-context,
-  .topbar-actions {
-    gap: 8px;
-  }
-  .breadcrumb-home,
-  .breadcrumb-separator {
-    display: none;
-  }
 }
 </style>

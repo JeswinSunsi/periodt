@@ -214,7 +214,7 @@ const phaseIcons = {
 }
 .living-ring-center strong {
   font:
-    500 clamp(40px, 4.4vw, 62px)/1 "Lora",
+    500 46px/1 "Lora",
     serif;
   color: var(--accent);
   letter-spacing: -2px;
@@ -293,11 +293,6 @@ const phaseIcons = {
   }
   to {
     opacity: 1;
-  }
-}
-@media (max-width: 680px) {
-  .living-ring-center strong {
-    font-size: 46px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -135,7 +135,7 @@ const sparkles = [
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 22px 24px 26px;
+  padding: 18px 18px 22px;
   background: var(--accent-soft);
   border: 1px solid var(--border);
   border-radius: 11px;
@@ -156,7 +156,7 @@ const sparkles = [
   overflow: hidden;
   color: var(--ring-accent);
   pointer-events: none;
-  mask-image: linear-gradient(90deg, transparent 20%, #000 62%);
+  mask-image: linear-gradient(90deg, transparent 50%, #000 85%);
 }
 .glance-card[data-phase="Ovulation"] .glance-sky {
   color: var(--ring-ovulation-accent);
@@ -226,7 +226,7 @@ const sparkles = [
 }
 .glance-figure strong {
   font:
-    400 clamp(56px, 6vw, 76px) / 1 "Lora",
+    400 56px / 1 "Lora",
     serif;
   letter-spacing: -2px;
   font-variant-numeric: tabular-nums;
@@ -405,14 +405,6 @@ const sparkles = [
   }
   .glance-sparkle {
     opacity: 0.5;
-  }
-}
-@media (max-width: 680px) {
-  .glance-card {
-    padding: 18px 18px 22px;
-  }
-  .glance-sky {
-    mask-image: linear-gradient(90deg, transparent 50%, #000 85%);
   }
 }
 </style>

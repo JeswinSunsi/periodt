@@ -71,7 +71,6 @@ function modalKeydown(event) {
       <section
         :ref="setModalElement"
         class="modal-card"
-        :class="{ 'wide-modal': modal === 'phases' }"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

@@ -49,7 +49,7 @@ const router = useRouter();
   <section class="care-section">
     <div class="care-heading">
       <div>
-        <h2>A little care goes a long way <span>✧</span></h2>
+        <h2>A little care goes a long way</h2>
         <p>Small things to support you, wherever you are in your cycle.</p>
       </div>
       <button class="small-text-button" @click="openDialog('guides')">

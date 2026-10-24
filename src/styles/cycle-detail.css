@@ -27,17 +27,10 @@
 .cycle-card-interactive .cycle-edit {
   position: relative;
   z-index: 3;
-  min-height: 28px;
-  min-width: 28px;
   border-radius: 50%;
 }
 .cycle-card-interactive .cycle-edit:hover {
   background: var(--accent-soft-strong);
-}
-.cycle-explore-link {
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--border-strong) 46.67%, transparent);
-  padding-bottom: 4px;
 }
 .cycle-explore-link svg {
   transition: transform 0.3s;
@@ -47,7 +40,6 @@
 }
 .cycle-card-interactive .cycle-ring {
   margin: -6px;
-  width: 205px;
 }
 .cycle-card-interactive:after {
   content: "";
@@ -73,7 +65,6 @@
   border: 1px solid var(--phase-follicular-border);
   background: var(--phase-follicular-bg);
   border-radius: 14px;
-  padding: 23px 30px 14px;
   transition:
     background 0.65s,
     border-color 0.65s;
@@ -99,12 +90,8 @@
 }
 .cycle-settings-button {
   display: inline-flex;
-  gap: 7px;
   align-items: center;
-  color: var(--text-muted);
-  font-size: 10px;
   border: 1px solid var(--border-accent);
-  padding: 8px 10px;
   border-radius: 6px;
   background: color-mix(in srgb, var(--surface) 14.51%, transparent);
 }
@@ -113,10 +100,7 @@
 }
 .cycle-explorer-body {
   display: grid;
-  grid-template-columns: 285px 1fr;
   align-items: center;
-  gap: clamp(25px, 4vw, 65px);
-  padding: 23px 20px 0;
   position: relative;
 }
 .cycle-orbit {
@@ -125,8 +109,6 @@
 }
 .cycle-orbit-caption {
   text-align: center;
-  color: var(--text-muted);
-  font-size: 10px;
   margin-top: 5px;
 }
 .cycle-orbit-caption > span {
@@ -151,59 +133,33 @@
 }
 .cycle-story {
   z-index: 1;
-  max-width: 420px;
 }
 .cycle-season {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 10px;
-  color: var(--text-secondary);
   padding: 6px 10px;
   border-radius: 20px;
   background: color-mix(in srgb, var(--surface) 30.2%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-strong) 21.18%, transparent);
 }
 .cycle-story h2 {
-  font-size: clamp(30px, 3vw, 42px);
-  line-height: 1.2;
-  letter-spacing: -1.4px;
   color: var(--accent);
-  max-width: 330px;
-  margin: 17px 0 15px;
-}
-.cycle-story p {
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.95;
-  max-width: 380px;
-  min-height: 93px;
 }
 .cycle-story-action {
   margin-top: 21px;
 }
-.cycle-story-action .button {
-  font-size: 11px;
-}
 /* Keep the 44px tap target without letting it pad out the layout. */
-.cycle-story-action .cycle-text-link {
-  margin-block: -12px;
-}
 .cycle-text-link {
-  font-size: 11px;
   font-weight: 500;
-  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
 }
 .cycle-text-link:hover {
   color: var(--text-heading);
 }
 .cycle-pressed-flower {
   position: absolute;
-  right: -43px;
-  top: 30px;
   height: 180px;
   width: 180px;
   opacity: 0.16;
@@ -236,13 +192,7 @@
     color-mix(in srgb, var(--border-strong) 33.33%, transparent);
   padding: 20px 0 0;
 }
-.cycle-day-explorer label {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
 .cycle-day-explorer output {
-  font-size: 10px;
-  color: var(--text-secondary);
   border: 1px solid color-mix(in srgb, var(--border-accent) 46.67%, transparent);
   border-radius: 20px;
   padding: 4px 9px;
@@ -252,54 +202,22 @@
   width: 100%;
   appearance: none;
   border-radius: 10px;
-  height: 8px;
-  margin: 22px 0 13px;
   cursor: pointer;
   outline-offset: 8px;
 }
 .cycle-day-range::-webkit-slider-thumb {
   appearance: none;
-  width: 23px;
-  height: 23px;
   border-radius: 50%;
-  background: var(--surface);
-  border: 6px solid var(--border-strong);
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--shadow-color) 53.33%, transparent);
   transition: box-shadow 0.2s;
 }
 .cycle-day-range::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
   border-radius: 50%;
-  background: var(--surface);
-  border: 6px solid var(--border-strong);
-}
-.cycle-day-range:hover::-webkit-slider-thumb {
-  box-shadow: 0 0 0 6px
-    color-mix(in srgb, var(--shadow-color) 73.33%, transparent);
 }
 .cycle-day-range:focus-visible {
   outline: 2px solid var(--focus-ring);
 }
-.cycle-day-labels {
-  display: flex;
-  justify-content: space-between;
-  color: var(--text-muted);
-  font-size: 9px;
-}
-.cycle-day-labels > span:nth-child(2) {
-  font-size: 9px;
-  letter-spacing: 0.25px;
-}
 .cycle-detail-grid {
   display: grid;
-  margin-top: 25px;
-  grid-template-columns: 1.45fr 1fr;
-  gap: 20px;
-}
-.cycle-body-card {
-  padding: 25px;
 }
 .cycle-section-title {
   display: flex;
@@ -318,11 +236,9 @@
   flex-shrink: 0;
 }
 .cycle-section-title .card-eyebrow {
-  font-size: 8px;
   letter-spacing: 1.2px;
 }
 .cycle-section-title h2 {
-  font-size: 23px;
   margin-top: 5px;
   letter-spacing: -0.5px;
 }
@@ -349,30 +265,19 @@
 }
 .cycle-body-facts h3 {
   font-family: "DM Sans", sans-serif;
-  font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
 }
 .cycle-body-facts p {
-  color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1.9;
   margin-top: 6px;
 }
 .cycle-hormone-chart {
   padding-top: 18px;
   border-top: 1px solid var(--border);
 }
-.cycle-hormone-chart > .flex > span:first-child {
-  font-size: 11px;
-  color: var(--text-muted);
-}
 .illustration-badge {
   background: var(--surface-subtle);
-  color: var(--text-muted);
   border-radius: 4px;
   padding: 4px 6px;
-  font-size: 8px;
 }
 .cycle-hormone-chart > svg {
   display: block;
@@ -395,29 +300,19 @@
 }
 .hormone-phase-labels {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 8px;
-  color: var(--text-muted);
   margin: -3px 5px 10px;
 }
 .hormone-legend {
   display: flex;
-  gap: 15px;
   justify-content: center;
 }
 .hormone-legend button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--text-muted);
-  font-size: 9px;
-  padding: 4px 6px;
   border-radius: 4px;
-  min-height: 26px;
 }
 .hormone-legend button[aria-pressed="false"] {
-  opacity: 0.5;
   text-decoration: line-through;
 }
 .hormone-legend button:hover {
@@ -433,16 +328,11 @@
   background: var(--hormone-progesterone);
 }
 .hormone-disclaimer {
-  font-size: 9px;
-  line-height: 1.8;
-  color: var(--text-muted);
   text-align: center;
   margin-top: 9px;
 }
 .cycle-detail-side {
-  display: flex;
   flex-direction: column;
-  gap: 18px;
 }
 .cycle-care-card {
   position: relative;
@@ -450,11 +340,9 @@
   background: var(--accent-soft);
   border: 1px solid var(--border);
   border-radius: 11px;
-  padding: 24px;
   flex: 1;
 }
 .cycle-care-card > .card-eyebrow {
-  font-size: 8px;
   letter-spacing: 1.2px;
 }
 .care-flower {
@@ -478,9 +366,6 @@
   letter-spacing: -0.5px;
 }
 .cycle-care-card > p {
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--text-muted);
   margin-top: 13px;
 }
 .cycle-journal-prompt {
@@ -490,7 +375,6 @@
   border-radius: 6px;
   background: color-mix(in srgb, var(--surface) 27.06%, transparent);
   margin: 18px 0 16px;
-  color: var(--text-muted);
   font:
     italic 12px/1.7 "Lora",
     serif;
@@ -499,11 +383,7 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
-.cycle-dates-card {
-  padding: 21px 24px;
-}
 .cycle-dates-card h2 {
-  font-size: 20px;
   letter-spacing: -0.5px;
 }
 .cycle-dates-card > .flex > svg {
@@ -513,41 +393,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
   margin-top: 15px;
-  font-size: 10px;
-  color: var(--text-muted);
 }
 .cycle-date-row strong {
-  font-size: 11px;
   font-weight: 500;
-  color: var(--text-secondary);
 }
 .cycle-dates-card > .cycle-text-link {
   margin-top: 19px;
 }
 .cycle-observations {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 35px;
-  padding: 27px;
   margin-top: 20px;
 }
 .cycle-observations .card-eyebrow {
-  font-size: 8px;
   letter-spacing: 1.2px;
 }
 .cycle-observations h2 {
-  font-size: 23px;
   line-height: 1.4;
   margin: 9px 0;
   letter-spacing: -0.6px;
-}
-.cycle-observations p {
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--text-muted);
 }
 .cycle-observation-content {
   display: grid;
@@ -570,20 +435,14 @@
 }
 .selected-day-log small {
   display: block;
-  font-size: 9px;
-  color: var(--text-muted);
 }
 .selected-day-log strong {
   display: block;
-  font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
   margin-top: 4px;
 }
 .selected-day-log span {
   display: block;
-  color: var(--text-muted);
-  font-size: 10px;
   margin-top: 5px;
 }
 .cycle-symptom-tags {
@@ -592,16 +451,12 @@
   gap: 7px;
 }
 .cycle-symptom-tags > span {
-  color: var(--text-muted);
-  font-size: 10px;
   padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: 5px;
 }
 .cycle-symptom-tags b {
-  font-size: 9px;
   font-weight: 400;
-  color: var(--text-muted);
   margin-left: 5px;
 }
 .cycle-research-note {
@@ -615,8 +470,6 @@
   align-items: center;
   gap: 8px;
   list-style: none;
-  padding: 0 0 15px;
-  font-size: 10px;
 }
 .cycle-research-note summary::-webkit-details-marker {
   display: none;
@@ -632,16 +485,11 @@
   padding: 0 0 20px;
 }
 .cycle-research-note p {
-  font-size: 11px;
-  line-height: 1.9;
   margin-bottom: 9px;
 }
 .cycle-research-note a {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--text-muted);
-  font-size: 10px;
   text-decoration: underline;
   text-underline-offset: 3px;
   margin-top: 7px;
@@ -689,212 +537,56 @@
     transform: rotate(10deg) scale(1.08);
   }
 }
-@media (min-width: 1500px) {
-  .cycle-card-interactive .cycle-ring {
-    width: 235px;
-  }
-  .cycle-explorer-body {
-    grid-template-columns: 315px 1fr;
-    gap: 70px;
-  }
-  .cycle-story {
-    max-width: 490px;
-  }
-  .cycle-story p {
-    font-size: 13px;
-    max-width: 420px;
-  }
-  .cycle-story h2 {
-    font-size: 46px;
-  }
-  .cycle-explorer {
-    padding: 25px 35px 16px;
-  }
+.cycle-orbit {
+  margin: 0 auto;
 }
-@media (max-width: 1150px) {
-  .cycle-card-interactive .cycle-ring {
-    width: 160px;
-  }
-  .cycle-explorer {
-    padding: 20px 20px 14px;
-  }
-  .cycle-explorer-body {
-    grid-template-columns: 235px 1fr;
-    gap: 25px;
-    padding: 20px 0 0;
-  }
-  .cycle-story h2 {
-    font-size: 33px;
-  }
-  .cycle-story p {
-    font-size: 11px;
-  }
-  .cycle-section-title h2 {
-    font-size: 21px;
-  }
-  .cycle-body-card {
-    padding: 21px;
-  }
-  .cycle-detail-grid {
-    gap: 15px;
-  }
-  .cycle-care-card {
-    padding: 20px;
-  }
+.cycle-story {
+  max-width: 440px;
 }
-@media (max-width: 940px) {
-  .cycle-card-interactive .cycle-ring {
-    width: 220px;
-  }
-  .cycle-explorer-body {
-    grid-template-columns: 1fr;
-    gap: 25px;
-    padding-top: 12px;
-  }
-  .cycle-orbit {
-    width: 255px;
-    margin: 0 auto;
-  }
-  .cycle-story {
-    text-align: center;
-    margin: 0 auto;
-    max-width: 440px;
-  }
-  .cycle-story h2 {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: none;
-    font-size: 37px;
-  }
-  .cycle-story p {
-    min-height: 0;
-    max-width: none;
-    font-size: 12px;
-  }
-  .cycle-story-action {
-    justify-content: center;
-  }
-  .cycle-detail-grid {
-    grid-template-columns: 1fr;
-  }
-  .cycle-detail-side {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-  .cycle-body-facts p {
-    font-size: 12px;
-  }
-  .cycle-hormone-chart {
-    max-width: 600px;
-  }
-  .cycle-observations {
-    gap: 20px;
-  }
-  .cycle-observations h2 {
-    font-size: 22px;
-  }
+.cycle-story h2 {
+  max-width: none;
 }
-@media (max-width: 680px) {
-  .cycle-card-interactive .cycle-ring {
-    width: 167px;
-  }
-  .cycle-explorer {
-    padding: 18px 18px 12px;
-  }
-  .cycle-explorer-top > .card-eyebrow {
-    font-size: 8px;
-    letter-spacing: 1px;
-    max-width: 140px;
-    line-height: 1.7;
-  }
-  .cycle-settings-button {
-    font-size: 9px;
-    gap: 5px;
-    padding: 7px 8px;
-  }
-  .cycle-orbit {
-    width: min(255px, 100%);
-  }
-  .cycle-story h2 {
-    font-size: 34px;
-    margin: 14px 0;
-  }
-  .cycle-story p {
-    font-size: 12px;
-  }
-  .cycle-story-action {
-    gap: 10px 17px;
-  }
-  .cycle-day-explorer label {
-    font-size: 10px;
-    max-width: 170px;
-  }
-  .cycle-day-explorer output {
-    font-size: 8px;
-    white-space: nowrap;
-  }
-  .cycle-day-labels > span:nth-child(2) {
-    font-size: 8px;
-  }
-  .cycle-detail-grid {
-    margin-top: 20px;
-  }
-  .cycle-section-title h2 {
-    font-size: 22px;
-  }
-  .cycle-section-title .card-eyebrow {
-    font-size: 7px;
-  }
-  .cycle-body-card {
-    padding: 21px 18px;
-  }
-  .cycle-detail-side {
-    display: flex;
-  }
-  .cycle-care-card {
-    padding: 24px;
-  }
-  .cycle-care-card > p {
-    font-size: 12px;
-  }
-  .cycle-journal-prompt {
-    font-size: 13px;
-  }
-  .cycle-dates-card {
-    padding: 23px;
-  }
-  .cycle-date-row {
-    font-size: 11px;
-  }
-  .cycle-dates-card h2 {
-    font-size: 23px;
-  }
-  .cycle-observations {
-    grid-template-columns: 1fr;
-    padding: 23px;
-  }
-  .cycle-observations h2 {
-    font-size: 25px;
-  }
-  .cycle-hormone-chart > .flex > span:first-child {
-    font-size: 10px;
-  }
-  .hormone-disclaimer {
-    font-size: 10px;
-  }
-  .cycle-pressed-flower {
-    top: 110px;
-    right: -80px;
-  }
-  .cycle-research-note summary {
-    font-size: 10px;
-  }
+.cycle-story p {
+  max-width: none;
 }
-@media (max-width: 680px) {
-  .cycle-detail-side {
-    align-items: stretch;
-  }
+.cycle-detail-side {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+.cycle-hormone-chart {
+  max-width: 600px;
+}
+.cycle-observations {
+  gap: 20px;
+}
+.cycle-explorer-top > .card-eyebrow {
+  letter-spacing: 1px;
+  line-height: 1.7;
+}
+.cycle-settings-button {
+  padding: 7px 8px;
+}
+.cycle-orbit {
+  width: min(255px, 100%);
+}
+.cycle-story h2 {
+  margin: 14px 0;
+}
+.cycle-story-action {
+  gap: 10px 17px;
+}
+.cycle-day-explorer output {
+  white-space: nowrap;
+}
+.cycle-detail-grid {
+  margin-top: 20px;
+}
+.cycle-dates-card h2 {
+  font-size: 23px;
+}
+.cycle-pressed-flower {
+  top: 110px;
+  right: -80px;
 }
 @media (max-width: 359px) {
   .cycle-card-interactive .cycle-ring {
