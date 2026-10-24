@@ -2,9 +2,8 @@
 import { computed, ref, watch } from "vue";
 import Icon from "./AppIcon.vue";
 import CycleRing from "./CycleRing.vue";
-import CyclePhasePicker from "./CyclePhasePicker.vue";
 import { useCycle, addDays, dateKey, fromKey } from "../composables/useCycle";
-import { phaseSegments, phaseAtDay, phaseStories } from "../lib/cyclePhases";
+import { phaseAtDay, phaseStories } from "../lib/cyclePhases";
 
 const emit = defineEmits(["log", "calendar"]);
 const {
@@ -20,9 +19,6 @@ const selectedDay = ref(
   Math.max(1, Math.min(cycleDay.value, state.profile.cycleLength)),
 );
 const exploring = ref(false);
-const segments = computed(() =>
-  phaseSegments(state.profile.cycleLength, currentPeriodLength.value),
-);
 const selectedPhase = computed(() =>
   exploring.value
     ? phaseAtDay(
@@ -66,12 +62,6 @@ function returnToToday() {
     1,
     Math.min(cycleDay.value, state.profile.cycleLength),
   );
-}
-function selectPhase(p) {
-  if (!p.days) return;
-  selectedDay.value =
-    p.name === phase.value ? Math.min(cycleDay.value, p.end) : p.start;
-  exploring.value = true;
 }
 function selectDay(day) {
   selectedDay.value = day;
@@ -165,13 +155,6 @@ const chartId = `cycle-hormones`;
       </div>
 
     </section>
-
-    <CyclePhasePicker
-      :segments="segments"
-      :selected-phase="selectedPhase"
-      :current-phase="phase"
-      @select="selectPhase"
-    />
 
     <div class="cycle-detail-grid">
       <section class="card cycle-body-card">
@@ -336,7 +319,7 @@ const chartId = `cycle-hormones`;
           </div>
           <div class="cycle-date-row">
             <span>{{
-              state.profile.demo ? "Sample cycle length" : "Your cycle setting"
+              state.profile.demo ? "Cycle length" : "Your cycle setting"
             }}</span
             ><strong>{{ state.profile.cycleLength }} days</strong>
           </div>
