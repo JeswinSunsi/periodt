@@ -208,7 +208,7 @@ onBeforeUnmount(() => {
           class="page-heading flex flex-wrap items-end justify-between gap-4"
         >
           <div>
-            <p class="eyebrow">
+            <p v-if="activePage === 'Overview'" class="eyebrow">
               <span class="tiny-sun">☼</span> {{ fullDate }}
             </p>
             <h1 tabindex="-1">{{ route.meta.heading }}</h1>
