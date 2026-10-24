@@ -118,7 +118,12 @@ onBeforeUnmount(() => motionQuery.removeEventListener("change", motionChanged));
           :cycle-length="state.profile.cycleLength"
           :period-length="currentPeriodLength"
           :phase="phase"
-        />
+        >
+          <span class="brand-flower onboarding-handoff-logo" aria-hidden="true"
+            >✳</span
+          >
+          <strong class="onboarding-handoff-welcome">Welcome</strong>
+        </CycleRing>
         <span
           v-for="(particle, index) in particles"
           :key="index"
@@ -280,8 +285,17 @@ onBeforeUnmount(() => motionQuery.removeEventListener("change", motionChanged));
     onboarding-handoff-rise 500ms 900ms ease-out both,
     onboarding-handoff-out 250ms 1950ms ease-in forwards;
 }
-.onboarding-handoff .living-ring-center strong {
-  font-size: clamp(38px, 7vh, 60px);
+.onboarding-handoff-logo {
+  margin-top: 0;
+  color: var(--accent);
+  font-size: clamp(32px, 5.5vh, 46px);
+}
+.onboarding-handoff-welcome {
+  font:
+    500 clamp(30px, 5.5vh, 46px)/1 "Lora",
+    serif;
+  color: var(--accent);
+  letter-spacing: -1px;
 }
 .app-shell.app-entering {
   animation: onboarding-app-arrive 480ms ease-out both;
@@ -395,11 +409,6 @@ onBeforeUnmount(() => motionQuery.removeEventListener("change", motionChanged));
   }
   to {
     opacity: 1;
-  }
-}
-@media (max-height: 540px) {
-  .onboarding-handoff .living-ring-phase {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -89,9 +89,25 @@ export function removePeriodStart(state, date, sampleDate) {
   state.profile.demo = starts.length === 0;
 }
 
+// The shortest cycle the app supports. Two starts closer than this cannot be
+// separate periods, so a new start replaces any recorded start that near it.
+export const minCycleLength = 21;
+
 export function setPeriodStart(state, date) {
+  const tooClose = (start) =>
+    start !== date &&
+    Math.abs(dayNumber(start) - dayNumber(date)) < minCycleLength;
+  state.periodHistory = state.periodHistory.filter(
+    (period) => !tooClose(period.start),
+  );
+  for (const [key, log] of Object.entries(state.logs))
+    if (log.periodStart && tooClose(key)) log.periodStart = false;
+  const replacesLatest =
+    !state.profile.demo && tooClose(state.profile.lastPeriod);
+
   if (
     !state.profile.demo &&
+    !replacesLatest &&
     date !== state.profile.lastPeriod &&
     !state.periodHistory.some((p) => p.start === state.profile.lastPeriod)
   ) {
@@ -100,7 +116,11 @@ export function setPeriodStart(state, date) {
       length: state.profile.periodLength,
     });
   }
-  if (state.profile.demo || date >= state.profile.lastPeriod) {
+  if (
+    state.profile.demo ||
+    replacesLatest ||
+    date >= state.profile.lastPeriod
+  ) {
     state.profile.lastPeriod = date;
     state.profile.demo = false;
   } else if (!state.periodHistory.some((p) => p.start === date))

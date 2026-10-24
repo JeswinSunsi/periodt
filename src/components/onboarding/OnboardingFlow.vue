@@ -16,10 +16,12 @@ import { regularityOptions, symptoms } from "../../lib/content.js";
 import { onboardingSteps as steps } from "../../lib/onboarding.js";
 import { useOnboarding } from "../../composables/useOnboarding.js";
 import { useCycle, dateKey, fromKey } from "../../composables/useCycle.js";
+import { useTheme } from "../../composables/useTheme.js";
 
 const emit = defineEmits(["complete"]);
 const { today } = useCycle();
 const { step, draft, errors, next, backTo, finish } = useOnboarding();
+const { themes, themeId, currentTheme, setTheme } = useTheme();
 const heading = ref(null);
 const form = ref(null);
 const privacyDialog = ref(null);
@@ -30,6 +32,7 @@ const titles = [
   "Your usual rhythm.",
   "A little about your cycle.",
   "What you usually notice.",
+  "Make it feel like yours.",
   "Your space is ready.",
 ];
 const descriptions = [
@@ -38,6 +41,7 @@ const descriptions = [
   "Your usual lengths, in days.",
   "Optional. This tells us how far to trust your estimates.",
   "Optional. These come first in your daily check-in.",
+  "Pick a palette. You can change it anytime.",
   "",
 ];
 const finalStep = steps.length - 1;
@@ -194,7 +198,7 @@ function setDate(value) {
                   <label
                     class="onboarding-input-label"
                     for="onboarding-last-period"
-                    >First day of your last period</label
+                    >When did your last period start?</label
                   >
                   <input
                     id="onboarding-last-period"
@@ -282,6 +286,28 @@ function setDate(value) {
                 </div>
               </fieldset>
 
+              <fieldset v-else-if="step === 5" class="onboarding-questions">
+                <legend class="onboarding-input-label">Theme</legend>
+                <div class="choice-row">
+                  <button
+                    v-for="theme in themes"
+                    :key="theme.id"
+                    type="button"
+                    class="choice onboarding-theme-choice"
+                    :class="{ chosen: themeId === theme.id }"
+                    :aria-pressed="themeId === theme.id"
+                    @click="setTheme(theme.id)"
+                  >
+                    <span
+                      class="onboarding-theme-swatch"
+                      :style="{ background: theme.swatch }"
+                      aria-hidden="true"
+                    ></span>
+                    {{ theme.label }}
+                  </button>
+                </div>
+              </fieldset>
+
               <template v-else>
                 <dl class="onboarding-review">
                   <div>
@@ -341,10 +367,20 @@ function setDate(value) {
                       <Icon name="Pencil" :size="17" />
                     </button>
                   </div>
+                  <div>
+                    <div>
+                      <dt>Theme</dt>
+                      <dd>{{ currentTheme.label }}</dd>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Edit theme"
+                      @click="backTo(5)"
+                    >
+                      <Icon name="Pencil" :size="17" />
+                    </button>
+                  </div>
                 </dl>
-                <p class="onboarding-estimate-note">
-                  Estimates can vary. Not for birth control.
-                </p>
               </template>
             </div>
 

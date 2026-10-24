@@ -23,10 +23,10 @@ const settingsSnapshot = JSON.stringify(settings);
 trackUnsaved(() => JSON.stringify(settings) !== settingsSnapshot);
 
 function saveSettings() {
-  setPeriodStart(state, settings.lastPeriod);
-  Object.assign(state.profile, settings, cycleContext(settings), {
-    demo: false,
-  });
+  // setPeriodStart keeps lastPeriod on the latest recorded start.
+  const { lastPeriod, ...rest } = settings;
+  setPeriodStart(state, lastPeriod);
+  Object.assign(state.profile, rest, cycleContext(settings));
   modal.value = "";
   notify("Your cycle details are updated.");
 }

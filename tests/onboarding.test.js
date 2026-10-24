@@ -150,9 +150,33 @@ test("an empty date cannot complete setup or change the profile", () => {
 
 test("setup preserves an existing personal start in history when it changes", () => {
   const state = sample();
-  state.profile.demo = false;
-  applyOnboarding(state, { ...answers, lastPeriod: "2026-10-12" }, today);
-  assert.deepEqual(state.periodHistory, [{ start: "2026-10-11", length: 5 }]);
+  Object.assign(state.profile, { lastPeriod: "2026-09-11", demo: false });
+  applyOnboarding(state, answers, today);
+  assert.equal(state.profile.lastPeriod, "2026-10-11");
+  assert.deepEqual(state.periodHistory, [{ start: "2026-09-11", length: 5 }]);
+});
+
+test("setup treats a start within the shortest cycle as a correction, not a second period", () => {
+  const state = sample();
+  Object.assign(state.profile, { lastPeriod: "2026-10-04", demo: false });
+  state.periodHistory.push({ start: "2026-09-02", length: 5 });
+  state.logs["2026-10-04"] = { periodStart: true, mood: "Good" };
+  applyOnboarding(state, answers, today);
+  assert.equal(state.profile.lastPeriod, "2026-10-11");
+  assert.deepEqual(state.periodHistory, [{ start: "2026-09-02", length: 5 }]);
+  assert.deepEqual(state.logs["2026-10-04"], {
+    periodStart: false,
+    mood: "Good",
+  });
+});
+
+test("setup clears a sample-cycle check-in start that conflicts with the entered date", () => {
+  const state = sample();
+  state.logs["2026-10-04"] = { periodStart: true };
+  applyOnboarding(state, answers, today);
+  assert.equal(state.profile.lastPeriod, "2026-10-11");
+  assert.equal(state.logs["2026-10-04"].periodStart, false);
+  assert.deepEqual(state.periodHistory, []);
 });
 
 const stored = new Map();
@@ -180,6 +204,8 @@ test("back navigation keeps drafts isolated until review is confirmed, then pers
   setup.draft.regularity = "varies";
   setup.next();
   setup.draft.usualSymptoms.push("Cramps");
+  setup.next();
+  assert.equal(setup.step.value, onboardingSteps.length - 2);
   setup.next();
   assert.equal(setup.step.value, onboardingSteps.length - 1);
   setup.next();

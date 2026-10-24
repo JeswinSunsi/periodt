@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { phaseSegments } from "../lib/cyclePhases";
 import Icon from "./AppIcon.vue";
 const props = defineProps({
@@ -8,8 +8,48 @@ const props = defineProps({
   periodLength: Number,
   phase: String,
   detailed: Boolean,
+  interactive: Boolean,
+  valueText: String,
   label: { type: String, default: "DAY" },
 });
+const emit = defineEmits(["select"]);
+// While dragging, the marker follows the pointer directly instead of gliding.
+const dragging = ref(false);
+function dayFromPointer(event) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const dx = event.clientX - (rect.left + rect.width / 2);
+  const dy = event.clientY - (rect.top + rect.height / 2);
+  // Angle measured clockwise from 12 o'clock, matching the marker's rotation.
+  const angle = (Math.atan2(dx, -dy) * 180) / Math.PI;
+  const turn = ((angle + 360) % 360) / 360;
+  return Math.min(props.cycleLength, Math.floor(turn * props.cycleLength) + 1);
+}
+function onPointerDown(event) {
+  if (!props.interactive || event.button > 0) return;
+  event.currentTarget.setPointerCapture(event.pointerId);
+  dragging.value = true;
+  emit("select", dayFromPointer(event));
+}
+function onPointerMove(event) {
+  if (dragging.value) emit("select", dayFromPointer(event));
+}
+function onPointerUp() {
+  dragging.value = false;
+}
+function onKeydown(event) {
+  const step = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[
+    event.key
+  ];
+  let next;
+  if (step) next = props.day + step;
+  else if (event.key === "PageUp") next = props.day + 7;
+  else if (event.key === "PageDown") next = props.day - 7;
+  else if (event.key === "Home") next = 1;
+  else if (event.key === "End") next = props.cycleLength;
+  else return;
+  event.preventDefault();
+  emit("select", Math.max(1, Math.min(props.cycleLength, next)));
+}
 const segments = computed(() =>
   phaseSegments(props.cycleLength, props.periodLength).filter((p) => p.days),
 );
@@ -31,10 +71,30 @@ const phaseIcons = {
 <template>
   <div
     class="living-ring"
-    :class="{ 'living-ring-detailed': detailed }"
+    :class="{
+      'living-ring-detailed': detailed,
+      'living-ring-interactive': interactive,
+      'is-dragging': dragging,
+    }"
     :data-phase="phase"
+    :role="interactive ? 'slider' : undefined"
+    :tabindex="interactive ? 0 : undefined"
+    :aria-label="interactive ? 'Explore a day in your cycle' : undefined"
+    :aria-valuemin="interactive ? 1 : undefined"
+    :aria-valuemax="interactive ? cycleLength : undefined"
+    :aria-valuenow="interactive ? day : undefined"
+    :aria-valuetext="interactive ? valueText : undefined"
+    @keydown="interactive && onKeydown($event)"
   >
-    <svg class="living-ring-svg" viewBox="0 0 240 240" aria-hidden="true">
+    <svg
+      class="living-ring-svg"
+      viewBox="0 0 240 240"
+      aria-hidden="true"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+    >
       <circle
         cx="120"
         cy="120"
@@ -94,14 +154,13 @@ const phaseIcons = {
       </g>
     </svg>
     <div class="living-ring-center">
-      <Icon v-if="detailed" :name="phaseIcons[phase]" :size="23" />
-      <span>{{ label }}</span>
-      <Transition name="day-number" mode="out-in"
-        ><strong :key="day">{{ day }}</strong></Transition
-      >
-      <span class="living-ring-phase">{{
-        phase === "Unconfirmed" ? "Phase unconfirmed" : phase + " phase"
-      }}</span>
+      <slot>
+        <Icon v-if="detailed" :name="phaseIcons[phase]" :size="23" />
+        <span>{{ label }}</span>
+        <Transition name="day-number" mode="out-in"
+          ><strong :key="day">{{ day }}</strong></Transition
+        >
+      </slot>
     </div>
   </div>
 </template>
@@ -140,6 +199,7 @@ const phaseIcons = {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   text-align: center;
   pointer-events: none;
 }
@@ -150,18 +210,43 @@ const phaseIcons = {
 }
 .living-ring-center strong {
   font:
-    500 clamp(40px, 4.4vw, 62px)/1.15 "Lora",
+    500 clamp(40px, 4.4vw, 62px)/1 "Lora",
     serif;
   color: var(--accent);
   letter-spacing: -2px;
 }
-.living-ring-phase {
-  font-size: 12px;
-  margin-top: 4px;
-}
 .living-ring-marker {
   transform-origin: 120px 120px;
   transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.living-ring-interactive {
+  border-radius: 50%;
+  outline: none;
+}
+.living-ring-interactive .living-ring-svg {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.living-ring-interactive.is-dragging .living-ring-svg {
+  cursor: grabbing;
+}
+.living-ring-interactive.is-dragging .living-ring-marker {
+  transition: none;
+}
+.living-ring-interactive .living-ring-marker circle:first-child {
+  transition:
+    fill 0.6s,
+    stroke 0.6s,
+    r 0.2s;
+}
+.living-ring-interactive:hover .living-ring-marker circle:first-child,
+.living-ring-interactive.is-dragging .living-ring-marker circle:first-child {
+  r: 13px;
+}
+.living-ring-interactive:focus-visible .living-ring-marker circle:first-child {
+  r: 13px;
+  stroke-width: 4;
 }
 .living-ring-arc {
   transition:
@@ -173,22 +258,21 @@ const phaseIcons = {
   animation: ring-arrive 1s ease-out both;
 }
 .living-ring-detailed .living-ring-center > svg {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 .living-ring-detailed .living-ring-center strong {
   font-size: 68px;
 }
-.living-ring-detailed .living-ring-phase {
-  font-size: 12px;
-}
 .living-ring-detailed .living-ring-center > span:first-of-type {
   font-size: 12px;
 }
-.day-number-enter-active,
-.day-number-leave-active {
+/* Must outrank `.living-ring-center strong`, whose 0.6s color transition
+   would otherwise set the duration Vue waits on for each swap. */
+.living-ring-center strong.day-number-enter-active,
+.living-ring-center strong.day-number-leave-active {
   transition:
-    opacity 0.13s,
-    translate 0.13s;
+    opacity 0.12s,
+    translate 0.12s;
 }
 .day-number-enter-from {
   opacity: 0;
@@ -217,8 +301,8 @@ const phaseIcons = {
   }
   .living-ring-marker,
   .living-ring-arc,
-  .day-number-enter-active,
-  .day-number-leave-active {
+  .living-ring-center strong.day-number-enter-active,
+  .living-ring-center strong.day-number-leave-active {
     transition: none;
   }
 }

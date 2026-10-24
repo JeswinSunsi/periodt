@@ -19,7 +19,8 @@
  * Illustration: --art-stem, --art-leaf/dark/light, --art-gold, --art-ground,
  *   --art-cup/rim/drink/highlight, --art-sun, --art-landscape/muted/line.
  * Effects: --shadow-color, --scrim-color; opacity is composed at each use.
- * Theme picker: --theme-control-bg/border/text, --theme-swatch-sage/pink.
+ * Theme picker: --theme-control-bg/border/text,
+ *   --theme-swatch-sage/pink/aqua/violet.
  *
  * Retain distinct phase, warning, and danger hues; body text and controls
  * should remain readable on their associated surfaces in every palette.
@@ -103,6 +104,8 @@
   --theme-control-text: var(--text-secondary);
   --theme-swatch-sage: #8b9e73;
   --theme-swatch-pink: #c77799;
+  --theme-swatch-aqua: #5fa0b8;
+  --theme-swatch-violet: #9278c4;
 }
 
 [data-theme="pink"] {
@@ -177,4 +180,152 @@
   --art-landscape-line: #ead4df;
   --shadow-color: #6f3b52;
   --scrim-color: #563143;
+}
+
+[data-theme="aqua"] {
+  --page-bg: #f2f8fa;
+  --sidebar-bg: #e4f0f3;
+  --surface: #fbfeff;
+  --surface-subtle: #ebf4f6;
+  --surface-muted: #e2ecef;
+  --text-heading: #263f4a;
+  --text-body: #2f4b57;
+  --text-secondary: #3f5f6c;
+  --text-muted: #43606c;
+  --text-danger: #8e3f3a;
+  --border: #d5e5ea;
+  --border-soft: #e2eef1;
+  --border-strong: #93b5c1;
+  --border-accent: #a9c8d2;
+  --accent: #2a6a80;
+  --accent-hover: #1f5163;
+  --accent-mid: #6fa3b5;
+  --accent-soft: #dcedf2;
+  --accent-soft-hover: #cfe5ec;
+  --accent-soft-strong: #c3dee7;
+  --on-accent: #f7fdff;
+  --focus-ring: #255f73;
+  --warning-bg: #f6eedd;
+  --warning-border: #c9b48c;
+  --warning-text: #6b4d2a;
+  --danger-bg: #fdefed;
+  --danger-border: #d29a94;
+  --decorative-gold: #b39b5e;
+  --period-bg: #e6a6a6;
+  --period-text: #66302f;
+  --predicted-bg: #fdf0f0;
+  --predicted-text: #844a48;
+  --predicted-border: #cc9593;
+  --fertile-bg: #e3f1ec;
+  --fertile-text: #2f6352;
+  --fertile-border: #b9dacd;
+  --ovulation-bg: #f1e6bf;
+  --ovulation-text: #67552a;
+  --ovulation-border: #dfcf9f;
+  --phase-menstrual: #dfa08f;
+  --phase-follicular: #6fb0a6;
+  --phase-ovulation: #c98bb0;
+  --phase-luteal: #8fa6c8;
+  --phase-menstrual-bg: #f8e9e4;
+  --phase-menstrual-border: #eed6ce;
+  --phase-follicular-bg: #e2f2ef;
+  --phase-follicular-border: #cce5e0;
+  --phase-ovulation-bg: #f6efda;
+  --phase-ovulation-border: #e8dcb9;
+  --phase-luteal-bg: #e5ebf4;
+  --phase-luteal-border: #d3dcea;
+  --ring-accent: #2f7489;
+  --ring-ovulation-accent: #a0537c;
+  --hormone-estrogen: #3f8a9c;
+  --hormone-progesterone: #c4976a;
+  --art-stem: #4f7a80;
+  --art-leaf: #7fb0b5;
+  --art-leaf-dark: #5f949b;
+  --art-leaf-light: #a7cdd1;
+  --art-gold: #cdb487;
+  --art-ground: #c9d9da;
+  --art-cup: #f2fafb;
+  --art-cup-rim: #dcecef;
+  --art-drink: #9a7c5f;
+  --art-highlight: #fbfeff;
+  --art-sun: #ecd9a6;
+  --art-landscape: #7fa5ae;
+  --art-landscape-muted: #adc8ce;
+  --art-landscape-line: #dceaec;
+  --shadow-color: #1d3943;
+  --scrim-color: #213a44;
+}
+
+[data-theme="violet"] {
+  --page-bg: #f8f5fc;
+  --sidebar-bg: #eee8f6;
+  --surface: #fdfbff;
+  --surface-subtle: #f3eefa;
+  --surface-muted: #eae3f2;
+  --text-heading: #3d3352;
+  --text-body: #483d5e;
+  --text-secondary: #5a4d72;
+  --text-muted: #5d5074;
+  --text-danger: #8f3f4c;
+  --border: #e3dbef;
+  --border-soft: #ece6f4;
+  --border-strong: #ae9fc8;
+  --border-accent: #c0b3d6;
+  --accent: #6a4c9c;
+  --accent-hover: #533a7d;
+  --accent-mid: #a08bc6;
+  --accent-soft: #ebe3f6;
+  --accent-soft-hover: #e1d6f1;
+  --accent-soft-strong: #d8cbec;
+  --on-accent: #fcfaff;
+  --focus-ring: #62458f;
+  --warning-bg: #f8efdd;
+  --warning-border: #cbb38b;
+  --warning-text: #6d4e2c;
+  --danger-bg: #fdeef0;
+  --danger-border: #d3969f;
+  --decorative-gold: #b89a62;
+  --period-bg: #e3a3b4;
+  --period-text: #692f42;
+  --predicted-bg: #fdf0f4;
+  --predicted-text: #85475b;
+  --predicted-border: #cc8ea2;
+  --fertile-bg: #e8f0e2;
+  --fertile-text: #4f663d;
+  --fertile-border: #c3d6b1;
+  --ovulation-bg: #f3e6bf;
+  --ovulation-text: #6b5529;
+  --ovulation-border: #dec99c;
+  --phase-menstrual: #d99aa8;
+  --phase-follicular: #9cb886;
+  --phase-ovulation: #c784b8;
+  --phase-luteal: #9d92cf;
+  --phase-menstrual-bg: #f9e8ee;
+  --phase-menstrual-border: #eed3dd;
+  --phase-follicular-bg: #ecf1e5;
+  --phase-follicular-border: #dbe5cf;
+  --phase-ovulation-bg: #f8eedb;
+  --phase-ovulation-border: #ebdcbd;
+  --phase-luteal-bg: #ece8f7;
+  --phase-luteal-border: #dcd5ee;
+  --ring-accent: #7457a6;
+  --ring-ovulation-accent: #a04f86;
+  --hormone-estrogen: #8a62b5;
+  --hormone-progesterone: #c49765;
+  --art-stem: #6d5e86;
+  --art-leaf: #a796c6;
+  --art-leaf-dark: #8a77ad;
+  --art-leaf-light: #c5b8dd;
+  --art-gold: #d1b183;
+  --art-ground: #d8cbe0;
+  --art-cup: #f8f2fd;
+  --art-cup-rim: #e7dcf2;
+  --art-drink: #a07b68;
+  --art-highlight: #fdfbff;
+  --art-sun: #eed8b0;
+  --art-landscape: #9989b8;
+  --art-landscape-muted: #c3b8d8;
+  --art-landscape-line: #e6def0;
+  --shadow-color: #3a2a55;
+  --scrim-color: #2f2545;
 }

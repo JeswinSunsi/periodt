@@ -6,7 +6,7 @@ import CyclePhasePicker from "./CyclePhasePicker.vue";
 import { useCycle, addDays, dateKey, fromKey } from "../composables/useCycle";
 import { phaseSegments, phaseAtDay, phaseStories } from "../lib/cyclePhases";
 
-const emit = defineEmits(["log", "settings", "calendar"]);
+const emit = defineEmits(["log", "calendar"]);
 const {
   state,
   today,
@@ -20,12 +20,6 @@ const selectedDay = ref(
   Math.max(1, Math.min(cycleDay.value, state.profile.cycleLength)),
 );
 const exploring = ref(false);
-// Native range inputs don't animate their thumbs; the visual thumb below does.
-// Direct pointer/keyboard input stays immediate, while phase jumps glide.
-const isScrubbing = ref(false);
-const sliderPosition = computed(
-  () => ((selectedDay.value - 1) / (state.profile.cycleLength - 1)) * 100,
-);
 const segments = computed(() =>
   phaseSegments(state.profile.cycleLength, currentPeriodLength.value),
 );
@@ -67,7 +61,6 @@ const symptomSummary = computed(() => {
 const pretty = (date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 function returnToToday() {
-  isScrubbing.value = false;
   exploring.value = false;
   selectedDay.value = Math.max(
     1,
@@ -76,14 +69,12 @@ function returnToToday() {
 }
 function selectPhase(p) {
   if (!p.days) return;
-  isScrubbing.value = false;
   selectedDay.value =
     p.name === phase.value ? Math.min(cycleDay.value, p.end) : p.start;
   exploring.value = true;
 }
-function selectDay(event) {
-  isScrubbing.value = true;
-  selectedDay.value = Number(event.target.value);
+function selectDay(day) {
+  selectedDay.value = day;
   exploring.value = true;
 }
 watch(
@@ -94,15 +85,6 @@ watch(
   ],
   returnToToday,
 );
-const rangeStyle = computed(() => ({
-  background: `linear-gradient(to right, ${segments.value
-    .filter((p) => p.days)
-    .map(
-      (p) =>
-        `${p.color} ${((p.start - 1) / state.profile.cycleLength) * 100}% ${(p.end / state.profile.cycleLength) * 100}%`,
-    )
-    .join(", ")})`,
-}));
 const chartPhase = computed(
   () =>
     ({
@@ -120,12 +102,6 @@ const chartId = `cycle-hormones`;
 <template>
   <div class="cycle-detail" :data-phase="selectedPhase">
     <section class="cycle-explorer" :data-phase="selectedPhase">
-      <div class="cycle-explorer-top flex items-center justify-between gap-3">
-        <span class="card-eyebrow">A LITTLE CLOSER TO YOUR CYCLE</span>
-        <button class="cycle-settings-button" @click="emit('settings')">
-          <Icon name="Settings2" :size="15" /> Edit my dates
-        </button>
-      </div>
       <div class="cycle-explorer-body">
         <div class="cycle-orbit">
           <span class="orbit-star star-one" aria-hidden="true">✧</span
@@ -136,7 +112,10 @@ const chartId = `cycle-hormones`;
             :period-length="currentPeriodLength"
             :phase="selectedPhase"
             detailed
+            interactive
+            :value-text="`Day ${exploring ? selectedDay : cycleDay}, ${pretty(exploring ? selectedDate : today)}, estimated ${selectedPhase} phase`"
             :label="exploring ? 'EXPLORING DAY' : 'TODAY · CYCLE DAY'"
+            @select="selectDay"
           />
           <p class="cycle-orbit-caption">
             {{ exploring ? pretty(selectedDate) : pretty(today) }}
@@ -144,7 +123,7 @@ const chartId = `cycle-hormones`;
             {{
               selectedPhase === "Unconfirmed"
                 ? "Awaiting a new period date"
-                : "Estimated phase"
+                : `${selectedPhase} phase`
             }}
           </p>
         </div>
@@ -185,47 +164,6 @@ const chartId = `cycle-hormones`;
         </div>
       </div>
 
-      <div class="cycle-day-explorer">
-        <div class="flex items-center justify-between gap-2">
-          <label for="cycle-day-range">Explore a day in your cycle</label
-          ><output for="cycle-day-range" aria-live="polite"
-            >{{ exploring ? "Exploring" : "Today" }} · Day
-            {{ exploring ? selectedDay : cycleDay }}</output
-          >
-        </div>
-        <div
-          class="cycle-range-control"
-          :class="{ 'is-scrubbing': isScrubbing }"
-        >
-          <div
-            class="cycle-range-rail"
-            :style="rangeStyle"
-            aria-hidden="true"
-          ></div>
-          <div class="cycle-range-travel" aria-hidden="true">
-            <span
-              class="cycle-range-thumb"
-              :style="{ left: `${sliderPosition}%` }"
-              ><i></i
-            ></span>
-          </div>
-          <input
-            id="cycle-day-range"
-            class="cycle-day-range"
-            type="range"
-            min="1"
-            :max="state.profile.cycleLength"
-            :value="selectedDay"
-            :aria-valuetext="`Day ${selectedDay}, ${pretty(selectedDate)}, estimated ${phaseAtDay(selectedDay, state.profile.cycleLength, currentPeriodLength)} phase`"
-            @input="selectDay"
-            @pointerdown="isScrubbing = true"
-          />
-        </div>
-        <div class="cycle-day-labels">
-          <span>Day 1</span><span>Slide to explore your cycle</span
-          ><span>Day {{ state.profile.cycleLength }}</span>
-        </div>
-      </div>
     </section>
 
     <CyclePhasePicker
@@ -234,10 +172,6 @@ const chartId = `cycle-hormones`;
       :current-phase="phase"
       @select="selectPhase"
     />
-    <p class="cycle-overlap-note">
-      A simple map, with a little overlap: menstruation is also the beginning of
-      the follicular phase. Dates are estimates.
-    </p>
 
     <div class="cycle-detail-grid">
       <section class="card cycle-body-card">

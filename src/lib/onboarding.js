@@ -1,4 +1,5 @@
 import { regularityOptions, symptoms } from "./content.js";
+import { setPeriodStart } from "./periodHistory.js";
 
 export const onboardingSteps = [
   "Welcome",
@@ -6,6 +7,7 @@ export const onboardingSteps = [
   "Your rhythm",
   "Your cycle",
   "Your body",
+  "Your theme",
   "Your space",
 ];
 
@@ -59,18 +61,8 @@ export function applyOnboarding(state, draft, today) {
   const errors = onboardingErrors(draft, today);
   if (Object.keys(errors).length) return errors;
 
-  if (
-    !state.profile.demo &&
-    state.profile.lastPeriod !== draft.lastPeriod &&
-    !state.periodHistory.some((p) => p.start === state.profile.lastPeriod)
-  )
-    state.periodHistory.push({
-      start: state.profile.lastPeriod,
-      length: state.profile.periodLength,
-    });
-
+  setPeriodStart(state, draft.lastPeriod);
   Object.assign(state.profile, {
-    lastPeriod: draft.lastPeriod,
     cycleLength: draft.cycleLength,
     periodLength: draft.periodLength,
     ...cycleContext(draft),

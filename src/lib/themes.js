@@ -13,6 +13,18 @@ export const themes = Object.freeze([
     swatch: "var(--theme-swatch-pink)",
     browserColor: "#fff5f8",
   }),
+  Object.freeze({
+    id: "aqua",
+    label: "Aqua Blue",
+    swatch: "var(--theme-swatch-aqua)",
+    browserColor: "#f2f8fa",
+  }),
+  Object.freeze({
+    id: "violet",
+    label: "Violet",
+    swatch: "var(--theme-swatch-violet)",
+    browserColor: "#f8f5fc",
+  }),
 ]);
 
 export const DEFAULT_THEME_ID = "sage";

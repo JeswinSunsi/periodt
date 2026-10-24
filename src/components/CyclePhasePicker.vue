@@ -49,8 +49,7 @@ const rangeLabel = (phase) =>
             <span class="phase-index-days">{{ rangeLabel(p) }}</span>
           </span>
           <span v-if="currentPhase === p.name" class="phase-index-current">
-            <span><i aria-hidden="true"></i>Your phase</span>
-            <small>Estimated</small>
+            <span><i aria-hidden="true"></i>Estimated Phase</span>
           </span>
           <span class="phase-index-action" aria-hidden="true">
             <Icon
@@ -176,13 +175,6 @@ const rangeLabel = (phase) =>
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
-}
-
-.phase-index-current small {
-  display: block;
-  margin-left: 11px;
-  color: var(--text-secondary);
-  font-size: 12px;
 }
 
 .phase-index-action {
