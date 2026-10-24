@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isPeriodStart, removePeriodStart } from "../src/lib/periodHistory.js";
+import {
+  isPeriodStart,
+  removePeriodStart,
+  setPeriodStart,
+} from "../src/lib/periodHistory.js";
 
 function recordedState() {
   return {
@@ -79,4 +83,46 @@ test("removing a date recorded only in settings does not create or delete a chec
   assert.equal(isPeriodStart(state, "2026-10-01"), false);
   assert.deepEqual(state.logs, {});
   assert.equal(state.profile.lastPeriod, "2026-09-01");
+});
+
+test("a newer period start moves the previous start into history", () => {
+  const state = recordedState();
+  state.profile.periodLength = 5;
+  setPeriodStart(state, "2026-10-29");
+  assert.equal(state.profile.lastPeriod, "2026-10-29");
+  assert.deepEqual(state.periodHistory, [
+    { start: "2026-09-01", length: 5 },
+    { start: "2026-10-01", length: 5 },
+  ]);
+  setPeriodStart(state, "2026-10-29");
+  assert.equal(state.periodHistory.length, 2);
+});
+
+test("an older period start is added to history without replacing the latest", () => {
+  const state = recordedState();
+  state.profile.periodLength = 4;
+  setPeriodStart(state, "2026-08-03");
+  assert.equal(state.profile.lastPeriod, "2026-10-01");
+  assert.deepEqual(state.periodHistory.at(-1), {
+    start: "2026-08-03",
+    length: 4,
+  });
+  assert.deepEqual(state.periodHistory.at(-2), {
+    start: "2026-10-01",
+    length: 4,
+  });
+  setPeriodStart(state, "2026-08-03");
+  assert.equal(
+    state.periodHistory.filter((p) => p.start === "2026-08-03").length,
+    1,
+  );
+});
+
+test("the first real period start replaces the sample cycle", () => {
+  const state = recordedState();
+  Object.assign(state.profile, { demo: true, periodLength: 5 });
+  setPeriodStart(state, "2026-07-01");
+  assert.equal(state.profile.lastPeriod, "2026-07-01");
+  assert.equal(state.profile.demo, false);
+  assert.deepEqual(state.periodHistory, [{ start: "2026-09-01", length: 5 }]);
 });

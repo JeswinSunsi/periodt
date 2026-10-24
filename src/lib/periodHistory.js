@@ -88,3 +88,24 @@ export function removePeriodStart(state, date, sampleDate) {
   state.profile.lastPeriod = starts.at(-1) || sampleDate;
   state.profile.demo = starts.length === 0;
 }
+
+export function setPeriodStart(state, date) {
+  if (
+    !state.profile.demo &&
+    date !== state.profile.lastPeriod &&
+    !state.periodHistory.some((p) => p.start === state.profile.lastPeriod)
+  ) {
+    state.periodHistory.push({
+      start: state.profile.lastPeriod,
+      length: state.profile.periodLength,
+    });
+  }
+  if (state.profile.demo || date >= state.profile.lastPeriod) {
+    state.profile.lastPeriod = date;
+    state.profile.demo = false;
+  } else if (!state.periodHistory.some((p) => p.start === date))
+    state.periodHistory.push({
+      start: date,
+      length: state.profile.periodLength,
+    });
+}
