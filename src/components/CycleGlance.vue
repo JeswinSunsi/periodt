@@ -11,11 +11,6 @@ const { state, today, currentPeriodLength } = useCycle();
 const now = computed(() =>
   todayInCycle(state.profile, currentPeriodLength.value, dateKey(today)),
 );
-const dateLabel = today.toLocaleDateString("en-US", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-});
 // What was logged today, so the card reflects the day as it actually is.
 const logged = computed(() => {
   const log = state.logs[dateKey(today)];
@@ -42,7 +37,6 @@ const located = computed(() => now.value.phase !== "Unconfirmed");
     class="glance-card"
     :data-phase="now.phase"
   >
-    <span class="card-eyebrow">Today · {{ dateLabel }}</span>
     <Icon class="glance-arrow" name="ArrowUpRight" :size="18" />
     <p class="glance-figure">
       <small>{{ now.label }}</small>
@@ -81,9 +75,6 @@ const located = computed(() => now.value.phase !== "Unconfirmed");
 .glance-card:hover {
   background: var(--accent-soft-hover);
 }
-.glance-card .card-eyebrow {
-  text-transform: uppercase;
-}
 .glance-arrow {
   position: absolute;
   top: 22px;
@@ -95,7 +86,6 @@ const located = computed(() => now.value.phase !== "Unconfirmed");
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0 10px;
-  margin-top: 10px;
   animation: glance-rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .glance-figure small {
