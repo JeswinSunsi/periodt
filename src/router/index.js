@@ -11,7 +11,6 @@ const pages = [
     component: () => import("../views/OverviewView.vue"),
     meta: {
       heading: "A little more in tune.",
-      description: "Every day is different. Let’s meet you where you are.",
     },
   },
   {

@@ -212,7 +212,9 @@ onBeforeUnmount(() => {
               <span class="tiny-sun">☼</span> {{ fullDate }}
             </p>
             <h1 tabindex="-1">{{ route.meta.heading }}</h1>
-            <p class="page-description">{{ route.meta.description }}</p>
+            <p v-if="route.meta.description" class="page-description">
+              {{ route.meta.description }}
+            </p>
           </div>
           <button
             v-if="
