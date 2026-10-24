@@ -4,111 +4,31 @@ import { useRouter } from "vue-router";
 import Icon from "../components/AppIcon.vue";
 import BotanicalArt from "../components/BotanicalArt.vue";
 import CycleCalendar from "../components/CycleCalendar.vue";
-import CycleRing from "../components/CycleRing.vue";
-import { articles, moods, phaseCopy } from "../lib/content.js";
-import { useCycle, shortDate } from "../composables/useCycle";
+import CycleGlance from "../components/CycleGlance.vue";
+import { articles, moods } from "../lib/content.js";
+import { checkinStreak } from "../lib/overview.js";
+import { useCycle, dateKey } from "../composables/useCycle";
 import { useCheckin } from "../composables/useCheckin.js";
 import { useDialog } from "../composables/useDialog.js";
 
-const {
-  state,
-  today,
-  cycleDay,
-  remaining,
-  nextPeriod,
-  phase,
-  currentPeriodLength,
-} = useCycle();
-const { todayLog, openLog } = useCheckin();
+const { state, today } = useCycle();
+const { todayLog, openLog, openCalendarDate } = useCheckin();
 const { openDialog } = useDialog();
 const router = useRouter();
-const currentPhaseCopy = computed(() => phaseCopy[phase.value]);
+const streak = computed(() => checkinStreak(state.logs, dateKey(today)));
+const todaySummary = computed(() => {
+  const log = todayLog.value;
+  const flow =
+    log.flow && log.flow !== "None"
+      ? `${log.flow} flow`
+      : log.flowRecorded && "No bleeding";
+  return [log.symptoms?.join(", "), flow].filter(Boolean).join(" · ");
+});
 </script>
 
 <template>
-  <div class="middle-grid overview-calendar">
-    <CycleCalendar />
-    <section class="checkin-card card" v-if="!todayLog">
-      <div class="flex items-center justify-between">
-        <span class="card-eyebrow">YOUR DAILY CHECK-IN</span>
-        <Icon name="Sun" :size="20" />
-      </div>
-      <h2>How’s your little world?</h2>
-      <p>A moment to pause and check in with you.</p>
-      <div class="mood-options">
-        <button
-          v-for="mood in moods"
-          :key="mood.name"
-          class="mood-option"
-          @click="openLog(today, mood.name)"
-        >
-          <span class="mood-face" :class="mood.face">
-            <i></i><i></i><b></b>
-            <span v-if="mood.face === 'glow'" class="face-spark">✧</span>
-          </span>
-          <span>{{ mood.name }}</span>
-        </button>
-      </div>
-    </section>
-  </div>
-  <div class="top-grid overview-support">
-    <section class="cycle-card cycle-card-interactive">
-      <button
-        class="cycle-card-hitbox"
-        aria-label="Open my cycle: explore phases, body changes, and check-ins"
-        @click="router.push({ name: 'My cycle' })"
-      ></button>
-      <div class="cycle-card-top">
-        <span class="card-eyebrow">YOU & YOUR CYCLE</span>
-        <button
-          class="cycle-edit"
-          aria-label="Edit cycle details"
-          @click="openDialog('settings')"
-        >
-          <Icon name="Ellipsis" :size="23" />
-        </button>
-      </div>
-      <div class="cycle-card-body">
-        <div class="cycle-ring">
-          <CycleRing
-            :day="cycleDay"
-            :cycle-length="state.profile.cycleLength"
-            :period-length="currentPeriodLength"
-            :phase="phase"
-          />
-        </div>
-        <div class="cycle-message">
-          <span class="phase-badge">
-            <Icon :name="currentPhaseCopy.icon" :size="14" />
-            {{
-              phase === "Unconfirmed"
-                ? "Awaiting your next log"
-                : phase + " phase"
-            }}
-          </span>
-          <h2>{{ currentPhaseCopy.title }}</h2>
-          <p>{{ currentPhaseCopy.description }}</p>
-          <span class="text-button cycle-explore-link">
-            Explore my cycle <Icon name="ArrowUpRight" :size="16" />
-          </span>
-        </div>
-      </div>
-      <div class="cycle-card-footer">
-        <span
-          ><span class="small-dot peach-dot"></span>
-          {{ remaining >= 0 ? "Next period in about" : "Expected period was" }}
-          <strong
-            >{{ Math.abs(remaining) }} days{{
-              remaining < 0 ? " ago" : ""
-            }}</strong
-          >
-        </span>
-        <span class="estimate"
-          >{{ state.profile.demo ? "Sample cycle" : "Estimated" }} ·
-          {{ shortDate(nextPeriod) }}</span
-        >
-      </div>
-    </section>
+  <div class="top-grid overview-glance">
+    <CycleGlance />
     <section class="partner-card">
       <div class="partner-art">
         <span class="partner-circle circle-one"
@@ -136,6 +56,56 @@ const currentPhaseCopy = computed(() => phaseCopy[phase.value]);
       ><span class="partner-caption"
         ><Icon name="ShieldCheck" :size="12" /> You’re always in control.</span
       >
+    </section>
+  </div>
+  <div class="middle-grid overview-calendar">
+    <CycleCalendar />
+    <section v-if="todayLog" class="checkin-card card checkin-done">
+      <div class="flex items-center justify-between">
+        <span class="card-eyebrow">TODAY’S CHECK-IN</span>
+        <Icon name="Check" :size="20" />
+      </div>
+      <h2>
+        {{
+          todayLog.mood
+            ? `Feeling ${todayLog.mood.toLowerCase()}.`
+            : "You checked in today."
+        }}
+      </h2>
+      <p>{{ todaySummary || "Nothing else noted, and that’s okay." }}</p>
+      <p v-if="streak > 1" class="checkin-streak">
+        <span aria-hidden="true">✧</span> {{ streak }} days in a row
+      </p>
+      <div class="checkin-done-actions">
+        <button class="button button-outline" @click="openCalendarDate(today)">
+          View today
+        </button>
+        <button class="small-text-button" @click="openLog()">
+          <Icon name="Pencil" :size="14" /> Edit
+        </button>
+      </div>
+    </section>
+    <section v-else class="checkin-card card">
+      <div class="flex items-center justify-between">
+        <span class="card-eyebrow">YOUR DAILY CHECK-IN</span>
+        <Icon name="Sun" :size="20" />
+      </div>
+      <h2>How’s your little world?</h2>
+      <p>A moment to pause and check in with you.</p>
+      <div class="mood-options">
+        <button
+          v-for="mood in moods"
+          :key="mood.name"
+          class="mood-option"
+          @click="openLog(today, mood.name)"
+        >
+          <span class="mood-face" :class="mood.face">
+            <i></i><i></i><b></b>
+            <span v-if="mood.face === 'glow'" class="face-spark">✧</span>
+          </span>
+          <span>{{ mood.name }}</span>
+        </button>
+      </div>
     </section>
   </div>
   <section class="care-section">
@@ -168,3 +138,24 @@ const currentPhaseCopy = computed(() => phaseCopy[phase.value]);
     </div>
   </section>
 </template>
+
+<style scoped>
+.checkin-done > p {
+  margin-top: 10px;
+}
+.checkin-done > .checkin-streak {
+  font-size: 13px;
+  color: var(--warning-text);
+}
+.checkin-done-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+.checkin-done-actions .small-text-button {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+</style>
