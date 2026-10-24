@@ -34,6 +34,16 @@ test("otherwise the figure is today's cycle day and phase", () => {
   assert.equal(figure("2026-10-28").value, 28);
 });
 
+test("the last days of the cycle count down to the next period", () => {
+  const at = (today) => todayInCycle(profile, 5, today);
+  assert.equal(at("2026-10-24").countdown, "");
+  assert.equal(at("2026-10-25").note, "Luteal phase");
+  assert.equal(at("2026-10-25").countdown, "Next period in 4 days");
+  assert.equal(at("2026-10-27").countdown, "Next period in 2 days");
+  assert.equal(at("2026-10-28").countdown, "Next period tomorrow");
+  assert.equal(at("2026-10-29").countdown, undefined);
+});
+
 test("a late period stays late without assuming a new cycle began", () => {
   assert.equal(figure("2026-10-29").note, "Period expected today");
   assert.equal(

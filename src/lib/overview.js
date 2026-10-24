@@ -39,8 +39,17 @@ export function todayInCycle(profile, periodLength, today) {
       note: "Menstrual phase",
     };
   const fertile = day >= timing.fertileStartDay && day < timing.ovulationDay;
+  // In the last few days of the cycle, count down to the next period.
+  const left = timing.nextPeriodDay - day;
+  const countdown =
+    day >= cycleLength - 3
+      ? left === 1
+        ? "Next period tomorrow"
+        : `Next period in ${left} days`
+      : "";
   return {
     ...base,
+    countdown,
     label: "Cycle day",
     value: day,
     unit: `of ${cycleLength}`,

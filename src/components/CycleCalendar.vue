@@ -134,10 +134,6 @@ function changeMonth(direction) {
             <i v-if="cell.logged" aria-hidden="true"></i>
           </button>
         </div>
-        <p class="calendar-instruction">
-          Select a date to view a saved check-in or add a new one. Future dates
-          are for planned notes.
-        </p>
       </div>
       <div class="calendar-side">
         <p class="calendar-estimate-label">
@@ -205,13 +201,6 @@ function changeMonth(direction) {
                 <h3>Cycle estimates</h3>
                 <span><i class="legend-dot fertile"></i> Fertile window</span>
                 <span><i class="legend-dot ovulation"></i> Ovulation</span>
-              </div>
-              <div class="calendar-legend-group">
-                <h3>Your activity</h3>
-                <span
-                  ><i class="legend-dot current-day"></i> Today (outline)</span
-                >
-                <span><i class="legend-dot logged"></i> Has check-in</span>
               </div>
             </div>
           </div>

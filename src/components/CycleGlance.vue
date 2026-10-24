@@ -106,7 +106,7 @@ const sparkles = [
     </p>
     <p class="glance-detail">{{ now.note }}</p>
     <p class="glance-season">
-      {{ logged || phaseStories[now.phase].season }}
+      {{ now.countdown || logged || phaseStories[now.phase].season }}
     </p>
     <div class="glance-bar" aria-hidden="true">
       <span
