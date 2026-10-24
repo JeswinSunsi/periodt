@@ -2,7 +2,7 @@
 import { computed, nextTick, reactive, ref } from "vue";
 import Icon from "../AppIcon.vue";
 import { hasCheckin } from "../../lib/checkin.js";
-import { moods } from "../../lib/content.js";
+import { moods, symptoms } from "../../lib/content.js";
 import {
   isPeriodStart,
   periodWindows,
@@ -30,16 +30,12 @@ const {
   openDialog,
   notify,
 } = useDialog();
-const symptoms = [
-  "Cramps",
-  "Bloating",
-  "Headache",
-  "Tender breasts",
-  "Low energy",
-  "Acne",
-  "Backache",
-  "Cravings",
-];
+// Symptoms chosen during setup come first.
+const orderedSymptoms = [...symptoms].sort(
+  (a, b) =>
+    state.profile.usualSymptoms.includes(b) -
+    state.profile.usualSymptoms.includes(a),
+);
 const checkinPeriod = computed(() =>
   periodWindows(state, dateKey(today))
     .filter((period) => !period.sample && period.start <= logDate.value)
@@ -298,7 +294,7 @@ function deleteLog() {
         <legend>What I’m noticing</legend>
         <div class="choice-row">
           <button
-            v-for="symptom in symptoms"
+            v-for="symptom in orderedSymptoms"
             :key="symptom"
             type="button"
             class="choice"

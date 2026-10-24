@@ -13,7 +13,7 @@ import { computed } from "vue";
 import Icon from "./AppIcon.vue";
 import { monthDates } from "../lib/calendar.js";
 import { hasCheckin } from "../lib/checkin.js";
-import { calendarEstimateAtDay } from "../lib/cyclePhases.js";
+import { calendarEstimateAtDay, estimateCaveats } from "../lib/cyclePhases.js";
 import { periodDayType } from "../lib/periodHistory.js";
 import {
   dateKey,
@@ -25,6 +25,7 @@ import { useCheckin } from "../composables/useCheckin.js";
 
 const { state, nextPeriod, ovulationDate } = useCycle();
 const { todayLog, periodEndDates, openLog, openCalendarDate } = useCheckin();
+const caveats = computed(() => estimateCaveats(state.profile));
 const calendarTitle = computed(() =>
   calendarMonth.value.toLocaleDateString("en-US", {
     month: "long",
@@ -153,6 +154,13 @@ function changeMonth(direction) {
             ><strong>{{ shortDate(ovulationDate) }}</strong>
           </div>
         </div>
+        <p
+          v-for="caveat in caveats"
+          :key="caveat"
+          class="calendar-estimate-caveat"
+        >
+          {{ caveat }}
+        </p>
       </div>
     </div>
     <div class="calendar-footer">

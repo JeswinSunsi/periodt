@@ -2,6 +2,8 @@
 import { reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Icon from "../AppIcon.vue";
+import { regularityOptions, symptoms } from "../../lib/content.js";
+import { cycleContext } from "../../lib/onboarding.js";
 import { setPeriodStart } from "../../lib/periodHistory.js";
 import { useCycle, dateKey } from "../../composables/useCycle";
 import { useDialog } from "../../composables/useDialog.js";
@@ -14,15 +16,29 @@ const settings = reactive({
   lastPeriod: state.profile.lastPeriod,
   cycleLength: state.profile.cycleLength,
   periodLength: state.profile.periodLength,
+  regularity: state.profile.regularity,
+  usualSymptoms: [...state.profile.usualSymptoms],
 });
 const settingsSnapshot = JSON.stringify(settings);
 trackUnsaved(() => JSON.stringify(settings) !== settingsSnapshot);
 
 function saveSettings() {
   setPeriodStart(state, settings.lastPeriod);
-  Object.assign(state.profile, settings, { demo: false });
+  Object.assign(state.profile, settings, cycleContext(settings), {
+    demo: false,
+  });
   modal.value = "";
   notify("Your cycle details are updated.");
+}
+// Tapping the chosen answer again clears it; these answers are optional.
+function choose(field, value) {
+  settings[field] = settings[field] === value ? "" : value;
+}
+function toggleSymptom(symptom) {
+  const index = settings.usualSymptoms.indexOf(symptom);
+  index < 0
+    ? settings.usualSymptoms.push(symptom)
+    : settings.usualSymptoms.splice(index, 1);
 }
 function openGuidedSetup() {
   modal.value = "";
@@ -84,6 +100,39 @@ function openGuidedSetup() {
     <p id="period-length-help" class="form-hint">
       How many days you usually bleed. Supported range: 2–10 days.
     </p>
+    <fieldset class="settings-choices">
+      <legend>How regular are your cycles?</legend>
+      <div class="choice-row">
+        <button
+          v-for="option in regularityOptions"
+          :key="option.value"
+          type="button"
+          class="choice"
+          :class="{ chosen: settings.regularity === option.value }"
+          :aria-pressed="settings.regularity === option.value"
+          @click="choose('regularity', option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </fieldset>
+    <fieldset class="settings-choices">
+      <legend>Usual symptoms</legend>
+      <p class="form-hint">These come first in your daily check-in.</p>
+      <div class="choice-row">
+        <button
+          v-for="symptom in symptoms"
+          :key="symptom"
+          type="button"
+          class="choice"
+          :class="{ chosen: settings.usualSymptoms.includes(symptom) }"
+          :aria-pressed="settings.usualSymptoms.includes(symptom)"
+          @click="toggleSymptom(symptom)"
+        >
+          {{ symptom }}
+        </button>
+      </div>
+    </fieldset>
     <p class="form-hint">
       Cycles vary. These estimates may be less useful with irregular cycles or
       hormonal contraception. They aren’t birth control.

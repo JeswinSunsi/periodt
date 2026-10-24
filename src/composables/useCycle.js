@@ -54,6 +54,9 @@ const state = reactive(
 state.logs ||= {};
 state.periodHistory ||= [];
 state.sharing ||= { code: "", cycle: true, mood: false, symptoms: false };
+// Optional setup answers; older saves predate them.
+state.profile.regularity ||= "";
+state.profile.usualSymptoms ||= [];
 state.onboarding = { status: initialOnboardingStatus(valid ? saved : null) };
 const storageError = reactive({ value: false });
 watch(

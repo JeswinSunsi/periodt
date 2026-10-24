@@ -5,7 +5,11 @@ import {
   initialOnboardingStatus,
   onboardingErrors,
   applyOnboarding,
+  cycleContext,
+  onboardingSteps,
+  progressRange,
 } from "../src/lib/onboarding.js";
+import { estimateCaveats } from "../src/lib/cyclePhases.js";
 
 const today = "2026-10-22";
 const answers = { lastPeriod: "2026-10-11", cycleLength: 30, periodLength: 4 };
@@ -113,7 +117,12 @@ test("personalizing records only the entered start, preserving check-ins, histor
     sharing: state.sharing,
   });
   assert.deepEqual(applyOnboarding(state, answers, today), {});
-  assert.deepEqual(state.profile, { ...answers, demo: false });
+  assert.deepEqual(state.profile, {
+    ...answers,
+    regularity: "",
+    usualSymptoms: [],
+    demo: false,
+  });
   assert.equal(state.onboarding.status, "completed");
   assert.deepEqual(
     {
@@ -168,6 +177,13 @@ test("back navigation keeps drafts isolated until review is confirmed, then pers
   setup.next();
   setup.next();
   assert.equal(setup.step.value, 3);
+  setup.draft.regularity = "varies";
+  setup.next();
+  setup.draft.usualSymptoms.push("Cramps");
+  setup.next();
+  assert.equal(setup.step.value, onboardingSteps.length - 1);
+  setup.next();
+  assert.equal(setup.step.value, onboardingSteps.length - 1);
   assert.equal(state.profile.demo, true);
   assert.equal(setup.finish(), true);
   await nextTick();
@@ -175,6 +191,8 @@ test("back navigation keeps drafts isolated until review is confirmed, then pers
   assert.equal(saved.onboarding.status, "completed");
   assert.equal(saved.profile.cycleLength, 31);
   assert.equal(saved.profile.demo, false);
+  assert.equal(saved.profile.regularity, "varies");
+  assert.deepEqual(saved.profile.usualSymptoms, ["Cramps"]);
 });
 
 test("setup has no skip path and an unfinished draft cannot complete", async () => {
@@ -187,4 +205,55 @@ test("setup has no skip path and an unfinished draft cannot complete", async () 
   assert.equal(setup.step.value, 1);
   assert.ok(setup.errors.value.lastPeriod);
   assert.deepEqual(JSON.parse(JSON.stringify(state.profile)), before);
+});
+
+test("optional setup answers keep only known choices, in check-in order", () => {
+  assert.deepEqual(
+    cycleContext({
+      regularity: "irregular",
+      usualSymptoms: ["Cravings", "Made up", "Cramps"],
+    }),
+    {
+      regularity: "irregular",
+      usualSymptoms: ["Cramps", "Cravings"],
+    },
+  );
+  assert.deepEqual(cycleContext({ regularity: "weekly" }), {
+    regularity: "",
+    usualSymptoms: [],
+  });
+});
+
+test("setup saves the optional answers with the cycle", () => {
+  const state = sample();
+  assert.deepEqual(
+    applyOnboarding(
+      state,
+      {
+        ...answers,
+        regularity: "regular",
+        usualSymptoms: ["Headache"],
+      },
+      today,
+    ),
+    {},
+  );
+  assert.equal(state.profile.regularity, "regular");
+  assert.deepEqual(state.profile.usualSymptoms, ["Headache"]);
+});
+
+test("estimates carry a caveat only when cycles vary", () => {
+  for (const regularity of ["", "regular", "unsure"])
+    assert.deepEqual(estimateCaveats({ regularity }), []);
+  for (const regularity of ["varies", "irregular"])
+    assert.equal(estimateCaveats({ regularity }).length, 1);
+});
+
+test("the progress bar shows four steps, then the fourth onward once it is done", () => {
+  const total = onboardingSteps.length;
+  for (const step of [0, 1, 2, 3])
+    assert.deepEqual(progressRange(step, total), [0, 4]);
+  for (const step of [4, 5])
+    assert.deepEqual(progressRange(step, total), [3, total]);
+  assert.deepEqual(progressRange(0, 3), [0, 3]);
 });

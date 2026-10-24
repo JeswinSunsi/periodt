@@ -130,7 +130,8 @@
 }
 .onboarding-progress ol {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -433,6 +434,15 @@
 }
 .onboarding-count-field > .onboarding-error {
   grid-column: 1 / -1;
+}
+.onboarding-questions {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.onboarding-questions .onboarding-input-label {
+  padding: 0;
 }
 .onboarding-review {
   margin: 0;

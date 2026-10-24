@@ -6,6 +6,23 @@ export const moods = [
   { name: "Good", face: "good" },
   { name: "Glowing", face: "glow" },
 ];
+export const symptoms = [
+  "Cramps",
+  "Bloating",
+  "Headache",
+  "Tender breasts",
+  "Low energy",
+  "Acne",
+  "Backache",
+  "Cravings",
+];
+// Optional setup answer that tells the app how far to trust its own estimates.
+export const regularityOptions = [
+  { value: "regular", label: "Pretty regular" },
+  { value: "varies", label: "Varies a little" },
+  { value: "irregular", label: "Hard to predict" },
+  { value: "unsure", label: "Not sure yet" },
+];
 export const phaseCopy = {
   Menstrual: {
     title: "A little room to rest.",

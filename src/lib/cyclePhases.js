@@ -132,3 +132,11 @@ export const phaseStories = {
     question: "How are you feeling while your rhythm changes?",
   },
 };
+
+// Notes shown beside the estimates when the setup answers make them less reliable.
+export function estimateCaveats(profile) {
+  const caveats = [];
+  if (["varies", "irregular"].includes(profile.regularity))
+    caveats.push("Your cycles vary, so treat these dates as rough guides.");
+  return caveats;
+}
