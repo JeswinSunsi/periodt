@@ -1559,7 +1559,7 @@ summary:focus-visible {
   }
 }
 
-/* Keep the calendar above the check-in at every screen size. */
+/* Keep the calendar above the partner card at every screen size. */
 .middle-grid.overview-calendar {
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
