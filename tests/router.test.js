@@ -1,10 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createMemoryHistory } from "vue-router";
-import { createAppRouter } from "../src/router/index.js";
+import { createAppRouter, onboardingDestination } from "../src/router/index.js";
 
-function testRouter() {
-  const router = createAppRouter(createMemoryHistory());
+function testRouter(onboarding = { pending: false }) {
+  const router = createAppRouter(createMemoryHistory(), {
+    needsOnboarding: () => onboarding.pending,
+  });
   // Stub the page component to exercise routing without a browser.
   const page = { render: () => null };
   for (const record of router.getRoutes()) {
@@ -92,4 +94,55 @@ test("back and forward restore the routed page", async () => {
   await travel(() => router.forward());
   assert.equal(router.currentRoute.value.name, "My cycle");
   assert.equal(router.currentRoute.value.fullPath, "/cycle");
+});
+
+test("pending setup redirects every page to onboarding and remembers the destination", async () => {
+  for (const [path, expected] of [
+    ["/", "/onboarding"],
+    ["/overview", "/onboarding"],
+    ["/missing/page", "/onboarding"],
+    ["/cycle", "/onboarding?redirect=/cycle"],
+    [
+      "/?source=bookmark#/journal",
+      "/onboarding?redirect=/journal?source=bookmark",
+    ],
+  ]) {
+    const router = testRouter({ pending: true });
+    await router.push(path);
+    assert.equal(router.currentRoute.value.name, "Onboarding");
+    assert.equal(
+      decodeURIComponent(router.currentRoute.value.fullPath),
+      expected,
+    );
+  }
+});
+
+test("completed setup leaves onboarding for the remembered page", async () => {
+  const onboarding = { pending: true };
+  const router = testRouter(onboarding);
+  await router.push("/insights");
+  assert.equal(router.currentRoute.value.name, "Onboarding");
+
+  onboarding.pending = false;
+  await router.replace(
+    onboardingDestination(router.currentRoute.value.query.redirect),
+  );
+  assert.equal(router.currentRoute.value.fullPath, "/insights");
+
+  await router.push("/onboarding");
+  assert.equal(router.currentRoute.value.fullPath, "/overview");
+  await router.push("/onboarding?redirect=/journal");
+  assert.equal(router.currentRoute.value.fullPath, "/journal");
+});
+
+test("onboarding only resumes same-app paths", () => {
+  assert.equal(onboardingDestination("/cycle?x=1"), "/cycle?x=1");
+  for (const redirect of [
+    undefined,
+    "",
+    "//example.com",
+    "https://example.com",
+    ["/cycle"],
+  ])
+    assert.deepEqual(onboardingDestination(redirect), { name: "Overview" });
 });

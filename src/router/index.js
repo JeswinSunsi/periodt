@@ -1,6 +1,8 @@
 import { createRouter } from "vue-router";
 
 const App = () => import("../App.vue");
+const OnboardingPage = () =>
+  import("../components/onboarding/OnboardingPage.vue");
 
 const pages = [
   { path: "/overview", name: "Overview" },
@@ -10,11 +12,21 @@ const pages = [
   { path: "/partner", name: "Partner space" },
 ];
 
-export function createAppRouter(history) {
+// Only same-app paths may be resumed after setup.
+export function onboardingDestination(redirect) {
+  return typeof redirect === "string" &&
+    redirect.startsWith("/") &&
+    !redirect.startsWith("//")
+    ? redirect
+    : { name: "Overview" };
+}
+
+export function createAppRouter(history, { needsOnboarding }) {
   const router = createRouter({
     history,
     routes: [
       { path: "/", redirect: { name: "Overview" } },
+      { path: "/onboarding", name: "Onboarding", component: OnboardingPage },
       ...pages.map((page) => ({ ...page, component: App })),
       { path: "/calendar", redirect: { name: "Overview" } },
       { path: "/:pathMatch(.*)*", redirect: { name: "Overview", params: {} } },
@@ -30,6 +42,19 @@ export function createAppRouter(history) {
       legacyPath === "/calendar"
     )
       return { path: legacyPath, query: to.query, replace: true };
+  });
+
+  // Setup runs before any page; the requested page opens once it is complete.
+  router.beforeEach((to) => {
+    const onboarding = to.name === "Onboarding";
+    if (needsOnboarding() && !onboarding)
+      return {
+        name: "Onboarding",
+        query: to.name === "Overview" ? {} : { redirect: to.fullPath },
+        replace: true,
+      };
+    if (!needsOnboarding() && onboarding)
+      return onboardingDestination(to.query.redirect);
   });
 
   return router;

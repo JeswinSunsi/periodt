@@ -2,6 +2,9 @@ import { reactive, ref } from "vue";
 import { useCycle, dateKey } from "./useCycle.js";
 import { applyOnboarding, onboardingErrors } from "../lib/onboarding.js";
 
+// True while the handoff animation plays between setup and the app.
+export const appOpening = ref(false);
+
 export function useOnboarding() {
   const { state, today } = useCycle();
   const step = ref(0);

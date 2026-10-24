@@ -14,8 +14,6 @@ import BotanicalArt from "./components/BotanicalArt.vue";
 import CycleRing from "./components/CycleRing.vue";
 import CycleDetail from "./components/CycleDetail.vue";
 import ThemeSwitcher from "./components/ThemeSwitcher.vue";
-import OnboardingFlow from "./components/onboarding/OnboardingFlow.vue";
-import OnboardingHandoff from "./components/onboarding/OnboardingHandoff.vue";
 import { monthDates } from "./lib/calendar.js";
 import { hasCheckin } from "./lib/checkin.js";
 import { calendarEstimateAtDay } from "./lib/cyclePhases.js";
@@ -32,6 +30,7 @@ import {
   addDays,
   dayDifference,
 } from "./composables/useCycle";
+import { appOpening } from "./composables/useOnboarding.js";
 const {
   state,
   today,
@@ -43,26 +42,6 @@ const {
   storageError,
   currentPeriodLength,
 } = useCycle();
-const appOpening = ref(false);
-const onboardingClosing = ref(false);
-const needsOnboarding = computed(
-  () => state.onboarding.status === "pending" || onboardingClosing.value,
-);
-function onOnboardingComplete() {
-  if (appOpening.value) return;
-  onboardingClosing.value = true;
-  appOpening.value = true;
-}
-function revealApp() {
-  onboardingClosing.value = false;
-}
-async function finishAppEntry() {
-  onboardingClosing.value = false;
-  appOpening.value = false;
-  await nextTick();
-  window.scrollTo({ top: 0, behavior: "auto" });
-  document.querySelector(".page-heading h1")?.focus({ preventScroll: true });
-}
 const router = useRouter();
 const route = useRoute();
 const activePage = computed(() => route.name);
@@ -582,6 +561,7 @@ function saveSettings() {
 function openGuidedSetup() {
   modal.value = "";
   state.onboarding = { status: "pending" };
+  router.push({ name: "Onboarding", query: { redirect: route.fullPath } });
 }
 const journalEntries = computed(() =>
   Object.entries(state.logs)
@@ -687,19 +667,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <OnboardingFlow
-    v-if="needsOnboarding"
-    :inert="appOpening ? true : undefined"
-    :aria-hidden="appOpening ? true : undefined"
-    @complete="onOnboardingComplete"
-  />
-  <OnboardingHandoff
-    v-if="appOpening"
-    @reveal="revealApp"
-    @complete="finishAppEntry"
-  />
   <a
-    v-if="!needsOnboarding"
     class="skip-link"
     href="#main-content"
     :inert="modal || mobileNav || appOpening ? true : undefined"
@@ -707,7 +675,6 @@ onBeforeUnmount(() => {
     >Skip to content</a
   >
   <div
-    v-if="!needsOnboarding"
     class="app-shell"
     :class="{ 'app-entering': appOpening }"
     :inert="modal || appOpening ? true : undefined"
