@@ -292,7 +292,7 @@ onBeforeUnmount(() => motionQuery.removeEventListener("change", motionChanged));
 }
 .onboarding-handoff-welcome {
   font:
-    500 clamp(30px, 5.5vh, 46px)/1 "Lora",
+    500 calc(var(--ring) * 0.115) / 1 "Lora",
     serif;
   color: var(--accent);
   letter-spacing: -1px;
