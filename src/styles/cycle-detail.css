@@ -288,14 +288,9 @@
   font-size: 9px;
   letter-spacing: 0.25px;
 }
-.cycle-overlap-note {
-  color: var(--text-muted);
-  font-size: 10px;
-  line-height: 1.7;
-  margin: 12px 2px 25px;
-}
 .cycle-detail-grid {
   display: grid;
+  margin-top: 25px;
   grid-template-columns: 1.45fr 1fr;
   gap: 20px;
 }
@@ -839,9 +834,8 @@
   .cycle-day-labels > span:nth-child(2) {
     font-size: 8px;
   }
-  .cycle-overlap-note {
-    font-size: 10px;
-    margin-bottom: 20px;
+  .cycle-detail-grid {
+    margin-top: 20px;
   }
   .cycle-section-title h2 {
     font-size: 22px;

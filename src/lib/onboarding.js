@@ -1,3 +1,23 @@
+import { regularityOptions, symptoms } from "./content.js";
+import { setPeriodStart } from "./periodHistory.js";
+
+export const onboardingSteps = [
+  "Welcome",
+  "Your dates",
+  "Your rhythm",
+  "Your cycle",
+  "Your body",
+  "Your theme",
+  "Your space",
+];
+
+// The progress bar shows the first four steps, then the fourth onward once it is done.
+export function progressRange(step, total, pageSize = 4) {
+  return step >= pageSize
+    ? [pageSize - 1, total]
+    : [0, Math.min(pageSize, total)];
+}
+
 // Keep legacy installs intact. Previously skipped setups now require a real
 // period start; completed setup stays complete when a recorded start is deleted.
 export function initialOnboardingStatus(saved) {
@@ -41,24 +61,27 @@ export function applyOnboarding(state, draft, today) {
   const errors = onboardingErrors(draft, today);
   if (Object.keys(errors).length) return errors;
 
-  if (
-    !state.profile.demo &&
-    state.profile.lastPeriod !== draft.lastPeriod &&
-    !state.periodHistory.some((p) => p.start === state.profile.lastPeriod)
-  )
-    state.periodHistory.push({
-      start: state.profile.lastPeriod,
-      length: state.profile.periodLength,
-    });
-
+  setPeriodStart(state, draft.lastPeriod);
   Object.assign(state.profile, {
-    lastPeriod: draft.lastPeriod,
     cycleLength: draft.cycleLength,
     periodLength: draft.periodLength,
+    ...cycleContext(draft),
     demo: false,
   });
   state.onboarding = {
     status: "completed",
   };
   return {};
+}
+
+// The optional answers keep only known choices; anything else means "not answered".
+export function cycleContext(answers) {
+  const known = (options, value) =>
+    options.some((option) => option.value === value) ? value : "";
+  return {
+    regularity: known(regularityOptions, answers.regularity),
+    usualSymptoms: symptoms.filter((symptom) =>
+      answers.usualSymptoms?.includes(symptom),
+    ),
+  };
 }

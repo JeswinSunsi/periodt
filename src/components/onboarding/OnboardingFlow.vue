@@ -12,29 +12,60 @@ import BotanicalArt from "../BotanicalArt.vue";
 import ThemeSwitcher from "../ThemeSwitcher.vue";
 import OnboardingProgress from "./OnboardingProgress.vue";
 import DayCountField from "./DayCountField.vue";
+import { regularityOptions, symptoms } from "../../lib/content.js";
+import { onboardingSteps as steps } from "../../lib/onboarding.js";
 import { useOnboarding } from "../../composables/useOnboarding.js";
 import { useCycle, dateKey, fromKey } from "../../composables/useCycle.js";
+import { useTheme } from "../../composables/useTheme.js";
 
 const emit = defineEmits(["complete"]);
 const { today } = useCycle();
 const { step, draft, errors, next, backTo, finish } = useOnboarding();
+const { themes, themeId, currentTheme, setTheme } = useTheme();
 const heading = ref(null);
 const form = ref(null);
 const privacyDialog = ref(null);
 const originalTitle = document.title;
-const steps = ["Welcome", "Your dates", "Your rhythm", "Your space"];
 const titles = [
   "A little more in tune.",
   "Your last period.",
   "Your usual rhythm.",
+  "A little about your cycle.",
+  "What you usually notice.",
+  "Make it feel like yours.",
   "Your space is ready.",
 ];
 const descriptions = [
   "Get to know your cycle, one day at a time.",
   "",
   "Your usual lengths, in days.",
+  "Optional. This tells us how far to trust your estimates.",
+  "Optional. These come first in your daily check-in.",
+  "Pick a palette. You can change it anytime.",
   "",
 ];
+const finalStep = steps.length - 1;
+const regularityLabel = computed(
+  () =>
+    regularityOptions.find((option) => option.value === draft.regularity)
+      ?.label || "Not answered",
+);
+const usualSymptomsLabel = computed(
+  () =>
+    symptoms
+      .filter((symptom) => draft.usualSymptoms.includes(symptom))
+      .join(", ") || "None chosen",
+);
+// Tapping the chosen answer again clears it, so these questions stay optional.
+function choose(field, value) {
+  draft[field] = draft[field] === value ? "" : value;
+}
+function toggleSymptom(symptom) {
+  const index = draft.usualSymptoms.indexOf(symptom);
+  index < 0
+    ? draft.usualSymptoms.push(symptom)
+    : draft.usualSymptoms.splice(index, 1);
+}
 const dateLabel = computed(() =>
   draft.lastPeriod
     ? fromKey(draft.lastPeriod).toLocaleDateString("en-US", {
@@ -46,7 +77,7 @@ const dateLabel = computed(() =>
 );
 
 function updateTitle() {
-  document.title = `Step ${step.value + 1} of 4: ${steps[step.value]} — periodt.`;
+  document.title = `Step ${step.value + 1} of ${steps.length}: ${steps[step.value]} — periodt.`;
 }
 async function focusHeading() {
   await nextTick();
@@ -66,7 +97,7 @@ onBeforeUnmount(() => {
 });
 
 async function submit() {
-  const isFinalStep = step.value === 3;
+  const isFinalStep = step.value === finalStep;
   const success = isFinalStep ? finish() : next();
   if (success && isFinalStep) emit("complete");
   if (!success) {
@@ -119,7 +150,7 @@ function setDate(value) {
       </aside>
 
       <div class="onboarding-form-column">
-        <OnboardingProgress :step="step" @navigate="backTo" />
+        <OnboardingProgress :steps="steps" :step="step" @navigate="backTo" />
         <section
           class="card onboarding-card"
           :data-step="step"
@@ -127,7 +158,7 @@ function setDate(value) {
         >
           <div class="onboarding-card-heading">
             <p id="onboarding-step-caption" class="onboarding-sr-only">
-              Step {{ step + 1 }} of 4: {{ steps[step] }}
+              Step {{ step + 1 }} of {{ steps.length }}: {{ steps[step] }}
             </p>
             <h1
               id="onboarding-title"
@@ -167,7 +198,7 @@ function setDate(value) {
                   <label
                     class="onboarding-input-label"
                     for="onboarding-last-period"
-                    >First day of your last period</label
+                    >When did your last period start?</label
                   >
                   <input
                     id="onboarding-last-period"
@@ -217,6 +248,66 @@ function setDate(value) {
                 />
               </div>
 
+              <fieldset v-else-if="step === 3" class="onboarding-questions">
+                <legend class="onboarding-input-label">
+                  How regular are your cycles?
+                </legend>
+                <div class="choice-row">
+                  <button
+                    v-for="option in regularityOptions"
+                    :key="option.value"
+                    type="button"
+                    class="choice"
+                    :class="{ chosen: draft.regularity === option.value }"
+                    :aria-pressed="draft.regularity === option.value"
+                    @click="choose('regularity', option.value)"
+                  >
+                    {{ option.label }}
+                  </button>
+                </div>
+              </fieldset>
+
+              <fieldset v-else-if="step === 4" class="onboarding-questions">
+                <legend class="onboarding-input-label">
+                  Choose any you often have around your period
+                </legend>
+                <div class="choice-row">
+                  <button
+                    v-for="symptom in symptoms"
+                    :key="symptom"
+                    type="button"
+                    class="choice"
+                    :class="{ chosen: draft.usualSymptoms.includes(symptom) }"
+                    :aria-pressed="draft.usualSymptoms.includes(symptom)"
+                    @click="toggleSymptom(symptom)"
+                  >
+                    {{ symptom }}
+                  </button>
+                </div>
+              </fieldset>
+
+              <fieldset v-else-if="step === 5" class="onboarding-questions">
+                <legend class="onboarding-input-label">Theme</legend>
+                <div class="choice-row">
+                  <button
+                    v-for="theme in themes"
+                    :key="theme.id"
+                    type="button"
+                    class="choice onboarding-theme-choice"
+                    :class="{ chosen: themeId === theme.id }"
+                    :aria-pressed="themeId === theme.id"
+                    @click="setTheme(theme.id)"
+                  >
+                    <span
+                      class="onboarding-theme-swatch"
+                      :style="{ background: theme.swatch }"
+                      aria-hidden="true"
+                    ></span>
+                    {{ theme.label }}
+                  </button>
+                </div>
+              </fieldset>
+
               <template v-else>
                 <dl class="onboarding-review">
                   <div>
@@ -234,12 +325,15 @@ function setDate(value) {
                   </div>
                   <div>
                     <div>
-                      <dt>Cycle length</dt>
-                      <dd>{{ draft.cycleLength }} days</dd>
+                      <dt>Usual rhythm</dt>
+                      <dd>
+                        {{ draft.cycleLength }}-day cycle ·
+                        {{ draft.periodLength }}-day period
+                      </dd>
                     </div>
                     <button
                       type="button"
-                      aria-label="Edit cycle length"
+                      aria-label="Edit cycle and period length"
                       @click="backTo(2)"
                     >
                       <Icon name="Pencil" :size="17" />
@@ -247,21 +341,46 @@ function setDate(value) {
                   </div>
                   <div>
                     <div>
-                      <dt>Period length</dt>
-                      <dd>{{ draft.periodLength }} days</dd>
+                      <dt>Cycle regularity</dt>
+                      <dd>{{ regularityLabel }}</dd>
                     </div>
                     <button
                       type="button"
-                      aria-label="Edit period length"
-                      @click="backTo(2)"
+                      aria-label="Edit cycle regularity"
+                      @click="backTo(3)"
+                    >
+                      <Icon name="Pencil" :size="17" />
+                    </button>
+                  </div>
+                  <div>
+                    <div>
+                      <dt>Usual symptoms</dt>
+                      <dd>
+                        {{ usualSymptomsLabel }}
+                      </dd>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Edit usual symptoms"
+                      @click="backTo(4)"
+                    >
+                      <Icon name="Pencil" :size="17" />
+                    </button>
+                  </div>
+                  <div>
+                    <div>
+                      <dt>Theme</dt>
+                      <dd>{{ currentTheme.label }}</dd>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Edit theme"
+                      @click="backTo(5)"
                     >
                       <Icon name="Pencil" :size="17" />
                     </button>
                   </div>
                 </dl>
-                <p class="onboarding-estimate-note">
-                  Estimates can vary. Not for birth control.
-                </p>
               </template>
             </div>
 
@@ -281,11 +400,14 @@ function setDate(value) {
                 {{
                   step === 0
                     ? "Let’s begin"
-                    : step === 3
+                    : step === finalStep
                       ? "Open my space"
                       : "Continue"
                 }}
-                <Icon :name="step === 3 ? 'Check' : 'ArrowRight'" :size="18" />
+                <Icon
+                  :name="step === finalStep ? 'Check' : 'ArrowRight'"
+                  :size="18"
+                />
               </button>
             </div>
           </form>

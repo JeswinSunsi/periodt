@@ -1,6 +1,13 @@
 import { reactive, ref } from "vue";
 import { useCycle, dateKey } from "./useCycle.js";
-import { applyOnboarding, onboardingErrors } from "../lib/onboarding.js";
+import {
+  applyOnboarding,
+  onboardingErrors,
+  onboardingSteps,
+} from "../lib/onboarding.js";
+
+// True while the handoff animation plays between setup and the app.
+export const appOpening = ref(false);
 
 export function useOnboarding() {
   const { state, today } = useCycle();
@@ -9,6 +16,8 @@ export function useOnboarding() {
     lastPeriod: "",
     cycleLength: state.profile.cycleLength,
     periodLength: state.profile.periodLength,
+    regularity: state.profile.regularity,
+    usualSymptoms: [...state.profile.usualSymptoms],
   });
   const errors = ref({});
 
@@ -27,7 +36,7 @@ export function useOnboarding() {
             )
           : {};
     if (Object.keys(errors.value).length) return false;
-    step.value = Math.min(step.value + 1, 3);
+    step.value = Math.min(step.value + 1, onboardingSteps.length - 1);
     return true;
   }
 

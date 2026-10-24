@@ -1,16 +1,25 @@
 <script setup>
+import { computed } from "vue";
 import Icon from "../AppIcon.vue";
+import { progressRange } from "../../lib/onboarding.js";
 
-defineProps({ step: { type: Number, required: true } });
+const props = defineProps({
+  steps: { type: Array, required: true },
+  step: { type: Number, required: true },
+});
 defineEmits(["navigate"]);
-const steps = ["Welcome", "Your dates", "Your rhythm", "Your space"];
+const range = computed(() => progressRange(props.step, props.steps.length));
+const first = computed(() => range.value[0]);
+const visibleSteps = computed(() =>
+  props.steps.map((title, index) => ({ title, index })).slice(...range.value),
+);
 </script>
 
 <template>
   <nav class="onboarding-progress" aria-label="Setup progress">
-    <ol>
+    <ol :start="first + 1">
       <li
-        v-for="(title, index) in steps"
+        v-for="{ title, index } in visibleSteps"
         :key="title"
         :class="{ 'is-current': index === step, 'is-complete': index < step }"
         :aria-current="index === step ? 'step' : undefined"

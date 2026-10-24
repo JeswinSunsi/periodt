@@ -130,7 +130,8 @@
 }
 .onboarding-progress ol {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -434,6 +435,27 @@
 .onboarding-count-field > .onboarding-error {
   grid-column: 1 / -1;
 }
+.onboarding-questions {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.onboarding-questions .onboarding-input-label {
+  padding: 0;
+}
+.onboarding-theme-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.onboarding-theme-swatch {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
 .onboarding-review {
   margin: 0;
 }
@@ -445,8 +467,8 @@
   padding: 13px 0;
   border-bottom: 1px solid var(--border);
 }
-.onboarding-review > div:first-child {
-  padding-top: 0;
+.onboarding-review > div:last-child {
+  border-bottom: 0;
 }
 .onboarding-review dt {
   font-size: 12px;
@@ -473,11 +495,6 @@
 }
 .onboarding-review button:hover {
   background: var(--accent-soft);
-}
-.onboarding-estimate-note {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-secondary);
 }
 .onboarding-data-dialog {
   width: min(380px, calc(100vw - 32px));

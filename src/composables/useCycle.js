@@ -5,6 +5,8 @@ import { initialOnboardingStatus } from "../lib/onboarding.js";
 export const dateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const fromKey = (key) => new Date(`${key}T12:00:00`);
+export const shortDate = (date) =>
+  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const addDays = (date, days) => {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -52,6 +54,9 @@ const state = reactive(
 state.logs ||= {};
 state.periodHistory ||= [];
 state.sharing ||= { code: "", cycle: true, mood: false, symptoms: false };
+// Optional setup answers; older saves predate them.
+state.profile.regularity ||= "";
+state.profile.usualSymptoms ||= [];
 state.onboarding = { status: initialOnboardingStatus(valid ? saved : null) };
 const storageError = reactive({ value: false });
 watch(
