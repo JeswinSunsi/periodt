@@ -5,7 +5,7 @@ import { hasCheckin } from "../../lib/checkin.js";
 import { moods, symptoms } from "../../lib/content.js";
 import {
   isPeriodStart,
-  minCycleLength,
+  minStartGap,
   periodWindows,
   removePeriodStart,
   setPeriodStart,
@@ -163,7 +163,7 @@ function togglePeriodStart(event) {
     draft.periodStart = false;
     return;
   }
-  // Starts closer than the shortest cycle are replaced, so confirm first.
+  // Starts closer than the minimum gap are replaced, so confirm first.
   const replaced = startsReplacedBy(state, logDate.value);
   if (!replaced.length) return markStart();
   event.target.checked = false;
@@ -176,7 +176,7 @@ function togglePeriodStart(event) {
   });
   showPrompt("replace-start", markStart, {
     title: `Replace your ${dates.join(" and ")} period start?`,
-    body: `${gaps.join(", and ")}. Periods can’t start less than ${minCycleLength} days apart, so saving this as a start moves your period start from ${dates.join(" and ")} to ${shortDate(fromKey(logDate.value))}. Any check-ins on ${dates.join(" and ")} stay saved.`,
+    body: `${gaps.join(", and ")}. Periods can’t start less than ${minStartGap} days apart, so saving this as a start moves your period start from ${dates.join(" and ")} to ${shortDate(fromKey(logDate.value))}. Any check-ins on ${dates.join(" and ")} stay saved.`,
     cancel: "Don’t mark as start",
     confirm: "Replace start",
   });

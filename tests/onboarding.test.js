@@ -8,11 +8,18 @@ import {
   cycleContext,
   onboardingSteps,
   progressRange,
+  markedRhythm,
 } from "../src/lib/onboarding.js";
 import { estimateCaveats } from "../src/lib/cyclePhases.js";
+import { periodWindows } from "../src/lib/periodHistory.js";
 
 const today = "2026-10-22";
-const answers = { lastPeriod: "2026-10-11", cycleLength: 30, periodLength: 4 };
+const answers = {
+  periods: [{ start: "2026-10-11", end: "2026-10-14" }],
+  cycleLength: 30,
+  periodLength: 4,
+};
+const one = (start, end = start) => ({ ...answers, periods: [{ start, end }] });
 const sample = () => ({
   version: 1,
   profile: {
@@ -59,23 +66,70 @@ test("legacy installs keep their data; previously skipped setup requires a real 
   );
 });
 
-test("setup requires a real date and rejects future or impossible dates", () => {
-  for (const lastPeriod of [
-    "",
-    "2026-10-23",
-    "2026-02-29",
-    "2026-02-31",
-    "bad",
-  ])
-    assert.ok(onboardingErrors({ ...answers, lastPeriod }, today).lastPeriod);
+test("setup requires a marked period and rejects future, impossible, or reversed ranges", () => {
+  assert.ok(onboardingErrors({ ...answers, periods: [] }, today).periods);
+  for (const start of ["", "2026-10-23", "2026-02-29", "2026-02-31", "bad"])
+    assert.ok(onboardingErrors(one(start), today).periods);
+  assert.ok(onboardingErrors(one("2026-10-20", "2026-10-23"), today).periods);
+  assert.ok(onboardingErrors(one("2026-10-14", "2026-10-11"), today).periods);
+  assert.ok(onboardingErrors(one("2026-10-01", "2026-10-15"), today).periods);
+  assert.deepEqual(onboardingErrors(one(today), today), {});
+  assert.deepEqual(onboardingErrors(one("2024-02-29"), today), {});
   assert.deepEqual(
-    onboardingErrors({ ...answers, lastPeriod: today }, today),
+    onboardingErrors(one("2026-10-01", "2026-10-14"), today),
     {},
   );
+});
+
+test("setup takes up to six non-overlapping periods, starting at least 7 days apart", () => {
+  const starts = [
+    "2026-04-20",
+    "2026-05-18",
+    "2026-06-15",
+    "2026-07-13",
+    "2026-08-10",
+    "2026-09-07",
+    "2026-10-05",
+  ];
+  const periods = starts.map((start) => ({ start, end: start }));
   assert.deepEqual(
-    onboardingErrors({ ...answers, lastPeriod: "2024-02-29" }, today),
+    onboardingErrors({ ...answers, periods: periods.slice(1) }, today),
     {},
   );
+  assert.ok(onboardingErrors({ ...answers, periods }, today).periods);
+  const pair = (first, second) =>
+    onboardingErrors({ ...answers, periods: [first, second] }, today).periods;
+  const latest = { start: "2026-10-11", end: "2026-10-14" };
+  assert.equal(
+    pair({ start: "2026-10-06", end: "2026-10-08" }, latest),
+    "Periods need to start at least 7 days apart.",
+  );
+  assert.equal(
+    pair({ start: "2026-10-04", end: "2026-10-06" }, latest),
+    undefined,
+  );
+  assert.equal(
+    pair(
+      { start: "2026-10-01", end: "2026-10-12" },
+      { start: "2026-10-08", end: "2026-10-10" },
+    ),
+    "Periods can’t overlap.",
+  );
+});
+
+test("marked periods suggest usual lengths within the supported ranges", () => {
+  assert.deepEqual(
+    markedRhythm([
+      { start: "2026-10-11", end: "2026-10-14" },
+      { start: "2026-08-14", end: "2026-08-19" },
+      { start: "2026-09-12", end: "2026-09-16" },
+    ]),
+    { cycleLength: 29, periodLength: 5 },
+  );
+  assert.deepEqual(markedRhythm([{ start: "2026-10-11", end: "2026-10-11" }]), {
+    cycleLength: null,
+    periodLength: 2,
+  });
 });
 
 test("lengths use the app's supported whole-day ranges, including their boundaries", () => {
@@ -118,12 +172,15 @@ test("personalizing records only the entered start, preserving check-ins, histor
   });
   assert.deepEqual(applyOnboarding(state, answers, today), {});
   assert.deepEqual(state.profile, {
-    ...answers,
+    lastPeriod: "2026-10-11",
+    cycleLength: 30,
+    periodLength: 4,
     regularity: "",
     usualSymptoms: [],
     demo: false,
   });
   assert.equal(state.onboarding.status, "completed");
+  preserved.periodHistory.push({ start: "2026-10-11", length: 4 });
   assert.deepEqual(
     {
       logs: state.logs,
@@ -139,12 +196,10 @@ test("personalizing records only the entered start, preserving check-ins, histor
   );
 });
 
-test("an empty date cannot complete setup or change the profile", () => {
+test("no marked period cannot complete setup or change the profile", () => {
   const state = sample();
   const before = structuredClone(state);
-  assert.ok(
-    applyOnboarding(state, { ...answers, lastPeriod: "" }, today).lastPeriod,
-  );
+  assert.ok(applyOnboarding(state, { ...answers, periods: [] }, today).periods);
   assert.deepEqual(state, before);
 });
 
@@ -153,18 +208,45 @@ test("setup preserves an existing personal start in history when it changes", ()
   Object.assign(state.profile, { lastPeriod: "2026-09-11", demo: false });
   applyOnboarding(state, answers, today);
   assert.equal(state.profile.lastPeriod, "2026-10-11");
-  assert.deepEqual(state.periodHistory, [{ start: "2026-09-11", length: 5 }]);
+  assert.deepEqual(state.periodHistory, [
+    { start: "2026-09-11", length: 5 },
+    { start: "2026-10-11", length: 4 },
+  ]);
 });
 
-test("setup treats a start within the shortest cycle as a correction, not a second period", () => {
+test("setup records every marked period with its own length, latest as the current cycle", () => {
   const state = sample();
-  Object.assign(state.profile, { lastPeriod: "2026-10-04", demo: false });
+  const periods = [
+    { start: "2026-10-11", end: "2026-10-13" },
+    { start: "2026-08-14", end: "2026-08-19" },
+    { start: "2026-09-12", end: "2026-09-16" },
+  ];
+  assert.deepEqual(applyOnboarding(state, { ...answers, periods }, today), {});
+  assert.equal(state.profile.lastPeriod, "2026-10-11");
+  assert.equal(state.profile.demo, false);
+  assert.deepEqual(state.periodHistory, [
+    { start: "2026-08-14", length: 6 },
+    { start: "2026-09-12", length: 5 },
+    { start: "2026-10-11", length: 3 },
+  ]);
+  assert.deepEqual(
+    periodWindows(state, today).map(({ start, length }) => ({ start, length })),
+    state.periodHistory,
+  );
+});
+
+test("setup treats a start within 7 days as a correction, not a second period", () => {
+  const state = sample();
+  Object.assign(state.profile, { lastPeriod: "2026-10-08", demo: false });
   state.periodHistory.push({ start: "2026-09-02", length: 5 });
-  state.logs["2026-10-04"] = { periodStart: true, mood: "Good" };
+  state.logs["2026-10-08"] = { periodStart: true, mood: "Good" };
   applyOnboarding(state, answers, today);
   assert.equal(state.profile.lastPeriod, "2026-10-11");
-  assert.deepEqual(state.periodHistory, [{ start: "2026-09-02", length: 5 }]);
-  assert.deepEqual(state.logs["2026-10-04"], {
+  assert.deepEqual(state.periodHistory, [
+    { start: "2026-09-02", length: 5 },
+    { start: "2026-10-11", length: 4 },
+  ]);
+  assert.deepEqual(state.logs["2026-10-08"], {
     periodStart: false,
     mood: "Good",
   });
@@ -172,11 +254,11 @@ test("setup treats a start within the shortest cycle as a correction, not a seco
 
 test("setup clears a sample-cycle check-in start that conflicts with the entered date", () => {
   const state = sample();
-  state.logs["2026-10-04"] = { periodStart: true };
+  state.logs["2026-10-08"] = { periodStart: true };
   applyOnboarding(state, answers, today);
   assert.equal(state.profile.lastPeriod, "2026-10-11");
-  assert.equal(state.logs["2026-10-04"].periodStart, false);
-  assert.deepEqual(state.periodHistory, []);
+  assert.equal(state.logs["2026-10-08"].periodStart, false);
+  assert.deepEqual(state.periodHistory, [{ start: "2026-10-11", length: 4 }]);
 });
 
 const stored = new Map();
@@ -184,7 +266,8 @@ globalThis.localStorage = {
   getItem: (key) => stored.get(key) ?? null,
   setItem: (key, value) => stored.set(key, value),
 };
-const { useCycle, dateKey } = await import("../src/composables/useCycle.js");
+const { useCycle, dateKey, addDays } =
+  await import("../src/composables/useCycle.js");
 const { useOnboarding } = await import("../src/composables/useOnboarding.js");
 
 test("back navigation keeps drafts isolated until review is confirmed, then persists completion", async () => {
@@ -192,9 +275,24 @@ test("back navigation keeps drafts isolated until review is confirmed, then pers
   const before = JSON.parse(JSON.stringify(state.profile));
   const setup = useOnboarding();
   setup.next();
-  setup.draft.lastPeriod = dateKey(currentDay);
+  setup.draft.periods = [
+    {
+      start: dateKey(addDays(currentDay, -30)),
+      end: dateKey(addDays(currentDay, -26)),
+    },
+    { start: dateKey(currentDay), end: dateKey(currentDay) },
+  ];
   setup.next();
+  assert.equal(
+    setup.draft.cycleLength,
+    30,
+    "Prefilled from the marked periods",
+  );
+  assert.equal(setup.draft.periodLength, 3);
   setup.draft.cycleLength = 31;
+  setup.backTo(1);
+  setup.next();
+  assert.equal(setup.draft.cycleLength, 31, "Unchanged periods keep edits");
   setup.backTo(1);
   assert.equal(setup.draft.cycleLength, 31);
   assert.deepEqual(JSON.parse(JSON.stringify(state.profile)), before);
@@ -229,7 +327,7 @@ test("setup has no skip path and an unfinished draft cannot complete", async () 
   assert.equal(setup.skip, undefined);
   assert.equal(setup.finish(), false);
   assert.equal(setup.step.value, 1);
-  assert.ok(setup.errors.value.lastPeriod);
+  assert.ok(setup.errors.value.periods);
   assert.deepEqual(JSON.parse(JSON.stringify(state.profile)), before);
 });
 

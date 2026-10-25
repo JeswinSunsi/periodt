@@ -108,17 +108,17 @@ test("only bleeding after ovulation overrides the fertile estimate", () => {
   assert.equal(bleedingAfterOvulation(data, "2026-10-26"), true);
 });
 
-test("starts within the shortest cycle are reported before being replaced", () => {
+test("starts within 7 days are reported before being replaced", () => {
   const data = state();
   data.periodHistory = [{ start: "2026-09-10", length: 5 }];
   data.logs["2026-10-07"] = { periodStart: true };
   data.profile.lastPeriod = "2026-10-07";
-  assert.deepEqual(startsReplacedBy(data, "2026-10-25"), ["2026-10-07"]);
+  assert.deepEqual(startsReplacedBy(data, "2026-10-11"), ["2026-10-07"]);
   assert.deepEqual(startsReplacedBy(data, "2026-10-07"), []);
-  assert.deepEqual(startsReplacedBy(data, "2026-11-10"), []);
+  assert.deepEqual(startsReplacedBy(data, "2026-10-14"), []);
   data.profile.demo = true;
   delete data.logs["2026-10-07"];
-  assert.deepEqual(startsReplacedBy(data, "2026-10-25"), []);
+  assert.deepEqual(startsReplacedBy(data, "2026-10-11"), []);
 });
 
 test("a later recorded flow remains visible after an early end", () => {

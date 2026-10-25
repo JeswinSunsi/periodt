@@ -24,10 +24,16 @@ export function periodWindows(state, today) {
         sample: false,
       });
   }
+  // A recorded length for the latest start (e.g. marked during setup) wins
+  // over the usual length.
   if (!state.profile.demo || !starts.has(state.profile.lastPeriod))
     starts.set(state.profile.lastPeriod, {
       start: state.profile.lastPeriod,
-      length: state.profile.periodLength,
+      length:
+        (!state.profile.demo &&
+          state.periodHistory.find((p) => p.start === state.profile.lastPeriod)
+            ?.length) ||
+        state.profile.periodLength,
       sample: !!state.profile.demo,
     });
   const periods = [...starts.values()].sort((a, b) =>
@@ -111,13 +117,12 @@ export function removePeriodStart(state, date, sampleDate) {
   state.profile.demo = starts.length === 0;
 }
 
-// The shortest cycle the app supports. Two starts closer than this cannot be
-// separate periods, so a new start replaces any recorded start that near it.
-export const minCycleLength = 21;
+// Two starts closer than this many days cannot be separate periods, so a new
+// start replaces any recorded start that near it.
+export const minStartGap = 7;
 
 const tooClose = (start, date) =>
-  start !== date &&
-  Math.abs(dayNumber(start) - dayNumber(date)) < minCycleLength;
+  start !== date && Math.abs(dayNumber(start) - dayNumber(date)) < minStartGap;
 
 // The recorded starts that setPeriodStart(state, date) would replace.
 export function startsReplacedBy(state, date) {

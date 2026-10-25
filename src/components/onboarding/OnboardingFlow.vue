@@ -12,10 +12,12 @@ import BotanicalArt from "../BotanicalArt.vue";
 import ThemeSwitcher from "../ThemeSwitcher.vue";
 import OnboardingProgress from "./OnboardingProgress.vue";
 import DayCountField from "./DayCountField.vue";
+import PeriodRangePicker from "./PeriodRangePicker.vue";
 import { regularityOptions, symptoms } from "../../lib/content.js";
+import { dateRangeLabel } from "../../lib/insights.js";
 import { onboardingSteps as steps } from "../../lib/onboarding.js";
 import { useOnboarding } from "../../composables/useOnboarding.js";
-import { useCycle, dateKey, fromKey } from "../../composables/useCycle.js";
+import { useCycle, dateKey } from "../../composables/useCycle.js";
 import { useTheme } from "../../composables/useTheme.js";
 
 const emit = defineEmits(["complete"]);
@@ -28,7 +30,7 @@ const privacyDialog = ref(null);
 const originalTitle = document.title;
 const titles = [
   "A little more in tune.",
-  "Your last period.",
+  "Your recent periods.",
   "Your usual rhythm.",
   "A little about your cycle.",
   "What you usually notice.",
@@ -37,7 +39,7 @@ const titles = [
 ];
 const descriptions = [
   "Get to know your cycle, one day at a time.",
-  "",
+  "Tap the calendar to mark up to 6 recent periods.",
   "Your usual lengths, in days.",
   "Optional. This tells us how far to trust your estimates.",
   "Optional. These come first in your daily check-in.",
@@ -66,15 +68,13 @@ function toggleSymptom(symptom) {
     ? draft.usualSymptoms.push(symptom)
     : draft.usualSymptoms.splice(index, 1);
 }
-const dateLabel = computed(() =>
-  draft.lastPeriod
-    ? fromKey(draft.lastPeriod).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "",
+const periodsLabel = computed(() =>
+  [...draft.periods]
+    .reverse()
+    .map((period) => dateRangeLabel(period.start, period.end))
+    .join(", "),
 );
+const periodPicker = ref(null);
 
 function updateTitle() {
   document.title = `Step ${step.value + 1} of ${steps.length}: ${steps[step.value]} — periodt.`;
@@ -97,6 +97,11 @@ onBeforeUnmount(() => {
 });
 
 async function submit() {
+  // With nothing marked yet, Continue opens the calendar instead of an error.
+  if (step.value === 1 && !draft.periods.length) {
+    periodPicker.value?.open();
+    return;
+  }
   const isFinalStep = step.value === finalStep;
   const success = isFinalStep ? finish() : next();
   if (success && isFinalStep) emit("complete");
@@ -105,8 +110,8 @@ async function submit() {
     form.value?.querySelector('[aria-invalid="true"]')?.focus();
   }
 }
-function setDate(value) {
-  draft.lastPeriod = value;
+function setPeriods(periods) {
+  draft.periods = periods;
   errors.value = {};
 }
 </script>
@@ -184,34 +189,13 @@ function setDate(value) {
               </template>
 
               <template v-else-if="step === 1">
-                <div class="onboarding-date-field">
-                  <label
-                    class="onboarding-input-label"
-                    for="onboarding-last-period"
-                    >When did your last period start?</label
-                  >
-                  <input
-                    id="onboarding-last-period"
-                    class="onboarding-date-input"
-                    :value="draft.lastPeriod"
-                    type="date"
-                    :max="dateKey(today)"
-                    required
-                    :aria-invalid="errors.lastPeriod ? true : undefined"
-                    :aria-describedby="
-                      errors.lastPeriod ? 'onboarding-date-error' : undefined
-                    "
-                    @input="setDate($event.target.value)"
-                  />
-                  <p
-                    v-if="errors.lastPeriod"
-                    id="onboarding-date-error"
-                    class="onboarding-error"
-                    role="alert"
-                  >
-                    {{ errors.lastPeriod }}
-                  </p>
-                </div>
+                <PeriodRangePicker
+                  ref="periodPicker"
+                  :model-value="draft.periods"
+                  :today="dateKey(today)"
+                  :error="errors.periods"
+                  @update:model-value="setPeriods"
+                />
               </template>
 
               <div v-else-if="step === 2" class="onboarding-lengths">
@@ -301,12 +285,18 @@ function setDate(value) {
                 <dl class="onboarding-review">
                   <div>
                     <div>
-                      <dt>Last period started</dt>
-                      <dd>{{ dateLabel }}</dd>
+                      <dt>
+                        {{
+                          draft.periods.length === 1
+                            ? "Recent period"
+                            : `${draft.periods.length} recent periods`
+                        }}
+                      </dt>
+                      <dd>{{ periodsLabel }}</dd>
                     </div>
                     <button
                       type="button"
-                      aria-label="Edit last period start"
+                      aria-label="Edit recent periods"
                       @click="backTo(1)"
                     >
                       <Icon name="Pencil" :size="17" />
