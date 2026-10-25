@@ -325,8 +325,7 @@ const chartId = `cycle-hormones`;
             </button>
           </div>
           <p class="hormone-disclaimer">
-            A general sketch of an ovulatory cycle, not a test result. The
-            curves don’t represent your hormone levels or exact timing.
+            A general sketch of an ovulatory cycle
           </p>
         </div>
       </section>

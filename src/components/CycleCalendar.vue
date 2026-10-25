@@ -36,7 +36,7 @@ function monthDates(year, month) {
 }
 
 const { state, nextPeriod, ovulationDate } = useCycle();
-const { todayLog, periodEndDates, openLog, openCalendarDate } = useCheckin();
+const { periodEndDates, openCalendarDate } = useCheckin();
 const { range } = useInsights();
 const caveats = computed(() => estimateCaveats(state.profile));
 const calendarTitle = computed(() =>
@@ -180,16 +180,6 @@ function changeMonth(direction) {
       </div>
     </div>
     <div class="calendar-footer">
-      <div v-if="todayLog" class="calendar-checkin-action">
-        <span><Icon name="Check" :size="16" /> Check-in saved</span>
-        <button
-          class="small-text-button"
-          aria-label="Edit today’s check-in"
-          @click="openLog()"
-        >
-          Edit
-        </button>
-      </div>
       <div class="calendar-key">
         <button
           type="button"
