@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   isPeriodStart,
+  offersPeriodStart,
   removePeriodStart,
   setPeriodStart,
 } from "../src/lib/periodHistory.js";
@@ -158,4 +159,22 @@ test("the first real period start replaces the sample cycle", () => {
   assert.equal(state.profile.lastPeriod, "2026-07-01");
   assert.equal(state.profile.demo, false);
   assert.deepEqual(state.periodHistory, [{ start: "2026-09-01", length: 5 }]);
+});
+
+test("check-ins offer a period start only 21 or more days from every recorded start", () => {
+  const state = recordedState();
+  const today = "2026-11-30";
+  const offers = (date) => offersPeriodStart(state, date, today);
+  assert.equal(offers("2026-10-01"), true, "a recorded start can be unticked");
+  assert.equal(offers("2026-10-15"), false);
+  assert.equal(offers("2026-10-21"), false);
+  assert.equal(offers("2026-10-22"), true);
+  assert.equal(offers("2026-09-20"), false, "too close to Sep 1 and Oct 1");
+  assert.equal(offers("2026-08-11"), true);
+  assert.equal(offers("2026-08-12"), false, "20 days before Sep 1");
+  assert.equal(offersPeriodStart(state, "2026-12-01", today), false);
+  state.profile.demo = true;
+  state.periodHistory = [];
+  state.logs = {};
+  assert.equal(offers("2026-10-05"), true, "the sample cycle never blocks it");
 });

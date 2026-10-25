@@ -6,6 +6,7 @@ import { moods, symptoms } from "../../lib/content.js";
 import {
   isPeriodStart,
   minStartGap,
+  offersPeriodStart,
   periodWindows,
   removePeriodStart,
   setPeriodStart,
@@ -104,21 +105,9 @@ const canSaveLog = computed(
       draft.periodEnd
     ),
 );
-const showPeriodStart = computed(() => {
-  if (isPeriodStart(state, logDate.value)) return true;
-  if (logDate.value > dateKey(today)) return false;
-  const recordedStarts = [
-    ...(state.profile.demo ? [] : [state.profile.lastPeriod]),
-    ...state.periodHistory.map((period) => period.start),
-    ...Object.entries(state.logs)
-      .filter(([, log]) => log.periodStart)
-      .map(([date]) => date),
-  ];
-  return !recordedStarts.some((start) => {
-    const elapsed = dayDifference(fromKey(logDate.value), fromKey(start));
-    return elapsed >= 0 && elapsed < 7;
-  });
-});
+const showPeriodStart = computed(() =>
+  offersPeriodStart(state, logDate.value, dateKey(today)),
+);
 const showPeriodEnd = computed(() => {
   const period = checkinPeriod.value;
   return (

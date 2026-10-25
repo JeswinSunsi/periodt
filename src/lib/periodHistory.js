@@ -121,6 +121,27 @@ export function removePeriodStart(state, date, sampleDate) {
 // start replaces any recorded start that near it.
 export const minStartGap = 7;
 
+// The check-in only offers "My period started" on dates at least this many
+// days from every recorded start; a start that close is unlikely to be a
+// new cycle. Recorded starts themselves always show it, so it can be unticked.
+export const periodStartOfferGap = 21;
+
+export function offersPeriodStart(state, date, today) {
+  if (isPeriodStart(state, date)) return true;
+  if (date > today) return false;
+  const recordedStarts = [
+    ...(state.profile.demo ? [] : [state.profile.lastPeriod]),
+    ...state.periodHistory.map((period) => period.start),
+    ...Object.entries(state.logs)
+      .filter(([, log]) => log.periodStart)
+      .map(([key]) => key),
+  ];
+  return !recordedStarts.some(
+    (start) =>
+      Math.abs(dayNumber(date) - dayNumber(start)) < periodStartOfferGap,
+  );
+}
+
 const tooClose = (start, date) =>
   start !== date && Math.abs(dayNumber(start) - dayNumber(date)) < minStartGap;
 

@@ -6,6 +6,7 @@ import {
   markedLength,
   maxSetupPeriods,
   periodRangeError,
+  periodsReplacedBy,
   recommendedSetupPeriods,
   sortedPeriods,
 } from "../../lib/onboarding.js";
@@ -34,16 +35,29 @@ const markedPeriod = (key) =>
 // A tap marks the start, a second tap the end; the range waits for Confirm.
 const start = ref("");
 const end = ref("");
-// A confirmed period tapped again, offered for removal.
+// A confirmed period tapped again, offered for removal; the tapped day also
+// anchors a new range if the next tap marks over it instead.
 const selected = ref(null);
+let selectedDay = "";
 const pending = computed(() =>
   start.value && end.value ? { start: start.value, end: end.value } : null,
 );
-const pendingError = computed(() =>
-  pending.value
-    ? periodRangeError(pending.value, props.modelValue, props.today)
-    : "",
+// Marking over a confirmed period replaces it once the new range is confirmed.
+const replaced = computed(() =>
+  pending.value ? periodsReplacedBy(pending.value, props.modelValue) : [],
 );
+const kept = computed(() =>
+  props.modelValue.filter((period) => !replaced.value.includes(period)),
+);
+const pendingError = computed(() => {
+  if (!pending.value) return "";
+  return (
+    periodRangeError(pending.value, kept.value, props.today) ||
+    (kept.value.length >= maxSetupPeriods
+      ? `You can mark up to ${maxSetupPeriods}. Remove one first.`
+      : "")
+  );
+});
 const full = computed(() => props.modelValue.length >= maxSetupPeriods);
 const remaining = computed(() => maxSetupPeriods - props.modelValue.length);
 
@@ -99,15 +113,21 @@ const currentMonth = computed(() => months.value.at(-1));
 
 function tap(cell) {
   if (cell.future) return;
+  const marked = markedPeriod(cell.key);
+  if (selected.value && marked !== selected.value) {
+    // Marking over: the range runs from the day tapped in the period.
+    selected.value = null;
+    end.value = "";
+    start.value = selectedDay;
+  }
   if (!start.value || end.value) {
-    const marked = markedPeriod(cell.key);
     if (marked && !start.value) {
       selected.value = selected.value === marked ? null : marked;
+      selectedDay = cell.key;
       return;
     }
     selected.value = null;
     end.value = "";
-    if (full.value) return;
     start.value = cell.key;
   } else if (cell.key < start.value) {
     end.value = start.value;
@@ -120,10 +140,7 @@ function clear() {
 }
 function confirm() {
   if (!pending.value || pendingError.value) return;
-  emit(
-    "update:modelValue",
-    sortedPeriods([...props.modelValue, pending.value]),
-  );
+  emit("update:modelValue", sortedPeriods([...kept.value, pending.value]));
   clear();
 }
 function remove() {
@@ -364,10 +381,7 @@ defineExpose({ open });
         <div class="period-sheet-status">
           <template v-if="pending">
             <strong>{{ rangeLabel(pending) }}</strong>
-            <p v-if="pendingError" class="onboarding-error">
-              {{ pendingError }}
-            </p>
-            <p v-else>{{ daysLabel(pending) }}. Is this right?</p>
+            <p>{{ daysLabel(pending) }}. Is this right?</p>
           </template>
           <template v-else-if="start">
             <strong>Started {{ startLabel }}</strong>
@@ -375,7 +389,6 @@ defineExpose({ open });
           </template>
           <template v-else-if="selected">
             <strong>{{ rangeLabel(selected) }}</strong>
-            <p>{{ daysLabel(selected) }}, marked.</p>
           </template>
           <template v-else-if="!modelValue.length">
             <strong>Your most recent period</strong>
@@ -387,8 +400,7 @@ defineExpose({ open });
               {{ modelValue.length === 1 ? "period" : "periods" }}
               marked</strong
             >
-            <p v-if="full">Tap one to remove it.</p>
-            <p v-else>Scroll up and mark one more.</p>
+            <p v-if="!full">Scroll up and mark one more.</p>
           </template>
         </div>
         <div class="period-sheet-actions">

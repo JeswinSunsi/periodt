@@ -47,6 +47,16 @@ export const markedLength = (period) =>
 export const sortedPeriods = (periods) =>
   [...periods].sort((a, b) => a.start.localeCompare(b.start));
 
+// The marked periods a new range would replace while marking: any it overlaps
+// or that start within the minimum gap of it, since they'd be the same period.
+export function periodsReplacedBy(period, others) {
+  return others.filter(
+    (other) =>
+      (other.start <= period.end && period.start <= other.end) ||
+      Math.abs(dayNumber(other.start) - dayNumber(period.start)) < minStartGap,
+  );
+}
+
 // Why one marked range can't be saved, or "" when it can. Ranges are
 // inclusive, can't overlap, and starts closer than the minimum gap would be
 // one period.

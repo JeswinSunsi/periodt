@@ -9,6 +9,8 @@ import {
   onboardingSteps,
   progressRange,
   markedRhythm,
+  periodsReplacedBy,
+  periodRangeError,
 } from "../src/lib/onboarding.js";
 import { estimateCaveats } from "../src/lib/cyclePhases.js";
 import { periodWindows } from "../src/lib/periodHistory.js";
@@ -115,6 +117,21 @@ test("setup takes up to six non-overlapping periods, starting at least 7 days ap
     ),
     "Periods can’t overlap.",
   );
+});
+
+test("marking over a period replaces any it overlaps or starts within 7 days of", () => {
+  const older = { start: "2026-09-10", end: "2026-09-14" };
+  const recent = { start: "2026-10-08", end: "2026-10-12" };
+  const marked = [older, recent];
+  const replaced = (start, end) => periodsReplacedBy({ start, end }, marked);
+  assert.deepEqual(replaced("2026-10-10", "2026-10-15"), [recent]);
+  assert.deepEqual(replaced("2026-10-03", "2026-10-06"), [recent]);
+  assert.deepEqual(replaced("2026-10-15", "2026-10-17"), []);
+  assert.deepEqual(replaced("2026-09-20", "2026-09-24"), []);
+  assert.deepEqual(replaced("2026-09-12", "2026-09-20"), [older]);
+  // What remains after replacing is valid to save alongside the new range.
+  const next = { start: "2026-10-10", end: "2026-10-15" };
+  assert.equal(periodRangeError(next, [older], today), "");
 });
 
 test("marked periods suggest usual lengths within the supported ranges", () => {

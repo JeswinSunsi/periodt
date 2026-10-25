@@ -414,9 +414,6 @@
   line-height: 1.4;
   color: var(--text-secondary);
 }
-.period-sheet-status p.onboarding-error {
-  color: var(--text-danger);
-}
 .period-sheet-actions {
   display: flex;
   flex-shrink: 0;
