@@ -4,6 +4,8 @@ import {
   periodWindows,
   periodDayType,
   isPeriodStart,
+  bleedingAfterOvulation,
+  startsReplacedBy,
 } from "../src/lib/periodHistory.js";
 
 function state() {
@@ -78,6 +80,45 @@ test("start dates take precedence over a contradictory None value", () => {
   };
   assert.equal(periodDayType(data, "2026-10-01", "2026-10-03"), "period");
   assert.equal(periodWindows(data, "2026-10-03")[1].length, 5);
+});
+
+test("a logged end marks every day since the start as bleeding", () => {
+  const data = state();
+  data.logs["2026-10-06"] = {
+    periodEnd: true,
+    flow: "None",
+    flowRecorded: true,
+  };
+  for (const day of ["01", "02", "03", "04", "05"])
+    assert.equal(periodDayType(data, `2026-10-${day}`, "2026-10-06"), "period");
+  assert.equal(periodDayType(data, "2026-10-06", "2026-10-06"), "");
+  assert.equal(periodDayType(data, "2026-10-07", "2026-10-07"), "");
+  assert.equal(periodDayType(data, "2026-09-02", "2026-10-06"), "");
+});
+
+test("only bleeding after ovulation overrides the fertile estimate", () => {
+  const data = state();
+  data.profile.cycleLength = 26;
+  data.logs["2026-10-12"] = { flow: "Light", flowRecorded: true };
+  assert.equal(bleedingAfterOvulation(data, "2026-10-26"), false);
+  data.logs["2026-10-19"] = { flow: "None", flowRecorded: true };
+  assert.equal(bleedingAfterOvulation(data, "2026-10-26"), false);
+  data.logs["2026-10-20"] = { flow: "Spotting", flowRecorded: true };
+  assert.equal(bleedingAfterOvulation(data, "2026-10-19"), false);
+  assert.equal(bleedingAfterOvulation(data, "2026-10-26"), true);
+});
+
+test("starts within the shortest cycle are reported before being replaced", () => {
+  const data = state();
+  data.periodHistory = [{ start: "2026-09-10", length: 5 }];
+  data.logs["2026-10-07"] = { periodStart: true };
+  data.profile.lastPeriod = "2026-10-07";
+  assert.deepEqual(startsReplacedBy(data, "2026-10-25"), ["2026-10-07"]);
+  assert.deepEqual(startsReplacedBy(data, "2026-10-07"), []);
+  assert.deepEqual(startsReplacedBy(data, "2026-11-10"), []);
+  data.profile.demo = true;
+  delete data.logs["2026-10-07"];
+  assert.deepEqual(startsReplacedBy(data, "2026-10-25"), []);
 });
 
 test("a later recorded flow remains visible after an early end", () => {

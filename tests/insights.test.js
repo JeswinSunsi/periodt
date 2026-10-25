@@ -278,38 +278,6 @@ test("recurring symptoms are dated from the anchor they follow", () => {
   assert.equal(forecastTiming(forecast[2]), "Days 1–2 of your cycle");
 });
 
-test("pain is rated per period and severe or rising pain is noted", () => {
-  const starts = [
-    "2026-06-01",
-    "2026-06-29",
-    "2026-07-27",
-    "2026-08-24",
-    "2026-09-21",
-  ];
-  const pains = ["Mild", "Moderate", "Severe", "Severe", null];
-  const logs = {};
-  starts.forEach((start, i) => {
-    if (pains[i]) logs[start] = { pain: pains[i], symptoms: ["Cramps"] };
-  });
-  const state = stateWith(starts, logs);
-  const cycles = cycleHistory(state, today);
-  assert.deepEqual(
-    cycles.map((c) => c.pain),
-    [1, 2, 3, 3, null],
-  );
-  const notes = healthNotes(state, cycles, cycleStats(cycles));
-  assert.ok(
-    notes.includes(
-      "You rated period pain severe in 2 of your last 3 rated periods. Pain that gets in the way of your day is worth getting checked.",
-    ),
-  );
-  assert.ok(
-    notes.includes(
-      "Your period pain has been getting stronger over your last 4 rated periods.",
-    ),
-  );
-});
-
 test("date ranges read naturally within and across months", () => {
   assert.equal(dateRangeLabel("2026-10-27", "2026-10-31"), "Oct 27–31");
   assert.equal(dateRangeLabel("2026-10-30", "2026-11-02"), "Oct 30 – Nov 2");

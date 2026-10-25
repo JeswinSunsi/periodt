@@ -7,7 +7,6 @@ export function hasCheckin(log) {
       log.flowRecorded ||
       (log.flow && log.flow !== "None") ||
       log.symptoms?.length ||
-      log.pain ||
       log.notes?.trim() ||
       log.periodStart ||
       log.periodEnd)

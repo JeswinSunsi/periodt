@@ -2,12 +2,14 @@
 import { computed, nextTick, reactive, ref } from "vue";
 import Icon from "../AppIcon.vue";
 import { hasCheckin } from "../../lib/checkin.js";
-import { moods, painLevels, symptoms } from "../../lib/content.js";
+import { moods, symptoms } from "../../lib/content.js";
 import {
   isPeriodStart,
+  minCycleLength,
   periodWindows,
   removePeriodStart,
   setPeriodStart,
+  startsReplacedBy,
 } from "../../lib/periodHistory.js";
 import {
   useCycle,
@@ -15,6 +17,7 @@ import {
   fromKey,
   addDays,
   dayDifference,
+  shortDate,
 } from "../../composables/useCycle";
 import { useCheckin } from "../../composables/useCheckin.js";
 import { useDialog } from "../../composables/useDialog.js";
@@ -49,7 +52,6 @@ const draft = reactive({
     existing?.flowRecorded === true ||
     !!(existing?.flow && existing.flow !== "None"),
   symptoms: [...(existing?.symptoms || [])],
-  pain: existing?.pain || "",
   notes: existing?.notes || "",
   periodStart: isPeriodStart(state, logDate.value),
   periodEnd: checkinPeriod.value?.end === logDate.value,
@@ -97,7 +99,6 @@ const canSaveLog = computed(
       draft.flowRecorded ||
       draft.flow !== "None" ||
       draft.symptoms.length ||
-      draft.pain ||
       draft.notes.trim() ||
       draft.periodStart ||
       draft.periodEnd
@@ -128,6 +129,19 @@ const showPeriodEnd = computed(() => {
     (!period.end || period.end >= logDate.value)
   );
 });
+// An open period offers an end, not a new start. A start entered at
+// onboarding or in settings has no check-in behind it, so once its usual
+// length has passed a later check-in may also mark the real start.
+const offerPeriodStart = computed(() => {
+  if (!showPeriodStart.value) return false;
+  if (!showPeriodEnd.value) return true;
+  const period = checkinPeriod.value;
+  return (
+    !state.logs[period.start]?.periodStart &&
+    dayDifference(fromKey(logDate.value), fromKey(period.start)) >=
+      period.expectedLength
+  );
+});
 function togglePeriodEnd(event) {
   draft.periodEnd = event.target.checked;
   if (draft.periodEnd) {
@@ -139,10 +153,39 @@ function togglePeriodEnd(event) {
     draft.flowRecorded = false;
   }
 }
+// A new start can be marked even while the previous period has no recorded end.
+function togglePeriodStart(event) {
+  const markStart = () => {
+    draft.periodStart = true;
+    draft.periodEnd = false;
+  };
+  if (!event.target.checked) {
+    draft.periodStart = false;
+    return;
+  }
+  // Starts closer than the shortest cycle are replaced, so confirm first.
+  const replaced = startsReplacedBy(state, logDate.value);
+  if (!replaced.length) return markStart();
+  event.target.checked = false;
+  const dates = replaced.map((start) => shortDate(fromKey(start)));
+  const gaps = replaced.map((start) => {
+    const days = Math.abs(
+      dayDifference(fromKey(logDate.value), fromKey(start)),
+    );
+    return `${shortDate(fromKey(start))} is ${days} ${days === 1 ? "day" : "days"} ${start < logDate.value ? "before" : "after"} this date`;
+  });
+  showPrompt("replace-start", markStart, {
+    title: `Replace your ${dates.join(" and ")} period start?`,
+    body: `${gaps.join(", and ")}. Periods can’t start less than ${minCycleLength} days apart, so saving this as a start moves your period start from ${dates.join(" and ")} to ${shortDate(fromKey(logDate.value))}. Any check-ins on ${dates.join(" and ")} stay saved.`,
+    cancel: "Don’t mark as start",
+    confirm: "Replace start",
+  });
+}
 function selectFlow(flow) {
   draft.flow = flow;
   draft.flowRecorded = true;
-  draft.periodEnd = flow === "None" && showPeriodEnd.value;
+  draft.periodEnd =
+    flow === "None" && showPeriodEnd.value && !draft.periodStart;
 }
 function toggleSymptom(symptom) {
   const index = draft.symptoms.indexOf(symptom);
@@ -229,10 +272,12 @@ function deleteLog() {
         </div>
       </fieldset>
       <template v-else-if="currentLogStep.id === 'flow'">
-        <label
-          v-if="!showPeriodEnd && showPeriodStart"
-          class="period-start-option"
-          ><input type="checkbox" v-model="draft.periodStart" /><span
+        <label v-if="offerPeriodStart" class="period-start-option"
+          ><input
+            type="checkbox"
+            :checked="draft.periodStart"
+            @change="togglePeriodStart"
+          /><span
             >My period started this day<small
               >Sets this date as the start of a cycle.</small
             ></span
@@ -306,22 +351,6 @@ function deleteLog() {
               @click="toggleSymptom(symptom)"
             >
               {{ symptom }}
-            </button>
-          </div>
-        </fieldset>
-        <fieldset class="checkin-pain">
-          <legend>Any pain?</legend>
-          <div class="choice-row">
-            <button
-              v-for="level in painLevels"
-              :key="level.name"
-              type="button"
-              class="choice pain-choice"
-              :class="{ chosen: draft.pain === level.name }"
-              :aria-pressed="draft.pain === level.name"
-              @click="draft.pain = draft.pain === level.name ? '' : level.name"
-            >
-              {{ level.name }}<small>{{ level.hint }}</small>
             </button>
           </div>
         </fieldset>

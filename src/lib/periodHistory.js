@@ -1,3 +1,5 @@
+import { cycleTiming } from "./cyclePhases.js";
+
 export function isPeriodStart(state, date) {
   return (
     !!state.logs[date]?.periodStart ||
@@ -68,8 +70,28 @@ export function periodDayType(state, date, today) {
     if (isPeriodStart(state, date) || (log?.flow && log.flow !== "None"))
       return "period";
     if (log?.flowRecorded && log.flow === "None") return "";
+    // A logged end confirms bleeding on every day between it and the start.
+    if (
+      periodWindows(state, today).some(
+        (period) => period.end && period.start < date && date < period.end,
+      )
+    )
+      return "period";
   }
   return "";
+}
+
+// Bleeding after the estimated ovulation day contradicts the current cycle's
+// fertile-window estimate, so the calendar stops showing it.
+export function bleedingAfterOvulation(state, today) {
+  const { ovulationDay } = cycleTiming(state.profile.cycleLength);
+  return Object.entries(state.logs).some(
+    ([date, log]) =>
+      date <= today &&
+      log.flow &&
+      log.flow !== "None" &&
+      dayNumber(date) - dayNumber(state.profile.lastPeriod) + 1 > ovulationDay,
+  );
 }
 
 export function removePeriodStart(state, date, sampleDate) {
@@ -93,17 +115,33 @@ export function removePeriodStart(state, date, sampleDate) {
 // separate periods, so a new start replaces any recorded start that near it.
 export const minCycleLength = 21;
 
+const tooClose = (start, date) =>
+  start !== date &&
+  Math.abs(dayNumber(start) - dayNumber(date)) < minCycleLength;
+
+// The recorded starts that setPeriodStart(state, date) would replace.
+export function startsReplacedBy(state, date) {
+  return [
+    ...new Set([
+      ...(state.profile.demo ? [] : [state.profile.lastPeriod]),
+      ...state.periodHistory.map((period) => period.start),
+      ...Object.entries(state.logs)
+        .filter(([, log]) => log.periodStart)
+        .map(([key]) => key),
+    ]),
+  ]
+    .filter((start) => tooClose(start, date))
+    .sort();
+}
+
 export function setPeriodStart(state, date) {
-  const tooClose = (start) =>
-    start !== date &&
-    Math.abs(dayNumber(start) - dayNumber(date)) < minCycleLength;
   state.periodHistory = state.periodHistory.filter(
-    (period) => !tooClose(period.start),
+    (period) => !tooClose(period.start, date),
   );
   for (const [key, log] of Object.entries(state.logs))
-    if (log.periodStart && tooClose(key)) log.periodStart = false;
+    if (log.periodStart && tooClose(key, date)) log.periodStart = false;
   const replacesLatest =
-    !state.profile.demo && tooClose(state.profile.lastPeriod);
+    !state.profile.demo && tooClose(state.profile.lastPeriod, date);
 
   if (
     !state.profile.demo &&

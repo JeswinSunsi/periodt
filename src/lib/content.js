@@ -16,13 +16,6 @@ export const symptoms = [
   "Backache",
   "Cravings",
 ];
-// Optional pain rating in the check-in; "Severe" carries the clinical cue
-// that matters most: pain getting in the way of usual activities.
-export const painLevels = [
-  { name: "Mild", hint: "Noticeable" },
-  { name: "Moderate", hint: "Hard to ignore" },
-  { name: "Severe", hint: "Got in the way of my day" },
-];
 // Optional setup answer that tells the app how far to trust its own estimates.
 export const regularityOptions = [
   { value: "regular", label: "Pretty regular" },

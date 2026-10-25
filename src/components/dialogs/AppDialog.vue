@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, watch } from "vue";
+import { computed, nextTick, watch } from "vue";
 import Icon from "../AppIcon.vue";
 import AboutDialog from "./AboutDialog.vue";
 import CheckinDialog from "./CheckinDialog.vue";
@@ -25,12 +25,30 @@ const {
   dialogProps,
   modalElement,
   closePrompt,
+  promptCopy,
   requestClose,
   keepEditing,
   confirmPrompt,
   focusDialog,
   clearToast,
 } = useDialog();
+const prompts = {
+  delete: {
+    title: "Delete this check-in?",
+    body: "This removes the entry and any period start recorded for this date. This can’t be undone.",
+    cancel: "Keep editing",
+    confirm: "Delete check-in",
+  },
+  discard: {
+    title: "Discard your unsaved changes?",
+    body: "Your changes haven’t been saved. Keep editing to finish your check-in or cycle settings.",
+    cancel: "Keep editing",
+    confirm: "Discard changes",
+  },
+};
+const prompt = computed(
+  () => promptCopy.value || prompts[closePrompt.value] || prompts.discard,
+);
 let previousFocus;
 
 function setModalElement(element) {
@@ -78,29 +96,17 @@ function modalKeydown(event) {
         @keydown="modalKeydown"
       >
         <div v-if="closePrompt" class="close-prompt" role="alert">
-          <strong>{{
-            closePrompt === "delete"
-              ? "Delete this check-in?"
-              : "Discard your unsaved changes?"
-          }}</strong>
-          <p>
-            {{
-              closePrompt === "delete"
-                ? "This removes the entry and any period start recorded for this date. This can’t be undone."
-                : "Your changes haven’t been saved. Keep editing to finish your check-in or cycle settings."
-            }}
-          </p>
+          <strong>{{ prompt.title }}</strong>
+          <p>{{ prompt.body }}</p>
           <div class="dialog-actions">
             <button class="button button-dark" @click="keepEditing">
-              Keep editing
+              {{ prompt.cancel }}
             </button>
             <button
               class="button button-outline danger-action"
               @click="confirmPrompt"
             >
-              {{
-                closePrompt === "delete" ? "Delete check-in" : "Discard changes"
-              }}
+              {{ prompt.confirm }}
             </button>
           </div>
         </div>

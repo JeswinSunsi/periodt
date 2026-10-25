@@ -5,7 +5,6 @@ import Icon from "../components/AppIcon.vue";
 import {
   healthNotes,
   insightsSummary,
-  painName,
   regularityLabel,
   settingSuggestions,
   symptomForecast,
@@ -331,10 +330,7 @@ async function shareSummary() {
         <li v-for="cycle in history" :key="cycle.start">
           <div class="history-label">
             <span
-              >{{ startLabel(cycle.start)
-              }}<template v-if="cycle.pain">
-                · {{ painName(cycle.pain).toLowerCase() }} pain</template
-              ></span
+              >{{ startLabel(cycle.start) }}</span
             >
             <strong v-if="cycle.gap"
               >{{ cycle.length }} days · a start may be missing</strong
@@ -398,11 +394,6 @@ async function shareSummary() {
             target="_blank"
             rel="noopener noreferrer"
             >NHS · Missed periods <Icon name="ArrowUpRight" :size="13" /></a
-          ><a
-            href="https://www.nhs.uk/symptoms/period-pain/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >NHS · Period pain <Icon name="ArrowUpRight" :size="13" /></a
           ><a
             href="https://womenshealth.gov/menstrual-cycle/premenstrual-syndrome"
             target="_blank"

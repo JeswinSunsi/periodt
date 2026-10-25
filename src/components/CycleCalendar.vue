@@ -14,7 +14,7 @@ import Icon from "./AppIcon.vue";
 import { hasCheckin } from "../lib/checkin.js";
 import { calendarEstimateAtDay, estimateCaveats } from "../lib/cyclePhases.js";
 import { dateRangeLabel } from "../lib/insights.js";
-import { periodDayType } from "../lib/periodHistory.js";
+import { bleedingAfterOvulation, periodDayType } from "../lib/periodHistory.js";
 import {
   dateKey,
   fromKey,
@@ -51,9 +51,11 @@ const calendarCells = computed(() => {
     calendarMonth.value.getMonth(),
     1,
   );
+  const hideFertile = bleedingAfterOvulation(state, dateKey(today));
   return monthDates(start.getFullYear(), start.getMonth()).map((date) => {
     const relative = dayDifference(date, fromKey(state.profile.lastPeriod));
     let type = calendarEstimateAtDay(relative + 1, state.profile.cycleLength);
+    if (hideFertile && (type === "fertile" || type === "ovulation")) type = "";
     const bleedingType = periodDayType(state, dateKey(date), dateKey(today));
     if (bleedingType) type = bleedingType;
     if (
@@ -149,15 +151,17 @@ function changeMonth(direction) {
         </div>
       </div>
       <div class="calendar-side">
-        <p class="calendar-estimate-label">
-          Cycle estimates<span v-if="state.profile.demo"> · Sample cycle</span>
+        <p v-if="state.profile.demo" class="calendar-estimate-label">
+          Sample cycle
         </p>
         <div class="upcoming">
           <div>
-            <span>Next period</span><strong>{{ shortDate(nextPeriod) }}</strong
-            ><small v-if="range" class="upcoming-range"
-              >Likely {{ dateRangeLabel(range.earliest, range.latest) }}</small
-            >
+            <span>Next period</span
+            ><strong>{{
+              range
+                ? dateRangeLabel(range.earliest, range.latest)
+                : shortDate(nextPeriod)
+            }}</strong>
           </div>
         </div>
         <div class="upcoming">

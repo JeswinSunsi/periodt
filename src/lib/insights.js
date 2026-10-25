@@ -1,4 +1,4 @@
-import { moods, painLevels } from "./content.js";
+import { moods } from "./content.js";
 import { periodWindows } from "./periodHistory.js";
 
 const dayNumber = (key) => Date.parse(`${key}T00:00:00Z`) / 86400000;
@@ -15,9 +15,6 @@ const median = (values) => {
     : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
 };
 const spread = (values) => Math.max(...values) - Math.min(...values);
-const painScore = Object.fromEntries(
-  painLevels.map((level, index) => [level.name, index + 1]),
-);
 
 // Averages follow recent cycles, like the last six Clue uses.
 export const recentCycleCount = 6;
@@ -63,27 +60,9 @@ export function cycleHistory(state, today) {
         : measuredRun(state, period),
       expectedPeriodLength: period.length,
       gap: length !== null && length > missedLogGap,
-      pain: peakPain(state, period),
     };
   });
 }
-
-// The strongest pain logged during a period, or null when none was rated.
-function peakPain(state, period) {
-  const days = Math.max(
-    period.end ? dayNumber(period.end) - dayNumber(period.start) : 0,
-    bleedingRun(state, period.start, period.length),
-  );
-  let peak = null;
-  for (let offset = 0; offset < days; offset++) {
-    const log = state.logs[keyAt(dayNumber(period.start) + offset)];
-    const score = painScore[log?.pain];
-    if (score) peak = Math.max(peak ?? 0, score);
-  }
-  return peak;
-}
-
-export const painName = (score) => painLevels[score - 1]?.name ?? "";
 
 function measuredRun(state, period) {
   const run = bleedingRun(state, period.start, period.length);
@@ -201,20 +180,6 @@ export function healthNotes(state, cycles, stats) {
     );
   if (spottingCycles(state, recent) >= 2)
     notes.push("You logged bleeding between periods in more than one cycle.");
-  const pains = recent.map((c) => c.pain).filter((pain) => pain !== null);
-  const severe = pains.slice(-3).filter((pain) => pain === 3).length;
-  if (severe >= 2)
-    notes.push(
-      `You rated period pain severe in ${severe} of your last ${Math.min(3, pains.length)} rated periods. Pain that gets in the way of your day is worth getting checked.`,
-    );
-  // A steady climb across at least three rated periods.
-  let climb = 1;
-  while (climb < pains.length && pains.at(-climb - 1) <= pains.at(-climb))
-    climb++;
-  if (climb >= 3 && pains.at(-1) > pains.at(-climb))
-    notes.push(
-      `Your period pain has been getting stronger over your last ${climb} rated periods.`,
-    );
   return notes;
 }
 
@@ -390,7 +355,7 @@ export function insightsSummary({ cycles, stats, notes, forecast }) {
     lines.push("", "Recent cycles:");
     for (const cycle of recent.toReversed())
       lines.push(
-        `- ${formatDate(cycle.start)}: ${cycle.length} days${cycle.periodLength !== null ? `, period ${cycle.periodLength} days` : ""}${cycle.pain ? `, ${painName(cycle.pain).toLowerCase()} pain` : ""}`,
+        `- ${formatDate(cycle.start)}: ${cycle.length} days${cycle.periodLength !== null ? `, period ${cycle.periodLength} days` : ""}`,
       );
   }
   if (forecast.length)

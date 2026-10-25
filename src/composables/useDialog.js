@@ -5,6 +5,8 @@ const modal = ref("");
 const dialogProps = ref({});
 const modalElement = ref(null);
 const closePrompt = ref("");
+// Optional wording for prompts whose details depend on the action.
+const promptCopy = ref(null);
 const toast = ref("");
 let hasUnsavedChanges = null;
 let pendingAction;
@@ -26,8 +28,9 @@ async function focusDialog() {
   modalElement.value?.scrollTo({ top: 0 });
   modalElement.value?.focus();
 }
-async function showPrompt(kind, onConfirm) {
+async function showPrompt(kind, onConfirm, copy = null) {
   pendingAction = onConfirm;
+  promptCopy.value = copy;
   closePrompt.value = kind;
   await nextTick();
   modalElement.value?.querySelector(".close-prompt button")?.focus();
@@ -68,6 +71,7 @@ export function useDialog() {
     dialogProps,
     modalElement,
     closePrompt,
+    promptCopy,
     toast,
     openDialog,
     trackUnsaved,
