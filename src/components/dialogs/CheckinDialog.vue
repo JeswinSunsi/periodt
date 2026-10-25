@@ -2,7 +2,7 @@
 import { computed, nextTick, reactive, ref } from "vue";
 import Icon from "../AppIcon.vue";
 import { hasCheckin } from "../../lib/checkin.js";
-import { moods, symptoms } from "../../lib/content.js";
+import { moods, painLevels, symptoms } from "../../lib/content.js";
 import {
   isPeriodStart,
   periodWindows,
@@ -49,6 +49,7 @@ const draft = reactive({
     existing?.flowRecorded === true ||
     !!(existing?.flow && existing.flow !== "None"),
   symptoms: [...(existing?.symptoms || [])],
+  pain: existing?.pain || "",
   notes: existing?.notes || "",
   periodStart: isPeriodStart(state, logDate.value),
   periodEnd: checkinPeriod.value?.end === logDate.value,
@@ -96,6 +97,7 @@ const canSaveLog = computed(
       draft.flowRecorded ||
       draft.flow !== "None" ||
       draft.symptoms.length ||
+      draft.pain ||
       draft.notes.trim() ||
       draft.periodStart ||
       draft.periodEnd
@@ -290,22 +292,40 @@ function deleteLog() {
           </button>
         </p>
       </template>
-      <fieldset v-else-if="currentLogStep.id === 'symptoms'">
-        <legend>What I’m noticing</legend>
-        <div class="choice-row">
-          <button
-            v-for="symptom in orderedSymptoms"
-            :key="symptom"
-            type="button"
-            class="choice"
-            :class="{ chosen: draft.symptoms.includes(symptom) }"
-            :aria-pressed="draft.symptoms.includes(symptom)"
-            @click="toggleSymptom(symptom)"
-          >
-            {{ symptom }}
-          </button>
-        </div>
-      </fieldset>
+      <template v-else-if="currentLogStep.id === 'symptoms'">
+        <fieldset>
+          <legend>What I’m noticing</legend>
+          <div class="choice-row">
+            <button
+              v-for="symptom in orderedSymptoms"
+              :key="symptom"
+              type="button"
+              class="choice"
+              :class="{ chosen: draft.symptoms.includes(symptom) }"
+              :aria-pressed="draft.symptoms.includes(symptom)"
+              @click="toggleSymptom(symptom)"
+            >
+              {{ symptom }}
+            </button>
+          </div>
+        </fieldset>
+        <fieldset class="checkin-pain">
+          <legend>Any pain?</legend>
+          <div class="choice-row">
+            <button
+              v-for="level in painLevels"
+              :key="level.name"
+              type="button"
+              class="choice pain-choice"
+              :class="{ chosen: draft.pain === level.name }"
+              :aria-pressed="draft.pain === level.name"
+              @click="draft.pain = draft.pain === level.name ? '' : level.name"
+            >
+              {{ level.name }}<small>{{ level.hint }}</small>
+            </button>
+          </div>
+        </fieldset>
+      </template>
       <template v-else>
         <label class="field-label" for="journal-note"
           >A little note

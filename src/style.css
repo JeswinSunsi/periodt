@@ -721,82 +721,6 @@ h1 {
   align-items: center;
   gap: 6px;
 }
-.insight-grid {
-  display: grid;
-}
-.stat-card {
-  display: flex;
-  flex-direction: column;
-}
-.stat-card > svg {
-  color: var(--text-muted);
-}
-.stat-card > strong {
-  font:
-    43px "Lora",
-    serif;
-}
-.stat-card small {
-  font:
-    16px "DM Sans",
-    sans-serif;
-}
-.insights-detail {
-  margin-top: 20px;
-}
-.insights-detail h2 {
-  margin-bottom: 10px;
-}
-.phase-grid {
-  display: grid;
-  margin-top: 24px;
-}
-.phase-item {
-  text-align: left;
-  background: var(--surface-subtle);
-  border-radius: 8px;
-}
-.phase-item:nth-child(1) {
-  background: var(--phase-menstrual-bg);
-}
-.phase-item:nth-child(3) {
-  background: var(--warning-bg);
-}
-.phase-item:nth-child(4) {
-  background: var(--accent-soft);
-}
-.phase-item svg {
-  color: var(--text-muted);
-  margin-bottom: 15px;
-}
-.phase-item p {
-  margin-top: 9px;
-}
-.insights-note {
-  margin-top: 21px;
-}
-.symptom-bars {
-  display: grid;
-  gap: 18px;
-  margin-top: 25px;
-}
-.symptom-row {
-  display: flex;
-  align-items: center;
-}
-.symptom-row > div {
-  flex: 1;
-  height: 8px;
-  border-radius: 10px;
-  background: var(--surface-subtle);
-  overflow: hidden;
-}
-.symptom-row i {
-  height: 100%;
-  display: block;
-  background: var(--accent-mid);
-  border-radius: 10px;
-}
 .empty-state {
   text-align: center;
 }
@@ -1302,21 +1226,6 @@ h1 {
   left: 50%;
   width: max-content;
   bottom: 20px;
-}
-.insight-grid {
-  grid-template-columns: 1fr;
-}
-.stat-card {
-  padding: 23px;
-}
-.stat-card > svg {
-  margin-bottom: 10px;
-}
-.stat-card > strong {
-  margin: 8px 0;
-}
-.insights-detail h2 {
-  font-size: 24px;
 }
 .empty-state {
   padding: 50px 20px;

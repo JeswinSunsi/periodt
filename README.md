@@ -29,7 +29,8 @@ Navigation uses Vue Router's HTML5 history with `/overview`, `/cycle`, `/insight
 - Daily mood, flow, symptoms, private notes, and period-start logging.
 - Editable recorded starts and explicit no-flow check-ins that end a period early. Only recorded bleeding is colored; the next estimated start is a single calendar marker. The usual period-length setting stays unchanged.
 - Overview calendar with month navigation, date-specific entries, and estimated period and fertile windows.
-- A journal and symptom-frequency insights based on actual local entries.
+- Daily check-ins can rate pain as mild, moderate, or severe ("got in the way of my day").
+- A journal, plus insights built from recorded cycles: the next period as a likely range from your own shortest and longest cycles (also shown on the Overview calendar), a late-period helper with next steps, gentle notes worth raising with a clinician (short, long, or irregular cycles, prolonged periods, bleeding between periods, severe or worsening period pain), one-tap prediction tune-ups when recorded averages differ from the settings, cycle averages and history, and a shareable plain-text summary, including recurring symptoms and premenstrual mood dips, that leaves out private notes.
 - Cycle settings and preservation of previously recorded period starts.
 - Partner code creation, copying, selectable sharing permissions, code entry, a partner preview, and revocation. Private journal notes are excluded from the partner preview.
 - Educational phase and self-care cards with source links.

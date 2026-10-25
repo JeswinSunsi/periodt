@@ -530,11 +530,6 @@ summary:focus-visible {
   color: var(--text-muted);
   flex-wrap: wrap;
 }
-.stat-card > span,
-.stat-card p,
-.insights-detail > p,
-.phase-item p,
-.insights-note,
 .empty-state p,
 .journal-content p,
 .sharing-card > p,
@@ -544,26 +539,6 @@ summary:focus-visible {
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.7;
-}
-.stat-card > strong {
-  font-size: 36px;
-}
-.stat-card p,
-.insights-note {
-  font-size: 12px;
-}
-.phase-item h3 {
-  font-size: 21px;
-}
-.symptom-row {
-  font-size: 14px;
-}
-.symptom-row > strong {
-  width: auto;
-  min-width: 48px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
 }
 .journal-content h3 > span,
 .journal-date > span,
@@ -1016,6 +991,37 @@ summary:focus-visible {
 .checkin-step-body .choice {
   min-height: 48px;
 }
+.upcoming-range {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+/* A second question inside the symptoms step, so its legend stays visible. */
+.checkin-step-body .checkin-pain {
+  margin-top: 24px;
+}
+.checkin-step-body .checkin-pain legend {
+  position: static;
+  width: auto;
+  height: auto;
+  margin-bottom: 10px;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+}
+.checkin-step-body .pain-choice {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  text-align: left;
+}
+.pain-choice small {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
 .checkin-step-actions {
   display: flex;
   gap: 12px;
@@ -1372,27 +1378,6 @@ summary:focus-visible {
 .journal-content h3 {
   font-size: 21px;
 }
-.insights-detail {
-  padding: 22px 18px;
-}
-.phase-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-.phase-item {
-  padding: 18px;
-}
-.symptom-row {
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.symptom-row > span {
-  width: auto;
-  flex: 1;
-}
-.symptom-row > div {
-  order: 3;
-  flex-basis: 100%;
-}
 .modal-backdrop {
   padding: 10px;
 }
@@ -1473,10 +1458,8 @@ summary:focus-visible {
 .top-grid,
 .middle-grid,
 .article-grid,
-.insight-grid,
 .journal-list,
 .sharing-grid,
-.phase-grid,
 .cycle-detail-grid,
 .cycle-detail-side {
   gap: var(--card-gap);

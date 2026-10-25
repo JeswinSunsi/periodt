@@ -54,6 +54,7 @@ const journalEntries = computed(() =>
         </h3>
         <p>{{ log.notes || "A little check-in with myself." }}</p>
         <div class="flex flex-wrap gap-2">
+          <span v-if="log.pain" class="tag">{{ log.pain }} pain</span>
           <span v-for="symptom in log.symptoms" :key="symptom" class="tag">{{
             symptom
           }}</span>

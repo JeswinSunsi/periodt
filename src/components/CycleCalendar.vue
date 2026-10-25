@@ -11,9 +11,9 @@ const calendarMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1));
 <script setup>
 import { computed } from "vue";
 import Icon from "./AppIcon.vue";
-import { monthDates } from "../lib/calendar.js";
 import { hasCheckin } from "../lib/checkin.js";
 import { calendarEstimateAtDay, estimateCaveats } from "../lib/cyclePhases.js";
+import { dateRangeLabel } from "../lib/insights.js";
 import { periodDayType } from "../lib/periodHistory.js";
 import {
   dateKey,
@@ -22,9 +22,22 @@ import {
   shortDate,
 } from "../composables/useCycle";
 import { useCheckin } from "../composables/useCheckin.js";
+import { useInsights } from "../composables/useInsights.js";
+
+// A Monday-first month, padded to complete weeks with adjacent-month dates.
+function monthDates(year, month) {
+  const first = new Date(year, month, 1, 12);
+  const offset = (first.getDay() + 6) % 7;
+  const days = new Date(year, month + 1, 0, 12).getDate();
+  return Array.from(
+    { length: Math.ceil((offset + days) / 7) * 7 },
+    (_, index) => new Date(year, month, index - offset + 1, 12),
+  );
+}
 
 const { state, nextPeriod, ovulationDate } = useCycle();
 const { todayLog, periodEndDates, openLog, openCalendarDate } = useCheckin();
+const { range } = useInsights();
 const caveats = computed(() => estimateCaveats(state.profile));
 const calendarTitle = computed(() =>
   calendarMonth.value.toLocaleDateString("en-US", {
@@ -141,7 +154,10 @@ function changeMonth(direction) {
         </p>
         <div class="upcoming">
           <div>
-            <span>Next period</span><strong>{{ shortDate(nextPeriod) }}</strong>
+            <span>Next period</span><strong>{{ shortDate(nextPeriod) }}</strong
+            ><small v-if="range" class="upcoming-range"
+              >Likely {{ dateRangeLabel(range.earliest, range.latest) }}</small
+            >
           </div>
         </div>
         <div class="upcoming">

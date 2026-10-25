@@ -109,8 +109,9 @@ async function undoSavedPeriodStart() {
         </div>
         <div>
           <dt><Icon name="Heart" :size="18" /> Symptoms</dt>
-          <dd v-if="savedLog?.symptoms?.length">
+          <dd v-if="savedLog?.symptoms?.length || savedLog?.pain">
             <ul class="saved-symptoms">
+              <li v-if="savedLog.pain" class="tag">{{ savedLog.pain }} pain</li>
               <li
                 v-for="symptom in savedLog.symptoms"
                 :key="symptom"
