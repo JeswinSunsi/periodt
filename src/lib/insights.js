@@ -330,48 +330,6 @@ export function forecastTiming({ anchor, offset, run }) {
     : `Days ${first}–${last} of your cycle`;
 }
 
-const formatDate = (key) =>
-  new Date(`${key}T12:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-// Plain text a person can paste into a message or read out at an appointment.
-export function insightsSummary({ cycles, stats, notes, forecast }) {
-  const lines = ["My cycle summary (from periodt)", ""];
-  const latest = cycles.at(-1);
-  if (latest) lines.push(`Last period started: ${formatDate(latest.start)}`);
-  if (stats.cycleCount)
-    lines.push(
-      `Average cycle: ${stats.averageCycle} days (${stats.shortest}–${stats.longest}, last ${stats.cycleCount} ${stats.cycleCount === 1 ? "cycle" : "cycles"})`,
-    );
-  if (stats.periodCount)
-    lines.push(`Average period: ${stats.averagePeriod} days`);
-  const recent = cycles
-    .filter((c) => c.length !== null)
-    .slice(-recentCycleCount);
-  if (recent.length) {
-    lines.push("", "Recent cycles:");
-    for (const cycle of recent.toReversed())
-      lines.push(
-        `- ${formatDate(cycle.start)}: ${cycle.length} days${cycle.periodLength !== null ? `, period ${cycle.periodLength} days` : ""}`,
-      );
-  }
-  if (forecast.length)
-    lines.push(
-      "",
-      "Recurring symptoms:",
-      ...forecast.map(
-        (item) =>
-          `- ${item.name}: ${forecastTiming(item)} (${item.cycles} of ${item.of} cycles)`,
-      ),
-    );
-  if (notes.length)
-    lines.push("", "Worth discussing:", ...notes.map((n) => `- ${n}`));
-  return lines.join("\n");
-}
-
 // "Oct 27–31", or "Oct 30 – Nov 2" across months.
 export function dateRangeLabel(startKey, endKey) {
   const format = (key, options) =>

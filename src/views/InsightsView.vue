@@ -2,9 +2,9 @@
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import Icon from "../components/AppIcon.vue";
+import { appointmentReport } from "../lib/appointmentReport.js";
 import {
   healthNotes,
-  insightsSummary,
   regularityLabel,
   settingSuggestions,
   symptomForecast,
@@ -95,23 +95,30 @@ function applySuggestion({ field, label, value }) {
   notify(`Predictions now use a ${value}-day ${label}.`);
 }
 
-async function shareSummary() {
-  const text = insightsSummary({
-    cycles: cycles.value,
-    stats: stats.value,
-    notes: notes.value,
-    forecast: forecast.value,
-  });
+// The PDF code and fonts only load when someone asks for the summary.
+const preparing = ref(false);
+async function downloadSummary() {
+  if (preparing.value) return;
+  preparing.value = true;
   try {
-    if (navigator.share) {
-      await navigator.share({ title: "My cycle summary", text });
-      return;
-    }
-    await navigator.clipboard.writeText(text);
-    notify("Summary copied. Paste it wherever you need it.");
-  } catch (error) {
-    if (error?.name !== "AbortError")
-      notify("Couldn’t share the summary on this device.");
+    const { appointmentPdf } = await import("../lib/appointmentPdf.js");
+    const doc = await appointmentPdf(
+      appointmentReport({
+        state,
+        cycles: cycles.value,
+        stats: stats.value,
+        range: range.value,
+        notes: notes.value,
+        forecast: forecast.value,
+        today: todayKey,
+      }),
+    );
+    doc.save(`periodt-cycle-summary-${todayKey}.pdf`);
+    notify("Your summary is downloading.");
+  } catch {
+    notify("Couldn’t make the summary on this device.");
+  } finally {
+    preparing.value = false;
   }
 }
 </script>
@@ -329,9 +336,7 @@ async function shareSummary() {
       <ol class="history-list">
         <li v-for="cycle in history" :key="cycle.start">
           <div class="history-label">
-            <span
-              >{{ startLabel(cycle.start) }}</span
-            >
+            <span>{{ startLabel(cycle.start) }}</span>
             <strong v-if="cycle.gap"
               >{{ cycle.length }} days · a start may be missing</strong
             >
@@ -364,13 +369,20 @@ async function shareSummary() {
       </p>
     </section>
 
-    <button class="card redeem-card" @click="shareSummary">
+    <button
+      class="card redeem-card"
+      :aria-busy="preparing"
+      :disabled="preparing"
+      @click="downloadSummary"
+    >
       <Icon name="BookOpen" /><span
         ><strong>Bring it to an appointment</strong
-        ><small
-          >A plain summary for your doctor. Notes stay private.</small
-        ></span
-      ><Icon name="ArrowUpRight" :size="18" />
+        ><small>{{
+          preparing
+            ? "Preparing your summary…"
+            : "A PDF summary for your doctor. Notes stay private."
+        }}</small></span
+      ><Icon name="Download" :size="18" />
     </button>
 
     <details class="cycle-research-note">

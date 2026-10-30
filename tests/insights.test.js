@@ -4,7 +4,6 @@ import {
   cycleHistory,
   cycleStats,
   healthNotes,
-  insightsSummary,
   dateRangeLabel,
   forecastTiming,
   nextPeriodRange,
@@ -145,27 +144,6 @@ test("spotting just before a period or continuing it is not flagged", () => {
   });
   const cycles = cycleHistory(state, today);
   assert.deepEqual(healthNotes(state, cycles, cycleStats(cycles)), []);
-});
-
-test("the summary lists recent cycles and notes", () => {
-  const state = stateWith(["2026-08-01", "2026-08-31", "2026-09-30"]);
-  const cycles = cycleHistory(state, today);
-  const text = insightsSummary({
-    cycles,
-    stats: cycleStats(cycles),
-    notes: ["Example note."],
-    forecast: [
-      { name: "Bloating", anchor: "next", offset: 4, run: 3, cycles: 2, of: 2 },
-    ],
-  });
-  assert.match(text, /Last period started: Sep 30, 2026/);
-  assert.match(text, /Average cycle: 30 days \(30–30, last 2 cycles\)/);
-  assert.match(text, /- Aug 31, 2026: 30 days/);
-  assert.match(
-    text,
-    /- Bloating: About 4 days before your period \(2 of 2 cycles\)/,
-  );
-  assert.match(text, /Worth discussing:\n- Example note\./);
 });
 
 const regular = [
